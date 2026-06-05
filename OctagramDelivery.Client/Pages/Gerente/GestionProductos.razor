@@ -1,0 +1,212 @@
+@page "/gerente/productos"
+@page "/supervisor/productos"
+@attribute [Authorize(Roles = $"{nameof(UserRole.Gerente)},{nameof(UserRole.Supervisor)}")]
+@inject ApiService Api
+@inject AuthService AuthSvc
+@inject ISnackbar Snackbar
+@inject IDialogService Dialog
+
+<PageTitle>Productos · OctagramDelivery</PageTitle>
+
+<div class="page-content">
+    <div class="page-header">
+        <div>
+            <h1 class="h-page-title">Productos</h1>
+            <p class="page-subtitle">Catálogo de productos del negocio</p>
+        </div>
+        <div class="page-header-actions">
+            @if (_esGerente && _misNegocios.Count > 1)
+            {
+                <MudSelect T="int" Value="_negocioActivo" ValueChanged="CambiarNegocio"
+                           Label="Negocio" Variant="Variant.Outlined" Margin="Margin.Dense"
+                           Style="min-width:180px;">
+                    @foreach (var n in _misNegocios)
+                    {
+                        <MudSelectItem T="int" Value="n.Id">@n.Nombre</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            <MudButton StartIcon="@Icons.Material.Rounded.Add"
+                       Variant="Variant.Filled" Color="Color.Primary"
+                       OnClick="AbrirCrear" Disabled="_negocioActivo == 0">
+                Nuevo Producto
+            </MudButton>
+        </div>
+    </div>
+
+    @if (_cargando)
+    {
+        <div class="loading-state"><MudProgressCircular Color="Color.Primary" Indeterminate="true" /></div>
+    }
+    else
+    {
+        <div class="data-card">
+            <MudTable Items="_productos" Hover="true" Dense="true" Striped="false">
+                <HeaderContent>
+                    <MudTh>Nombre</MudTh>
+                    <MudTh Style="text-align:center;">Tipo</MudTh>
+                    <MudTh Style="text-align:right;">Precio / Unidad</MudTh>
+                    <MudTh Style="text-align:center;">Estado</MudTh>
+                    <MudTh Style="width:72px;text-align:center;">Acciones</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd><span class="fw-600">@context.Nombre</span></MudTd>
+                    <MudTd Style="text-align:center;">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                                 Color="@(context.TipoMedida == TipoMedida.Gramaje ? Color.Info : Color.Default)">
+                            @(context.TipoMedida == TipoMedida.Gramaje ? "Gramaje" : "Pieza")
+                        </MudChip>
+                    </MudTd>
+                    <MudTd Style="text-align:right;font-variant-numeric:tabular-nums;">
+                        @context.PrecioPorUnidad.ToString("C", _mx)
+                        @if (context.TipoMedida == TipoMedida.Gramaje)
+                        {
+                            <span class="text-muted" style="font-size:10px;"> /KG</span>
+                        }
+                    </MudTd>
+                    <MudTd Style="text-align:center;">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                                 Color="@(context.IsActive ? Color.Success : Color.Default)">
+                            @(context.IsActive ? "Activo" : "Inactivo")
+                        </MudChip>
+                    </MudTd>
+                    <MudTd Style="text-align:center;">
+                        <div style="display:inline-flex;gap:2px;align-items:center;">
+                            <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                                           Size="Size.Small" Color="Color.Default"
+                                           title="Editar"
+                                           OnClick="@(() => AbrirEditar(context))" />
+                            <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                           Size="Size.Small" Color="Color.Default"
+                                           title="Desactivar"
+                                           OnClick="@(() => Eliminar(context))" />
+                        </div>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <div class="empty-state">
+                        <span class="material-symbols-rounded">inventory_2</span>
+                        <p>No hay productos registrados para este negocio.</p>
+                    </div>
+                </NoRecordsContent>
+            </MudTable>
+        </div>
+    }
+</div>
+
+<MudDialog @bind-Visible="_dialogOpen">
+    <TitleContent>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <span class="material-symbols-rounded" style="color:var(--primary);font-size:20px;">inventory_2</span>
+            <span>@(_esCrear ? "Nuevo Producto" : "Editar Producto")</span>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="_nombre" Label="Nombre del producto"
+                      Variant="Variant.Outlined" FullWidth="true" Class="mb-3"
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Label" />
+        <MudSelect T="TipoMedida" @bind-Value="_tipoMedida" Label="Tipo de medida"
+                   Variant="Variant.Outlined" FullWidth="true" Class="mb-3">
+            <MudSelectItem T="TipoMedida" Value="TipoMedida.Pieza">Pieza (por unidad)</MudSelectItem>
+            <MudSelectItem T="TipoMedida" Value="TipoMedida.Gramaje">Gramaje (precio por KG)</MudSelectItem>
+        </MudSelect>
+        <MudNumericField T="decimal" @bind-Value="_precio"
+                         Label="@(_tipoMedida == TipoMedida.Gramaje ? "Precio por KG" : "Precio por pieza")"
+                         Variant="Variant.Outlined" FullWidth="true" Min="0"
+                         Adornment="Adornment.Start" AdornmentText="$"
+                         Format="F2" Culture="_mx" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="CerrarDialog">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Guardar">Guardar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private static readonly System.Globalization.CultureInfo _mx =
+        System.Globalization.CultureInfo.GetCultureInfo("es-MX");
+
+    private List<ProductDto>  _productos   = new();
+    private List<TenantDto>   _misNegocios = new();
+    private bool _cargando = true;
+    private bool _esGerente;
+    private int  _negocioActivo;
+
+    private bool     _dialogOpen, _esCrear;
+    private int      _editId;
+    private string   _nombre    = "";
+    private TipoMedida _tipoMedida = TipoMedida.Pieza;
+    private decimal  _precio;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await AuthSvc.GetCurrentUser();
+        _esGerente = user?.Rol == UserRole.Gerente;
+
+        if (_esGerente)
+        {
+            _misNegocios  = await Api.GetNegociosAsync() ?? new();
+            _negocioActivo = _misNegocios.FirstOrDefault()?.Id ?? 0;
+        }
+        else
+        {
+            _negocioActivo = user?.NegocioIds.FirstOrDefault() ?? 0;
+        }
+
+        if (_negocioActivo != 0) await Cargar();
+        _cargando = false;
+    }
+
+    private async Task CambiarNegocio(int id) { _negocioActivo = id; await Cargar(); }
+
+    private async Task Cargar()
+    {
+        _cargando = true;
+        _productos = await Api.GetProductosAsync(_negocioActivo) ?? new();
+        _cargando = false;
+    }
+
+    private void AbrirCrear()
+    {
+        _esCrear = true; _editId = 0;
+        _nombre = ""; _tipoMedida = TipoMedida.Pieza; _precio = 0;
+        _dialogOpen = true;
+    }
+
+    private void AbrirEditar(ProductDto p)
+    {
+        _esCrear = false; _editId = p.Id;
+        _nombre = p.Nombre; _tipoMedida = p.TipoMedida; _precio = p.PrecioPorUnidad;
+        _dialogOpen = true;
+    }
+
+    private void CerrarDialog() => _dialogOpen = false;
+
+    private async Task Guardar()
+    {
+        if (string.IsNullOrWhiteSpace(_nombre)) { Snackbar.Add("El nombre es requerido.", Severity.Warning); return; }
+        var req = new CreateProductRequest { Nombre = _nombre, TipoMedida = _tipoMedida, PrecioPorUnidad = _precio };
+        var resp = _esCrear
+            ? await Api.CreateProductoAsync(_negocioActivo, req)
+            : await Api.UpdateProductoAsync(_negocioActivo, _editId, req);
+
+        if (resp.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Producto guardado.", Severity.Success);
+            CerrarDialog(); await Cargar();
+        }
+        else Snackbar.Add("Error al guardar el producto.", Severity.Error);
+    }
+
+    private async Task Eliminar(ProductDto p)
+    {
+        var ok = await Dialog.ShowMessageBox("Desactivar producto",
+            $"¿Desactivar \"{p.Nombre}\"?", yesText: "Desactivar", cancelText: "Cancelar");
+        if (ok == true)
+        {
+            await Api.DeleteProductoAsync(_negocioActivo, p.Id);
+            Snackbar.Add("Producto desactivado.", Severity.Warning);
+            await Cargar();
+        }
+    }
+}

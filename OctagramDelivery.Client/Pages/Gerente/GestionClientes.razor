@@ -1,0 +1,375 @@
+@page "/gerente/clientes"
+@page "/supervisor/clientes"
+@attribute [Authorize(Roles = $"{nameof(UserRole.Gerente)},{nameof(UserRole.Supervisor)}")]
+@inject ApiService Api
+@inject AuthService AuthSvc
+@inject ISnackbar Snackbar
+@inject IDialogService Dialog
+
+<PageTitle>Clientes · OctagramDelivery</PageTitle>
+
+<div class="page-content">
+    <div class="page-header">
+        <div>
+            <h1 class="h-page-title">Clientes</h1>
+            <p class="page-subtitle">Cartera de clientes del negocio</p>
+        </div>
+        <div class="page-header-actions">
+            @if (_esGerente && _misNegocios.Count > 1)
+            {
+                <MudSelect T="int" Value="_negocioActivo" ValueChanged="CambiarNegocio"
+                           Label="Negocio" Variant="Variant.Outlined" Margin="Margin.Dense"
+                           Style="min-width:180px;">
+                    @foreach (var n in _misNegocios)
+                    {
+                        <MudSelectItem T="int" Value="n.Id">@n.Nombre</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            <MudButton StartIcon="@Icons.Material.Rounded.PersonAdd"
+                       Variant="Variant.Filled" Color="Color.Primary"
+                       OnClick="AbrirCrear" Disabled="_negocioActivo == 0">
+                Nuevo Cliente
+            </MudButton>
+        </div>
+    </div>
+
+    @if (_cargando)
+    {
+        <div class="loading-state"><MudProgressCircular Color="Color.Primary" Indeterminate="true" /></div>
+    }
+    else
+    {
+        <div class="data-card">
+            <MudTable Items="_clientes" Hover="true" Dense="true" Striped="false" Filter="FiltrarCliente">
+                <ToolBarContent>
+                    <MudTextField @bind-Value="_busqueda"
+                                  Placeholder="Buscar cliente..."
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Rounded.Search"
+                                  FullWidth="true" Variant="Variant.Outlined"
+                                  Margin="Margin.Dense" />
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Nombre</MudTh>
+                    <MudTh>Teléfono</MudTh>
+                    <MudTh>Días de entrega</MudTh>
+                    <MudTh Style="text-align:center;">Productos</MudTh>
+                    <MudTh Style="text-align:center;">Estado</MudTh>
+                    <MudTh Style="width:90px;text-align:center;">Acciones</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>
+                        <div><span class="fw-600">@context.Nombre</span></div>
+                        @if (!string.IsNullOrEmpty(context.Direccion))
+                        {
+                            <div style="font-size:11px;color:var(--gray-muted);">@context.Direccion</div>
+                        }
+                    </MudTd>
+                    <MudTd><span class="text-muted">@(context.Telefono ?? "—")</span></MudTd>
+                    <MudTd>
+                        <span style="font-size:12px;letter-spacing:0.5px;">@FormatDias(context.DiasEntrega)</span>
+                    </MudTd>
+                    <MudTd Style="text-align:center;">
+                        <span class="fw-600 text-primary">@context.Productos.Count</span>
+                    </MudTd>
+                    <MudTd Style="text-align:center;">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                                 Color="@(context.IsActive ? Color.Success : Color.Default)">
+                            @(context.IsActive ? "Activo" : "Inactivo")
+                        </MudChip>
+                    </MudTd>
+                    <MudTd Style="text-align:center;">
+                        <div style="display:inline-flex;gap:2px;align-items:center;">
+                            <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                                           Size="Size.Small" Color="Color.Default"
+                                           title="Editar"
+                                           OnClick="@(() => AbrirEditar(context))" />
+                            <MudIconButton Icon="@Icons.Material.Rounded.Inventory"
+                                           Size="Size.Small" Color="Color.Default"
+                                           title="Asignar productos"
+                                           OnClick="@(() => AbrirProductos(context))" />
+                            <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                           Size="Size.Small" Color="Color.Default"
+                                           title="Desactivar"
+                                           OnClick="@(() => Eliminar(context))" />
+                        </div>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <div class="empty-state">
+                        <span class="material-symbols-rounded">people</span>
+                        <p>No hay clientes registrados para este negocio.</p>
+                    </div>
+                </NoRecordsContent>
+            </MudTable>
+        </div>
+    }
+</div>
+
+<!-- Dialog datos del cliente -->
+<MudDialog @bind-Visible="_dialogDatos">
+    <TitleContent>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <span class="material-symbols-rounded" style="color:var(--primary);font-size:20px;">person</span>
+            <span>@(_esCrear ? "Nuevo Cliente" : "Editar Cliente")</span>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="_nombre" Label="Nombre del cliente"
+                      Variant="Variant.Outlined" FullWidth="true" Class="mb-3"
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Person" />
+        <MudTextField @bind-Value="_direccion" Label="Dirección"
+                      Variant="Variant.Outlined" FullWidth="true" Class="mb-3"
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.LocationOn" />
+        <MudTextField @bind-Value="_telefono" Label="Teléfono"
+                      Variant="Variant.Outlined" FullWidth="true" Class="mb-3"
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Phone" />
+        <MudTimePicker @bind-Time="_horaAprox" Label="Hora aproximada de entrega"
+                       Variant="Variant.Outlined" Style="width:100%;" Class="mb-3"
+                       AmPm="false" />
+        <div class="mb-1" style="font-size:12px;font-weight:600;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.04em;">
+            Días de entrega
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+            @foreach (var d in _diasOptions)
+            {
+                var activo = (_diasEntrega & d.Bit) != 0;
+                <button class="@("dia-btn" + (activo ? " dia-btn-active" : ""))"
+                        @onclick="@(() => ToggleDia(d.Bit))" type="button">
+                    @d.Label
+                </button>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="CerrarDialogDatos">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GuardarDatos">Guardar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<!-- Dialog asignación de productos -->
+<MudDialog @bind-Visible="_dialogProductos" Options="@(new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true })">
+    <TitleContent>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <span class="material-symbols-rounded" style="color:var(--primary);font-size:20px;">inventory</span>
+            <span>Productos de @_clienteEditando?.Nombre</span>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        @if (!_todosLosProductos.Any())
+        {
+            <div class="empty-state" style="padding:24px;">
+                <span class="material-symbols-rounded">inventory_2</span>
+                <p>No hay productos registrados en este negocio.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var prod in _todosLosProductos)
+            {
+                var asig = _asignaciones.FirstOrDefault(a => a.ProductId == prod.Id);
+                var activo = asig != null;
+                <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-line);">
+                    <MudCheckBox T="bool" Value="activo"
+                                 ValueChanged="@(v => ToggleProducto(prod.Id, v))"
+                                 Color="Color.Primary" />
+                    <div style="flex:1;min-width:0;">
+                        <div class="fw-500" style="font-size:13px;">@prod.Nombre</div>
+                        <div style="font-size:11px;color:var(--gray-muted);">
+                            @(prod.TipoMedida == TipoMedida.Gramaje ? "Gramaje" : "Pieza") —
+                            @prod.PrecioPorUnidad.ToString("C", _mx)
+                            @(prod.TipoMedida == TipoMedida.Gramaje ? "/KG" : "")
+                        </div>
+                    </div>
+                    @if (activo && asig != null)
+                    {
+                        <MudNumericField T="decimal" Value="asig.CantidadHabitual"
+                                         ValueChanged="@(v => asig.CantidadHabitual = v)"
+                                         Label="Cant. habitual" Style="width:110px;"
+                                         Variant="Variant.Outlined" Margin="Margin.Dense" Min="0"
+                                         Format="@(prod.TipoMedida == TipoMedida.Gramaje ? "F2" : "F0")" />
+                        <MudNumericField T="decimal?" Value="asig.PrecioEspecial"
+                                         ValueChanged="@(v => asig.PrecioEspecial = v)"
+                                         Label="Precio especial" Style="width:120px;"
+                                         Variant="Variant.Outlined" Margin="Margin.Dense" Min="0"
+                                         Placeholder="(base)" />
+                    }
+                </div>
+            }
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="@(() => _dialogProductos = false)">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GuardarProductos">Guardar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private static readonly System.Globalization.CultureInfo _mx =
+        System.Globalization.CultureInfo.GetCultureInfo("es-MX");
+
+    private static readonly (int Bit, string Label)[] _diasOptions =
+    {
+        (1, "L"), (2, "M"), (4, "X"), (8, "J"), (16, "V"), (32, "S"), (64, "D")
+    };
+
+    private List<CustomerDto> _clientes       = new();
+    private List<ProductDto>  _todosLosProductos = new();
+    private List<TenantDto>   _misNegocios    = new();
+    private bool _cargando = true;
+    private bool _esGerente;
+    private int  _negocioActivo;
+    private string _busqueda = "";
+
+    // Dialog datos del cliente
+    private bool     _dialogDatos;
+    private bool     _esCrear;
+    private int      _editId;
+    private string   _nombre    = "";
+    private string?  _direccion;
+    private string?  _telefono;
+    private TimeSpan? _horaAprox;
+    private int      _diasEntrega;
+
+    // Dialog productos del cliente
+    private bool _dialogProductos;
+    private CustomerDto? _clienteEditando;
+    private List<ProductAssignItem> _asignaciones = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await AuthSvc.GetCurrentUser();
+        _esGerente = user?.Rol == UserRole.Gerente;
+
+        if (_esGerente)
+        {
+            _misNegocios   = await Api.GetNegociosAsync() ?? new();
+            _negocioActivo = _misNegocios.FirstOrDefault()?.Id ?? 0;
+        }
+        else
+        {
+            _negocioActivo = user?.NegocioIds.FirstOrDefault() ?? 0;
+        }
+
+        if (_negocioActivo != 0) await Cargar();
+        _cargando = false;
+    }
+
+    private async Task CambiarNegocio(int id) { _negocioActivo = id; await Cargar(); }
+
+    private async Task Cargar()
+    {
+        _cargando = true;
+        (_clientes, _todosLosProductos) = (
+            await Api.GetClientesAsync(_negocioActivo) ?? new(),
+            await Api.GetProductosAsync(_negocioActivo) ?? new()
+        );
+        _cargando = false;
+    }
+
+    private bool FiltrarCliente(CustomerDto c) =>
+        string.IsNullOrEmpty(_busqueda) ||
+        c.Nombre.Contains(_busqueda, StringComparison.OrdinalIgnoreCase);
+
+    // ── Dialog datos ──────────────────────────────────────────────
+    private void AbrirCrear()
+    {
+        _esCrear = true; _editId = 0;
+        _nombre = ""; _direccion = null; _telefono = null;
+        _horaAprox = null; _diasEntrega = 0;
+        _dialogDatos = true;
+    }
+
+    private void AbrirEditar(CustomerDto c)
+    {
+        _esCrear = false; _editId = c.Id;
+        _nombre = c.Nombre; _direccion = c.Direccion; _telefono = c.Telefono;
+        _horaAprox = c.HoraAproximada; _diasEntrega = c.DiasEntrega;
+        _dialogDatos = true;
+    }
+
+    private void CerrarDialogDatos() => _dialogDatos = false;
+
+    private void ToggleDia(int bit) => _diasEntrega ^= bit;
+
+    private async Task GuardarDatos()
+    {
+        if (string.IsNullOrWhiteSpace(_nombre)) { Snackbar.Add("El nombre es requerido.", Severity.Warning); return; }
+        var req = new CreateCustomerRequest
+        {
+            Nombre = _nombre, Direccion = _direccion, Telefono = _telefono,
+            DiasEntrega = _diasEntrega, HoraAproximada = _horaAprox
+        };
+        var resp = _esCrear
+            ? await Api.CreateClienteAsync(_negocioActivo, req)
+            : await Api.UpdateClienteAsync(_negocioActivo, _editId, req);
+
+        if (resp.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Cliente guardado.", Severity.Success);
+            CerrarDialogDatos(); await Cargar();
+        }
+        else Snackbar.Add("Error al guardar el cliente.", Severity.Error);
+    }
+
+    // ── Dialog productos ──────────────────────────────────────────
+    private void AbrirProductos(CustomerDto c)
+    {
+        _clienteEditando = c;
+        _asignaciones = c.Productos.Select(p => new ProductAssignItem
+        {
+            ProductId        = p.ProductId,
+            CantidadHabitual = p.CantidadHabitual,
+            PrecioEspecial   = p.PrecioEspecial
+        }).ToList();
+        _dialogProductos = true;
+    }
+
+    private void ToggleProducto(int productId, bool incluir)
+    {
+        if (incluir)
+        {
+            if (!_asignaciones.Any(a => a.ProductId == productId))
+                _asignaciones.Add(new ProductAssignItem { ProductId = productId, CantidadHabitual = 1 });
+        }
+        else
+        {
+            _asignaciones.RemoveAll(a => a.ProductId == productId);
+        }
+    }
+
+    private async Task GuardarProductos()
+    {
+        var req = new AssignProductsRequest { Productos = _asignaciones };
+        var resp = await Api.AssignProductosClienteAsync(_negocioActivo, _clienteEditando!.Id, req);
+        if (resp.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Productos del cliente actualizados.", Severity.Success);
+            _dialogProductos = false;
+            await Cargar();
+        }
+        else Snackbar.Add("Error al guardar los productos.", Severity.Error);
+    }
+
+    private async Task Eliminar(CustomerDto c)
+    {
+        var ok = await Dialog.ShowMessageBox("Desactivar cliente",
+            $"¿Desactivar a \"{c.Nombre}\"?", yesText: "Desactivar", cancelText: "Cancelar");
+        if (ok == true)
+        {
+            await Api.DeleteClienteAsync(_negocioActivo, c.Id);
+            Snackbar.Add("Cliente desactivado.", Severity.Warning);
+            await Cargar();
+        }
+    }
+
+    private static string FormatDias(int bitmask)
+    {
+        if (bitmask == 0) return "Todos";
+        var labels = new[] { "L", "M", "X", "J", "V", "S", "D" };
+        var bits   = new[] { 1, 2, 4, 8, 16, 32, 64 };
+        return string.Join(" ", bits.Select((b, i) => (bitmask & b) != 0 ? labels[i] : null)
+                                    .Where(l => l != null));
+    }
+}

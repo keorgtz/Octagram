@@ -44,6 +44,9 @@ public class JwtAuthStateProvider : AuthenticationStateProvider
         NotifyAuthenticationStateChanged(Task.FromResult(Anonymous()));
     }
 
+    public Task<string?> GetTokenAsync()
+        => _storage.GetItemAsStringAsync("authToken").AsTask()!;
+
     private static AuthenticationState Anonymous()
         => new(new ClaimsPrincipal(new ClaimsIdentity()));
 }

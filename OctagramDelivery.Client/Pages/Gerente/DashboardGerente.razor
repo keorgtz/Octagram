@@ -1,6 +1,9 @@
 @page "/gerente/dashboard"
 @attribute [Authorize(Roles = $"{nameof(UserRole.Gerente)},{nameof(UserRole.Admin)}")]
+@implements IAsyncDisposable
 @inject ApiService Api
+@inject AuthService AuthSvc
+@inject HubService Hub
 
 <PageTitle>Dashboard Gerente · OctagramDelivery</PageTitle>
 
@@ -12,6 +15,16 @@
             <p class="page-subtitle">Resumen de operaciones por fecha</p>
         </div>
         <div class="page-header-actions">
+            @if (_enVivo)
+            {
+                <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
+                            color:var(--em);padding:4px 10px;background:var(--em-bg,#F0FDF4);
+                            border-radius:20px;">
+                    <span style="width:7px;height:7px;border-radius:50%;background:var(--em);
+                                 display:inline-block;animation:pulse 2s infinite;"></span>
+                    En vivo
+                </div>
+            }
             <MudDatePicker Date="_fecha" DateChanged="OnFechaChanged"
                            Variant="Variant.Outlined" Margin="Margin.Dense"
                            Style="max-width:160px;" />
@@ -119,11 +132,20 @@
 @code {
     private static readonly System.Globalization.CultureInfo _mx = new("es-MX");
 
-    private List<DashboardNegocioDto> _negocios = new();
-    private bool      _cargando = true;
-    private DateTime? _fecha    = DateTime.Today;
+    private List<DashboardNegocioDto> _negocios  = new();
+    private bool          _cargando = true;
+    private DateTime?     _fecha    = DateTime.Today;
+    private bool          _enVivo;
+    private List<int>     _negocioIds = new();
+    private List<IDisposable> _hubSubs = new();
 
-    protected override async Task OnInitializedAsync() => await Cargar();
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await AuthSvc.GetCurrentUser();
+        _negocioIds = user?.NegocioIds ?? new();
+        await Cargar();
+        await ConectarHub();
+    }
 
     private async Task OnFechaChanged(DateTime? f) { _fecha = f; await Cargar(); }
 
@@ -133,5 +155,28 @@
         var f = _fecha.HasValue ? DateOnly.FromDateTime(_fecha.Value) : DateOnly.FromDateTime(DateTime.Today);
         _negocios = await Api.GetDashboardGerenteAsync(f) ?? new();
         _cargando = false;
+    }
+
+    private async Task ConectarHub()
+    {
+        try
+        {
+            await Hub.ConnectAsync();
+            foreach (var id in _negocioIds)
+                await Hub.JoinNegocioAsync(id);
+
+            _hubSubs.Add(Hub.On<object>("JornadaActualizada", async _ =>
+                await InvokeAsync(async () => { await Cargar(); StateHasChanged(); })));
+
+            _enVivo = true;
+            StateHasChanged();
+        }
+        catch { /* funciona sin SignalR */ }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        foreach (var s in _hubSubs) s.Dispose();
+        await Hub.DisposeAsync();
     }
 }

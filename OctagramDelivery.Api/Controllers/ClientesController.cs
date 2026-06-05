@@ -100,11 +100,13 @@ public class ClientesController : ControllerBase
         IsActive = c.IsActive,
         Productos = c.CustomerProducts.Select(cp => new CustomerProductDto
         {
-            Id = cp.Id,
-            ProductId = cp.ProductId,
-            ProductNombre = cp.Product?.Nombre ?? "",
+            Id               = cp.Id,
+            ProductId        = cp.ProductId,
+            ProductNombre    = cp.Product?.Nombre ?? "",
+            TipoMedida       = cp.Product?.TipoMedida ?? OctagramDelivery.Domain.Enums.TipoMedida.Pieza,
+            PrecioBase       = cp.Product?.PrecioPorUnidad ?? 0,
             CantidadHabitual = cp.CantidadHabitual,
-            PrecioEspecial = cp.PrecioEspecial
+            PrecioEspecial   = cp.PrecioEspecial
         }).ToList()
     };
 }

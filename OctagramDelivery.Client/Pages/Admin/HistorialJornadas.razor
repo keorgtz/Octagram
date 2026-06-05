@@ -1,0 +1,122 @@
+@page "/admin/historial"
+@page "/gerente/historial"
+@page "/supervisor/historial"
+@attribute [Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Gerente)},{nameof(UserRole.Supervisor)}")]
+@inject ApiService Api
+@inject AuthService AuthSvc
+@inject IJSRuntime JS
+
+<PageTitle>Historial · OctagramDelivery</PageTitle>
+
+<div class="page-content">
+    <div class="page-header">
+        <div>
+            <h1 class="h-page-title">Historial de Jornadas</h1>
+            <p class="page-subtitle">Consulta de jornadas cerradas</p>
+        </div>
+        <div class="page-header-actions">
+            <MudDatePicker @bind-Date="_fechaDesde" Label="Desde"
+                           Variant="Variant.Outlined" Margin="Margin.Dense"
+                           DateFormat="dd/MM/yyyy" Style="max-width:140px;" />
+            <MudDatePicker @bind-Date="_fechaHasta" Label="Hasta"
+                           Variant="Variant.Outlined" Margin="Margin.Dense"
+                           DateFormat="dd/MM/yyyy" Style="max-width:140px;" />
+            <MudButton StartIcon="@Icons.Material.Rounded.Search"
+                       Variant="Variant.Outlined" Color="Color.Primary"
+                       OnClick="Buscar">
+                Buscar
+            </MudButton>
+            <MudIconButton Icon="@Icons.Material.Rounded.Download"
+                           Color="Color.Default" title="Exportar CSV"
+                           OnClick="ExportarCsv" Disabled="_jornadas.Count == 0" />
+        </div>
+    </div>
+
+    @if (_cargando)
+    {
+        <div class="loading-state"><MudProgressCircular Color="Color.Primary" Indeterminate="true" /></div>
+    }
+    else
+    {
+        <div class="data-card">
+            <MudTable Items="_jornadas" Hover="true" Dense="true" Striped="false" RowsPerPage="25">
+                <HeaderContent>
+                    <MudTh>Fecha</MudTh>
+                    <MudTh>Repartidor</MudTh>
+                    <MudTh>Negocio</MudTh>
+                    <MudTh Style="text-align:center;">Estado</MudTh>
+                    <MudTh Style="text-align:right;">Total Neto</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.Fecha.ToString("dd/MM/yyyy")</MudTd>
+                    <MudTd><span class="fw-500">@context.RepartidorNombre</span></MudTd>
+                    <MudTd><span class="text-muted">@context.NegocioNombre</span></MudTd>
+                    <MudTd Style="text-align:center;">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                                 Color="@(context.Estado == JornadaEstado.Revisada ? Color.Success : Color.Default)">
+                            @(context.Estado == JornadaEstado.Cerrada ? "Cerrada" : "Revisada")
+                        </MudChip>
+                    </MudTd>
+                    <MudTd Style="text-align:right;">
+                        <span class="fw-700 tabnum text-vi">
+                            @context.TotalNeto.ToString("C", _mx)
+                        </span>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <div class="empty-state">
+                        <span class="material-symbols-rounded">history</span>
+                        <p>No hay jornadas en el período seleccionado.</p>
+                    </div>
+                </NoRecordsContent>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        </div>
+    }
+</div>
+
+@code {
+    private static readonly System.Globalization.CultureInfo _mx =
+        System.Globalization.CultureInfo.GetCultureInfo("es-MX");
+
+    private List<JornadaResumenDto> _jornadas = new();
+    private bool      _cargando;
+    private DateTime? _fechaDesde = DateTime.Today.AddDays(-30);
+    private DateTime? _fechaHasta = DateTime.Today;
+    private int       _negocioActivo;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await AuthSvc.GetCurrentUser();
+        _negocioActivo = user?.NegocioIds.FirstOrDefault() ?? 0;
+        await Buscar();
+    }
+
+    private async Task Buscar()
+    {
+        _cargando = true;
+        var todas = await Api.GetHistorialAsync(negocioId: _negocioActivo) ?? new();
+
+        _jornadas = todas
+            .Where(j => (!_fechaDesde.HasValue || j.Fecha >= DateOnly.FromDateTime(_fechaDesde.Value))
+                     && (!_fechaHasta.HasValue || j.Fecha <= DateOnly.FromDateTime(_fechaHasta.Value)))
+            .ToList();
+        _cargando = false;
+    }
+
+    private async Task ExportarCsv()
+    {
+        var csv = new System.Text.StringBuilder("Fecha,Repartidor,Negocio,Estado,Total Neto\n");
+        foreach (var j in _jornadas)
+            csv.AppendLine($"{j.Fecha:dd/MM/yyyy},{j.RepartidorNombre},{j.NegocioNombre},{j.Estado},{j.TotalNeto:F2}");
+
+        var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+        var b64   = Convert.ToBase64String(bytes);
+        var nombre = $"historial_{DateTime.Today:yyyyMMdd}.csv";
+        await JS.InvokeVoidAsync("eval",
+            $"const a=document.createElement('a');a.href='data:text/csv;base64,{b64}';" +
+            $"a.download='{nombre}';a.click()");
+    }
+}

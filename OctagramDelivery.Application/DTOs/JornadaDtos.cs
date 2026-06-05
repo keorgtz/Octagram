@@ -120,3 +120,13 @@ public class TotalesProductoCliente
     public decimal CantidadEntregada { get; set; }
     public decimal CantidadDevuelta { get; set; }
 }
+
+public class JornadaResumenDto
+{
+    public int Id { get; set; }
+    public DateOnly Fecha { get; set; }
+    public string RepartidorNombre { get; set; } = string.Empty;
+    public string NegocioNombre { get; set; } = string.Empty;
+    public JornadaEstado Estado { get; set; }
+    public decimal TotalNeto { get; set; }
+}

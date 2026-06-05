@@ -123,24 +123,40 @@ else
                         {
                             @foreach (var prod in _productos)
                             {
-                                var celda = GetOrCreateCelda(ronda.Id, cliente.Id, prod.Id);
+                                var celda     = GetOrCreateCelda(ronda.Id, cliente.Id, prod.Id);
+                                var esGramaje = prod.TipoMedida == TipoMedida.Gramaje;
+                                var abierta   = _jornada.Estado == JornadaEstado.Abierta;
                                 <td>
                                     <input type="number"
                                            class="celda-input"
                                            style="border:1px solid var(--gray-line);border-radius:4px;padding:3px 4px;width:54px;text-align:right;font-size:12px;font-variant-numeric:tabular-nums;"
-                                           min="0" step="@(prod.TipoMedida == TipoMedida.Gramaje ? "0.25" : "1")"
+                                           min="0" step="@(esGramaje ? "0.25" : "1")"
                                            value="@celda.Entregado"
                                            @onchange="@(e => OnCeldaChange(ronda.Id, cliente.Id, prod.Id, true, e))"
-                                           disabled="@(_jornada.Estado != JornadaEstado.Abierta)" />
+                                           disabled="@(!abierta)" />
+                                    @if (esGramaje && abierta)
+                                    {
+                                        <div class="gramaje-presets">
+                                            @{ var rId = ronda.Id; var cId = cliente.Id; var pId = prod.Id; }
+                                            @foreach (var gp in _gramajePresets)
+                                            {
+                                                var kg = gp.Kg;
+                                                <button class="preset-btn" type="button"
+                                                        @onclick="@(() => AplicarPreset(rId, cId, pId, kg))">
+                                                    @gp.Label
+                                                </button>
+                                            }
+                                        </div>
+                                    }
                                 </td>
                                 <td>
                                     <input type="number"
                                            class="celda-input"
                                            style="border:1px solid var(--gray-line);border-radius:4px;padding:3px 4px;width:54px;text-align:right;font-size:12px;font-variant-numeric:tabular-nums;color:var(--or);"
-                                           min="0" step="@(prod.TipoMedida == TipoMedida.Gramaje ? "0.25" : "1")"
+                                           min="0" step="@(esGramaje ? "0.25" : "1")"
                                            value="@celda.Devuelto"
                                            @onchange="@(e => OnCeldaChange(ronda.Id, cliente.Id, prod.Id, false, e))"
-                                           disabled="@(_jornada.Estado != JornadaEstado.Abierta)" />
+                                           disabled="@(!abierta)" />
                                 </td>
                             }
                         }
@@ -396,12 +412,12 @@ else
                         {
                             detalles.Add(new DetalleUpsertItem
                             {
-                                ClienteId = cli.Id,
-                                ProductoId = prod.Id,
+                                ClienteId         = cli.Id,
+                                ProductoId        = prod.Id,
                                 CantidadEntregada = celda.Entregado,
                                 CantidadDevuelta  = celda.Devuelto,
                                 PrecioUnitario    = celda.Precio,
-                                GramajePreset     = GramajePreset.Ninguno
+                                GramajePreset     = celda.GramajePreset
                             });
                         }
                     }
@@ -516,10 +532,32 @@ else
         _saveTimer?.Dispose();
     }
 
+    private static readonly (decimal Kg, string Label)[] _gramajePresets =
+    {
+        (0.25m, "¼"), (0.5m, "½"), (1.0m, "1")
+    };
+
+    private void AplicarPreset(int rondaId, int clienteId, int prodId, decimal kg)
+    {
+        var celda = GetOrCreateCelda(rondaId, clienteId, prodId);
+        var preset = kg switch
+        {
+            0.25m => GramajePreset.CuartoKg,
+            0.50m => GramajePreset.MedioKg,
+            1.00m => GramajePreset.UnKg,
+            _     => GramajePreset.Personalizado
+        };
+        celda.Entregado     = kg;
+        celda.GramajePreset = preset;
+        RecalcularTotales();
+        MarcarCambioPendiente();
+    }
+
     private class CeldaState
     {
-        public decimal Entregado { get; set; }
-        public decimal Devuelto  { get; set; }
-        public decimal Precio    { get; set; }
+        public decimal      Entregado     { get; set; }
+        public decimal      Devuelto      { get; set; }
+        public decimal      Precio        { get; set; }
+        public GramajePreset GramajePreset { get; set; } = GramajePreset.Ninguno;
     }
 }

@@ -42,6 +42,9 @@ public class AuthService
 
     public async Task Logout() => await _provider.NotifyLogout();
 
+    public Task<string?> GetTokenAsync()
+        => _provider.GetTokenAsync();
+
     public async Task<UserInfo?> GetCurrentUser()
     {
         var state = await _authState.GetAuthenticationStateAsync();

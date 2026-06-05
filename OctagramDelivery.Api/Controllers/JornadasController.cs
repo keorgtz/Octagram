@@ -223,6 +223,57 @@ public class JornadasController : ControllerBase
         return Ok(_calc.Calcular(jornada, exclusiones));
     }
 
+    // GET /api/jornadas/historial
+    [HttpGet("historial")]
+    public async Task<ActionResult<List<JornadaResumenDto>>> GetHistorial(
+        [FromQuery] int? negocioId,
+        [FromQuery] int? repartidorId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50)
+    {
+        var callerId = CallerId;
+        var callerRole = CallerRole;
+        var callerNegocios = CallerNegocioIds;
+
+        var query = _ctx.DeliveryDays
+            .Include(d => d.Driver)
+            .Include(d => d.Tenant)
+            .Include(d => d.Rounds).ThenInclude(r => r.Details)
+            .Where(d => d.Estado != JornadaEstado.Abierta)
+            .AsQueryable();
+
+        if (callerRole == UserRole.Repartidor)
+            query = query.Where(d => d.DriverId == callerId);
+        else
+        {
+            if (negocioId.HasValue)
+                query = query.Where(d => d.TenantId == negocioId.Value);
+            else if (callerRole != UserRole.Admin)
+                query = query.Where(d => callerNegocios.Contains(d.TenantId));
+
+            if (repartidorId.HasValue)
+                query = query.Where(d => d.DriverId == repartidorId.Value);
+        }
+
+        var jornadas = await query
+            .OrderByDescending(d => d.Fecha)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return Ok(jornadas.Select(d => new JornadaResumenDto
+        {
+            Id               = d.Id,
+            Fecha            = d.Fecha,
+            RepartidorNombre = d.Driver?.FullName ?? "",
+            NegocioNombre    = d.Tenant?.Nombre ?? "",
+            Estado           = d.Estado,
+            TotalNeto        = d.Rounds
+                .SelectMany(r => r.Details)
+                .Sum(det => (det.CantidadEntregada - det.CantidadDevuelta) * det.PrecioUnitario)
+        }));
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────
     private async Task<DeliveryDay?> LoadJornada(int tenantId, int driverId, DateOnly fecha)
         => await _ctx.DeliveryDays

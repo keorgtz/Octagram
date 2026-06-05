@@ -1,7 +1,9 @@
 @page "/supervisor/dashboard"
 @attribute [Authorize(Roles = $"{nameof(UserRole.Supervisor)},{nameof(UserRole.Gerente)},{nameof(UserRole.Admin)}")]
+@implements IAsyncDisposable
 @inject ApiService Api
 @inject AuthService AuthSvc
+@inject HubService Hub
 
 <PageTitle>Dashboard · OctagramDelivery</PageTitle>
 
@@ -13,6 +15,16 @@
             <p class="page-subtitle">@(_data?.TenantNombre ?? "Cargando...")</p>
         </div>
         <div class="page-header-actions">
+            @if (_enVivo)
+            {
+                <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
+                            color:var(--em);padding:4px 10px;background:var(--em-bg,#F0FDF4);
+                            border-radius:20px;">
+                    <span style="width:7px;height:7px;border-radius:50%;background:var(--em);
+                                 display:inline-block;animation:pulse 2s infinite;"></span>
+                    En vivo
+                </div>
+            }
             <MudDatePicker Date="_fecha" DateChanged="OnFechaChanged"
                            Variant="Variant.Outlined" Margin="Margin.Dense"
                            Style="max-width:160px;" />
@@ -108,15 +120,18 @@
     private static readonly System.Globalization.CultureInfo _mx = new("es-MX");
 
     private DashboardNegocioDto? _data;
-    private bool      _cargando = true;
-    private DateTime? _fecha    = DateTime.Today;
+    private bool      _cargando  = true;
+    private DateTime? _fecha     = DateTime.Today;
     private int       _negocioId;
+    private bool      _enVivo;
+    private IDisposable? _hubSub;
 
     protected override async Task OnInitializedAsync()
     {
         var user = await AuthSvc.GetCurrentUser();
         _negocioId = user?.NegocioIds.FirstOrDefault() ?? 0;
         await Cargar();
+        await ConectarHub();
     }
 
     private async Task OnFechaChanged(DateTime? f) { _fecha = f; await Cargar(); }
@@ -127,5 +142,27 @@
         var f = _fecha.HasValue ? DateOnly.FromDateTime(_fecha.Value) : DateOnly.FromDateTime(DateTime.Today);
         _data = await Api.GetDashboardSupervisorAsync(_negocioId, f);
         _cargando = false;
+    }
+
+    private async Task ConectarHub()
+    {
+        try
+        {
+            await Hub.ConnectAsync();
+            await Hub.JoinNegocioAsync(_negocioId);
+            _hubSub = Hub.On<object>("JornadaActualizada", async _ =>
+            {
+                await InvokeAsync(async () => { await Cargar(); StateHasChanged(); });
+            });
+            _enVivo = true;
+            StateHasChanged();
+        }
+        catch { /* SignalR no disponible, funciona sin él */ }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _hubSub?.Dispose();
+        await Hub.DisposeAsync();
     }
 }

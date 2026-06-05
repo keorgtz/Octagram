@@ -44,6 +44,9 @@ public class ApiService
     public Task<HttpResponseMessage> UpdateClienteAsync(int negocioId, int id, CreateCustomerRequest req)
         => _http.PutAsJsonAsync($"api/negocios/{negocioId}/clientes/{id}", req);
 
+    public Task<HttpResponseMessage> DeleteClienteAsync(int negocioId, int id)
+        => _http.DeleteAsync($"api/negocios/{negocioId}/clientes/{id}");
+
     public Task<HttpResponseMessage> AssignProductosClienteAsync(int negocioId, int clienteId, AssignProductsRequest req)
         => _http.PostAsJsonAsync($"api/negocios/{negocioId}/clientes/{clienteId}/productos", req);
 
@@ -56,6 +59,9 @@ public class ApiService
 
     public Task<HttpResponseMessage> UpdateProductoAsync(int negocioId, int id, CreateProductRequest req)
         => _http.PutAsJsonAsync($"api/negocios/{negocioId}/productos/{id}", req);
+
+    public Task<HttpResponseMessage> DeleteProductoAsync(int negocioId, int id)
+        => _http.DeleteAsync($"api/negocios/{negocioId}/productos/{id}");
 
     // ── Jornadas ──────────────────────────────────────────────────
     public Task<JornadaDto?> GetJornadaHoyAsync(int negocioId)
@@ -84,6 +90,15 @@ public class ApiService
 
     public Task<TotalesJornada?> GetTotalesAsync(int jornadaId)
         => _http.GetFromJsonAsync<TotalesJornada>($"api/jornadas/{jornadaId}/totales");
+
+    // ── Historial ─────────────────────────────────────────────────
+    public Task<List<JornadaResumenDto>?> GetHistorialAsync(int? negocioId = null, int? repartidorId = null, int page = 1)
+    {
+        var q = new System.Text.StringBuilder($"api/jornadas/historial?page={page}");
+        if (negocioId.HasValue)    q.Append($"&negocioId={negocioId}");
+        if (repartidorId.HasValue) q.Append($"&repartidorId={repartidorId}");
+        return _http.GetFromJsonAsync<List<JornadaResumenDto>>(q.ToString());
+    }
 
     // ── Dashboard ─────────────────────────────────────────────────
     public Task<DashboardNegocioDto?> GetDashboardSupervisorAsync(int negocioId, DateOnly? fecha = null)
