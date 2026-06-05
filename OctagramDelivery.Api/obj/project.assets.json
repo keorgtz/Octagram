@@ -1102,14 +1102,43 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
-      "OctagramDelivery.Shared/1.0.0": {
+      "OctagramDelivery.Application/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "OctagramDelivery.Domain": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/OctagramDelivery.Application.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/OctagramDelivery.Application.dll": {}
+        }
+      },
+      "OctagramDelivery.Domain/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
         "compile": {
-          "bin/placeholder/OctagramDelivery.Shared.dll": {}
+          "bin/placeholder/OctagramDelivery.Domain.dll": {}
         },
         "runtime": {
-          "bin/placeholder/OctagramDelivery.Shared.dll": {}
+          "bin/placeholder/OctagramDelivery.Domain.dll": {}
+        }
+      },
+      "OctagramDelivery.Infrastructure/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "BCrypt.Net-Next": "4.0.3",
+          "Microsoft.EntityFrameworkCore.SqlServer": "10.0.8",
+          "OctagramDelivery.Application": "1.0.0",
+          "OctagramDelivery.Domain": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/OctagramDelivery.Infrastructure.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/OctagramDelivery.Infrastructure.dll": {}
         }
       }
     }
@@ -3239,10 +3268,20 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "OctagramDelivery.Shared/1.0.0": {
+    "OctagramDelivery.Application/1.0.0": {
       "type": "project",
-      "path": "../OctagramDelivery.Shared/OctagramDelivery.Shared.csproj",
-      "msbuildProject": "../OctagramDelivery.Shared/OctagramDelivery.Shared.csproj"
+      "path": "../OctagramDelivery.Application/OctagramDelivery.Application.csproj",
+      "msbuildProject": "../OctagramDelivery.Application/OctagramDelivery.Application.csproj"
+    },
+    "OctagramDelivery.Domain/1.0.0": {
+      "type": "project",
+      "path": "../OctagramDelivery.Domain/OctagramDelivery.Domain.csproj",
+      "msbuildProject": "../OctagramDelivery.Domain/OctagramDelivery.Domain.csproj"
+    },
+    "OctagramDelivery.Infrastructure/1.0.0": {
+      "type": "project",
+      "path": "../OctagramDelivery.Infrastructure/OctagramDelivery.Infrastructure.csproj",
+      "msbuildProject": "../OctagramDelivery.Infrastructure/OctagramDelivery.Infrastructure.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -3253,7 +3292,8 @@
       "Microsoft.EntityFrameworkCore.Design >= 10.0.8",
       "Microsoft.EntityFrameworkCore.SqlServer >= 10.0.8",
       "Microsoft.EntityFrameworkCore.Tools >= 10.0.8",
-      "OctagramDelivery.Shared >= 1.0.0"
+      "OctagramDelivery.Application >= 1.0.0",
+      "OctagramDelivery.Infrastructure >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -3294,8 +3334,11 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\Users\\kevin\\KeorSoft\\Development\\Web\\OctagramDelivery\\OctagramDelivery.Shared\\OctagramDelivery.Shared.csproj": {
-              "projectPath": "C:\\Users\\kevin\\KeorSoft\\Development\\Web\\OctagramDelivery\\OctagramDelivery.Shared\\OctagramDelivery.Shared.csproj"
+            "C:\\Users\\kevin\\KeorSoft\\Development\\Web\\OctagramDelivery\\OctagramDelivery.Application\\OctagramDelivery.Application.csproj": {
+              "projectPath": "C:\\Users\\kevin\\KeorSoft\\Development\\Web\\OctagramDelivery\\OctagramDelivery.Application\\OctagramDelivery.Application.csproj"
+            },
+            "C:\\Users\\kevin\\KeorSoft\\Development\\Web\\OctagramDelivery\\OctagramDelivery.Infrastructure\\OctagramDelivery.Infrastructure.csproj": {
+              "projectPath": "C:\\Users\\kevin\\KeorSoft\\Development\\Web\\OctagramDelivery\\OctagramDelivery.Infrastructure\\OctagramDelivery.Infrastructure.csproj"
             }
           }
         }

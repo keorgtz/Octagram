@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using OctagramDelivery.Api.Data;
 using OctagramDelivery.Api.Hubs;
-using OctagramDelivery.Api.Services;
+using OctagramDelivery.Application.Services;
+using OctagramDelivery.Infrastructure.Data;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);

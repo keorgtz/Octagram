@@ -4,9 +4,9 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using OctagramDelivery.Api.Data;
-using OctagramDelivery.Shared.DTOs;
-using OctagramDelivery.Shared.Enums;
+using OctagramDelivery.Infrastructure.Data;
+using OctagramDelivery.Application.DTOs;
+using OctagramDelivery.Domain.Enums;
 
 namespace OctagramDelivery.Api.Controllers;
 
@@ -46,7 +46,7 @@ public class AuthController : ControllerBase
         });
     }
 
-    private string GenerateToken(Shared.Models.AppUser user, List<int> negocioIds)
+    private string GenerateToken(OctagramDelivery.Domain.Entities.AppUser user, List<int> negocioIds)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

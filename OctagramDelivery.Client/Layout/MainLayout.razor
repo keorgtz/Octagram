@@ -2,15 +2,18 @@
 @inject AuthService AuthSvc
 @inject NavigationManager Nav
 
-<MudThemeProvider />
+<MudThemeProvider Theme="_theme" />
 <MudPopoverProvider />
-<MudDialogProvider />
+<MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Small" />
 <MudSnackbarProvider />
 
 @if (_loading)
 {
-    <div style="display:flex;height:100vh;align-items:center;justify-content:center;background:#F2F3F7;">
-        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    <div style="display:flex;height:100vh;align-items:center;justify-content:center;background:var(--page-bg,#F2F3F7);">
+        <div style="text-align:center;">
+            <span class="material-symbols-rounded fill" style="font-size:40px;color:var(--in,#6366F1);">local_shipping</span>
+            <div style="font-size:13px;color:var(--gray-muted,#6B7280);margin-top:8px;">Cargando...</div>
+        </div>
     </div>
 }
 else if (_user == null)
@@ -19,12 +22,18 @@ else if (_user == null)
 }
 else if (_user.Rol == UserRole.Repartidor)
 {
+    <!-- Layout móvil para Repartidor — sin sidebar -->
     <div class="rep-layout">
         <div class="rep-topbar">
-            <span class="app-name">Octagram</span>
             <div style="display:flex;align-items:center;gap:8px;">
-                <span style="font-size:13px;color:var(--gray-muted);">@_user.FullName</span>
-                <MudIconButton Icon="@Icons.Material.Rounded.Logout" Size="Size.Small" Color="Color.Default" OnClick="Logout" />
+                <span class="material-symbols-rounded fill" style="color:var(--in);font-size:22px;">local_shipping</span>
+                <span class="app-name">Octagram</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:12px;color:var(--gray-muted);" class="hide-mobile">@_user.FullName</span>
+                <button class="icon-btn" @onclick="Logout" title="Cerrar sesión">
+                    <span class="material-symbols-rounded">logout</span>
+                </button>
             </div>
         </div>
         <div class="rep-content">
@@ -38,64 +47,93 @@ else if (_user.Rol == UserRole.Repartidor)
 }
 else
 {
-    <MudLayout>
-        <MudAppBar Elevation="1" Color="Color.Surface" Dense="true">
-            <MudIconButton Icon="@Icons.Material.Rounded.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
-            <span style="font-size:18px;font-weight:700;color:var(--primary);letter-spacing:-0.3px;margin-left:4px;">Octagram</span>
-            <span style="font-size:12px;color:var(--gray-muted);margin-left:8px;" class="hide-mobile">Delivery</span>
-            <MudSpacer />
-            <span style="font-size:13px;color:var(--gray-muted);" class="hide-mobile">@_user.FullName</span>
-            <MudIconButton Icon="@Icons.Material.Rounded.Logout" Size="Size.Small" Color="Color.Default" OnClick="Logout" Title="Cerrar sesión" />
-        </MudAppBar>
+    <!-- Shell principal con sidebar colapsable -->
+    <div class="app-shell @(_sidebarOpen ? "" : "sidebar-collapsed")">
 
-        <MudDrawer @bind-Open="_drawerOpen" Elevation="0" ClipMode="DrawerClipMode.Always">
-            <MudDrawerHeader>
-                <div style="padding:8px 0;">
-                    <div style="font-size:11px;font-weight:600;letter-spacing:0.6px;text-transform:uppercase;color:var(--gray-muted);">
-                        @_user.Rol.ToString().ToUpper()
-                    </div>
-                </div>
-            </MudDrawerHeader>
-            <NavMenu UserRol="@_user.Rol" />
-        </MudDrawer>
+        <!-- ── Titlebar ── -->
+        <header class="titlebar">
+            <button class="icon-btn" @onclick="ToggleSidebar" title="Menú">
+                <span class="material-symbols-rounded">menu</span>
+            </button>
+            <div class="titlebar-brand">
+                <span class="material-symbols-rounded fill titlebar-brand-icon">local_shipping</span>
+                <span class="titlebar-brand-name">Octagram</span>
+                <span class="titlebar-brand-sub">Delivery</span>
+            </div>
+            <div class="titlebar-spacer"></div>
+            <div class="titlebar-user hide-mobile">
+                <div class="user-avatar">@GetInitials(_user.FullName)</div>
+                <span class="titlebar-username">@_user.FullName</span>
+            </div>
+            <button class="icon-btn" @onclick="Logout" title="Cerrar sesión">
+                <span class="material-symbols-rounded">logout</span>
+            </button>
+        </header>
 
-        <MudMainContent>
+        <!-- ── Sidebar ── -->
+        <nav class="sidebar">
+            <NavMenu UserRol="@_user.Rol" SidebarOpen="@_sidebarOpen" />
+        </nav>
+
+        <!-- ── Contenido principal ── -->
+        <main class="main-content">
             @Body
-        </MudMainContent>
-    </MudLayout>
+        </main>
+
+    </div>
 }
 
 @code {
     private UserInfo? _user;
     private bool _loading = true;
-    private bool _drawerOpen = true;
+    private bool _sidebarOpen = true;
+
+    private MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary             = "#1976D2",
+            PrimaryContrastText = "#FFFFFF",
+            Success             = "#10B981",
+            Warning             = "#F59E0B",
+            Error               = "#EF4444",
+            Info                = "#6366F1",
+            Background          = "#F2F3F7",
+            Surface             = "#FFFFFF",
+            DrawerBackground    = "#FFFFFF",
+            TextPrimary         = "#1C1E26",
+            TextSecondary       = "#6B7280",
+            Divider             = "#E5E7EB",
+        },
+        Typography = new Typography
+        {
+            Default = new DefaultTypography
+            {
+                FontFamily = ["Inter", "Segoe UI", "system-ui", "sans-serif"]
+            }
+        }
+    };
 
     protected override async Task OnInitializedAsync()
     {
         _user = await AuthSvc.GetCurrentUser();
         _loading = false;
-
-        if (_user != null)
-        {
-            if (_user.Rol == UserRole.Repartidor && Nav.Uri.Contains("/login"))
-                Nav.NavigateTo("/repartidor/jornada");
-            else if (_user.Rol != UserRole.Repartidor && Nav.Uri.Contains("/login"))
-                RedirectByRole();
-        }
     }
 
-    private void RedirectByRole()
+    private void ToggleSidebar() => _sidebarOpen = !_sidebarOpen;
+
+    private string GetInitials(string? name)
     {
-        var dest = _user!.Rol switch
-        {
-            UserRole.Supervisor => "/supervisor/dashboard",
-            UserRole.Gerente    => "/gerente/dashboard",
-            UserRole.Admin      => "/admin/dashboard",
-            _                   => "/"
-        };
-        Nav.NavigateTo(dest);
+        if (string.IsNullOrWhiteSpace(name)) return "?";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length >= 2
+            ? $"{parts[0][0]}{parts[1][0]}".ToUpper()
+            : name[0].ToString().ToUpper();
     }
 
-    private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
-    private async Task Logout() { await AuthSvc.Logout(); Nav.NavigateTo("/login"); }
+    private async Task Logout()
+    {
+        await AuthSvc.Logout();
+        Nav.NavigateTo("/login", forceLoad: true);
+    }
 }

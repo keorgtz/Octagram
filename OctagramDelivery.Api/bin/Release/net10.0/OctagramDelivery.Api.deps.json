@@ -13,7 +13,8 @@
           "Microsoft.AspNetCore.OpenApi": "10.0.8",
           "Microsoft.EntityFrameworkCore.Design": "10.0.8",
           "Microsoft.EntityFrameworkCore.SqlServer": "10.0.8",
-          "OctagramDelivery.Shared": "1.0.0"
+          "OctagramDelivery.Application": "1.0.0",
+          "OctagramDelivery.Infrastructure": "1.0.0"
         },
         "runtime": {
           "OctagramDelivery.Api.dll": {}
@@ -788,9 +789,34 @@
           }
         }
       },
-      "OctagramDelivery.Shared/1.0.0": {
+      "OctagramDelivery.Application/1.0.0": {
+        "dependencies": {
+          "OctagramDelivery.Domain": "1.0.0"
+        },
         "runtime": {
-          "OctagramDelivery.Shared.dll": {
+          "OctagramDelivery.Application.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "OctagramDelivery.Domain/1.0.0": {
+        "runtime": {
+          "OctagramDelivery.Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "OctagramDelivery.Infrastructure/1.0.0": {
+        "dependencies": {
+          "BCrypt.Net-Next": "4.0.3",
+          "Microsoft.EntityFrameworkCore.SqlServer": "10.0.8",
+          "OctagramDelivery.Application": "1.0.0",
+          "OctagramDelivery.Domain": "1.0.0"
+        },
+        "runtime": {
+          "OctagramDelivery.Infrastructure.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -1133,7 +1159,17 @@
       "path": "system.security.cryptography.protecteddata/9.0.4",
       "hashPath": "system.security.cryptography.protecteddata.9.0.4.nupkg.sha512"
     },
-    "OctagramDelivery.Shared/1.0.0": {
+    "OctagramDelivery.Application/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "OctagramDelivery.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "OctagramDelivery.Infrastructure/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

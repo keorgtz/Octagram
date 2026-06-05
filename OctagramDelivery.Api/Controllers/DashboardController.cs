@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OctagramDelivery.Api.Data;
-using OctagramDelivery.Api.Services;
-using OctagramDelivery.Shared.DTOs;
-using OctagramDelivery.Shared.Enums;
+using OctagramDelivery.Infrastructure.Data;
+using OctagramDelivery.Application.Services;
+using OctagramDelivery.Application.DTOs;
+using OctagramDelivery.Domain.Enums;
 
 namespace OctagramDelivery.Api.Controllers;
 

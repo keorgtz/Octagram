@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-using OctagramDelivery.Shared.DTOs;
+using OctagramDelivery.Application.DTOs;
 
 namespace OctagramDelivery.Client.Services;
 

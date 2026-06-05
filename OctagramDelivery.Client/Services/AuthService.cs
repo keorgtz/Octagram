@@ -1,8 +1,8 @@
 using System.Net.Http.Json;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
-using OctagramDelivery.Shared.DTOs;
-using OctagramDelivery.Shared.Enums;
+using OctagramDelivery.Application.DTOs;
+using OctagramDelivery.Domain.Enums;
 
 namespace OctagramDelivery.Client.Services;
 

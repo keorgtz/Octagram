@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OctagramDelivery.Shared\OctagramDelivery.Shared.csproj" />
+    <ProjectReference Include="..\OctagramDelivery.Application\OctagramDelivery.Application.csproj" />
   </ItemGroup>
 
 </Project>

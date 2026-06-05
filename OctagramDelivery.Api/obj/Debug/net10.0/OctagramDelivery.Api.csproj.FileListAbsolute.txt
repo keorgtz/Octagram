@@ -296,8 +296,6 @@ C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Api\bi
 C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Api\bin\Debug\net10.0\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
 C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Api\bin\Debug\net10.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
 C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Api\bin\Debug\net10.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
-C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Api\bin\Debug\net10.0\OctagramDelivery.Shared.dll
-C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Api\bin\Debug\net10.0\OctagramDelivery.Shared.pdb
 C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Api\obj\Debug\net10.0\OctagramDelivery.Api.csproj.AssemblyReference.cache
 C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Api\obj\Debug\net10.0\rpswa.dswa.cache.json
 C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Api\obj\Debug\net10.0\OctagramDelivery.Api.GeneratedMSBuildEditorConfig.editorconfig
@@ -322,3 +320,9 @@ C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Api\ob
 C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Api\obj\Debug\net10.0\OctagramDelivery.Api.pdb
 C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Api\obj\Debug\net10.0\OctagramDelivery.Api.genruntimeconfig.cache
 C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Api\obj\Debug\net10.0\ref\OctagramDelivery.Api.dll
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Api\bin\Debug\net10.0\OctagramDelivery.Application.dll
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Api\bin\Debug\net10.0\OctagramDelivery.Domain.dll
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Api\bin\Debug\net10.0\OctagramDelivery.Infrastructure.dll
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Api\bin\Debug\net10.0\OctagramDelivery.Application.pdb
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Api\bin\Debug\net10.0\OctagramDelivery.Infrastructure.pdb
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Api\bin\Debug\net10.0\OctagramDelivery.Domain.pdb

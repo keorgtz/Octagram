@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "OctagramDelivery.Application/1.0.0": {
+        "dependencies": {
+          "OctagramDelivery.Domain": "1.0.0"
+        },
+        "runtime": {
+          "OctagramDelivery.Application.dll": {}
+        }
+      },
+      "OctagramDelivery.Domain/1.0.0": {
+        "runtime": {
+          "OctagramDelivery.Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "OctagramDelivery.Application/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "OctagramDelivery.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

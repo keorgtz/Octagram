@@ -1,24 +1,53 @@
+@inject NavigationManager Nav
+
+<div class="nav-menu">
+
+    @switch (UserRol)
+    {
+        case UserRole.Admin:
+            <div class="nav-section">
+                <NavLink class="nav-item" href="/admin/dashboard" Match="NavLinkMatch.All" ActiveClass="active">
+                    <span class="material-symbols-rounded nav-item-icon">dashboard</span>
+                    @if (SidebarOpen) { <span class="nav-item-label">Dashboard</span> }
+                </NavLink>
+            </div>
+
+            <div class="nav-divider"></div>
+            @if (SidebarOpen) { <div class="nav-category">Administración</div> }
+            <div class="nav-section">
+                <NavLink class="nav-item" href="/admin/negocios" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                    <span class="material-symbols-rounded nav-item-icon">store</span>
+                    @if (SidebarOpen) { <span class="nav-item-label">Negocios</span> }
+                </NavLink>
+                <NavLink class="nav-item" href="/admin/usuarios" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                    <span class="material-symbols-rounded nav-item-icon">manage_accounts</span>
+                    @if (SidebarOpen) { <span class="nav-item-label">Usuarios</span> }
+                </NavLink>
+            </div>
+            break;
+
+        case UserRole.Gerente:
+            <div class="nav-section">
+                <NavLink class="nav-item" href="/gerente/dashboard" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                    <span class="material-symbols-rounded nav-item-icon">dashboard</span>
+                    @if (SidebarOpen) { <span class="nav-item-label">Vista General</span> }
+                </NavLink>
+            </div>
+            break;
+
+        case UserRole.Supervisor:
+            <div class="nav-section">
+                <NavLink class="nav-item" href="/supervisor/dashboard" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                    <span class="material-symbols-rounded nav-item-icon">dashboard</span>
+                    @if (SidebarOpen) { <span class="nav-item-label">Dashboard</span> }
+                </NavLink>
+            </div>
+            break;
+    }
+
+</div>
+
 @code {
     [Parameter] public UserRole UserRol { get; set; }
+    [Parameter] public bool SidebarOpen { get; set; } = true;
 }
-
-<MudNavMenu>
-    @if (UserRol == UserRole.Admin)
-    {
-        <MudNavLink Href="/admin/dashboard" Icon="@Icons.Material.Rounded.Dashboard" Match="NavLinkMatch.All">Dashboard</MudNavLink>
-        <MudNavLink Href="/admin/negocios" Icon="@Icons.Material.Rounded.Store">Negocios</MudNavLink>
-        <MudNavLink Href="/admin/usuarios" Icon="@Icons.Material.Rounded.ManageAccounts">Usuarios</MudNavLink>
-    }
-    else if (UserRol == UserRole.Gerente)
-    {
-        <MudNavLink Href="/gerente/dashboard" Icon="@Icons.Material.Rounded.Dashboard" Match="NavLinkMatch.All">Dashboard</MudNavLink>
-        <MudNavLink Href="/gerente/negocios" Icon="@Icons.Material.Rounded.Store">Mis Negocios</MudNavLink>
-    }
-    else if (UserRol == UserRole.Supervisor)
-    {
-        <MudNavLink Href="/supervisor/dashboard" Icon="@Icons.Material.Rounded.Dashboard" Match="NavLinkMatch.All">Dashboard</MudNavLink>
-        <MudNavLink Href="/supervisor/clientes" Icon="@Icons.Material.Rounded.People">Clientes</MudNavLink>
-        <MudNavLink Href="/supervisor/productos" Icon="@Icons.Material.Rounded.Inventory2">Productos</MudNavLink>
-        <MudNavLink Href="/supervisor/repartidores" Icon="@Icons.Material.Rounded.DeliveryDining">Repartidores</MudNavLink>
-    }
-</MudNavMenu>

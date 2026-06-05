@@ -1,0 +1,12 @@
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Domain\bin\Debug\net10.0\OctagramDelivery.Domain.deps.json
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Domain\bin\Debug\net10.0\OctagramDelivery.Domain.dll
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Domain\bin\Debug\net10.0\OctagramDelivery.Domain.pdb
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Domain\obj\Debug\net10.0\OctagramDelivery.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Domain\obj\Debug\net10.0\OctagramDelivery.Domain.AssemblyInfoInputs.cache
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Domain\obj\Debug\net10.0\OctagramDelivery.Domain.AssemblyInfo.cs
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Domain\obj\Debug\net10.0\OctagramDelivery.Domain.csproj.CoreCompileInputs.cache
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Domain\obj\Debug\net10.0\OctagramDelivery.Domain.sourcelink.json
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Domain\obj\Debug\net10.0\OctagramDelivery.Domain.dll
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Domain\obj\Debug\net10.0\refint\OctagramDelivery.Domain.dll
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Domain\obj\Debug\net10.0\OctagramDelivery.Domain.pdb
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Domain\obj\Debug\net10.0\ref\OctagramDelivery.Domain.dll

@@ -1,0 +1,16 @@
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Application\bin\Release\net10.0\OctagramDelivery.Application.deps.json
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Application\bin\Release\net10.0\OctagramDelivery.Application.dll
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Application\bin\Release\net10.0\OctagramDelivery.Application.pdb
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Application\bin\Release\net10.0\OctagramDelivery.Domain.dll
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Application\bin\Release\net10.0\OctagramDelivery.Domain.pdb
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Application\obj\Release\net10.0\OctagramDelivery.Application.csproj.AssemblyReference.cache
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Application\obj\Release\net10.0\OctagramDelivery.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Application\obj\Release\net10.0\OctagramDelivery.Application.AssemblyInfoInputs.cache
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Application\obj\Release\net10.0\OctagramDelivery.Application.AssemblyInfo.cs
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Application\obj\Release\net10.0\OctagramDelivery.Application.csproj.CoreCompileInputs.cache
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Application\obj\Release\net10.0\OctagramDelivery.Application.sourcelink.json
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Application\obj\Release\net10.0\Octagram.131E3A86.Up2Date
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Application\obj\Release\net10.0\OctagramDelivery.Application.dll
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Application\obj\Release\net10.0\refint\OctagramDelivery.Application.dll
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Application\obj\Release\net10.0\OctagramDelivery.Application.pdb
+C:\Users\kevin\KeorSoft\Development\Web\OctagramDelivery\OctagramDelivery.Application\obj\Release\net10.0\ref\OctagramDelivery.Application.dll
