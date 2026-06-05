@@ -507,6 +507,86 @@ a { color: var(--primary); text-decoration: none; }
 .save-error { color: #DC2626; background: #FEF2F2; }
 
 /* ═══════════════════════════════════════════════════════════════════
+   DATA CARD — tabla / contenido en superficie blanca
+   ═══════════════════════════════════════════════════════════════════ */
+.data-card {
+    background: var(--white, #fff);
+    border-radius: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06);
+    overflow: hidden;
+}
+
+.data-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--gray-line, #E5E7EB);
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.data-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-dark, #1C1E26);
+}
+
+/* ── Loading state centrado ── */
+.loading-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 24px;
+}
+
+/* ── Empty state ── */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 24px;
+    color: var(--gray-muted, #6B7280);
+    gap: 8px;
+}
+.empty-state .material-symbols-rounded { font-size: 40px; opacity: .4; }
+.empty-state p { font-size: 13px; }
+
+/* ── Utilidades de color semántico ── */
+.text-em  { color: var(--em,  #10B981); }
+.text-vi  { color: var(--vi,  #8B5CF6); }
+.text-in  { color: var(--in,  #6366F1); }
+.text-am  { color: var(--am,  #F59E0B); }
+.text-or  { color: var(--or,  #F97316); }
+.text-muted { color: var(--gray-muted, #6B7280); }
+
+.fw-600 { font-weight: 600; }
+.fw-700 { font-weight: 700; }
+.tabnum { font-variant-numeric: tabular-nums; }
+
+/* ── Negocio card header stats ── */
+.neg-stats {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.neg-stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--gray-muted, #6B7280);
+}
+
+.neg-stat strong {
+    font-weight: 700;
+    color: var(--gray-dark, #1C1E26);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    MUDBLAZOR OVERRIDES — Dialogs, Snackbar, Typography
    ═══════════════════════════════════════════════════════════════════ */
 body,

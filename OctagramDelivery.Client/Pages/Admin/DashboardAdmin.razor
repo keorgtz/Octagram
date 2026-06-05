@@ -5,23 +5,42 @@
 
 <PageTitle>Dashboard Admin · OctagramDelivery</PageTitle>
 
-<div style="padding:16px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
-        <h1 style="font-size:20px;font-weight:700;color:var(--gray-dark);margin:0;">Administración Global</h1>
-        <div style="display:flex;gap:8px;">
-            <MudButton StartIcon="@Icons.Material.Rounded.Store" Variant="Variant.Outlined" Color="Color.Primary" Href="/admin/negocios">Negocios</MudButton>
-            <MudButton StartIcon="@Icons.Material.Rounded.ManageAccounts" Variant="Variant.Outlined" Color="Color.Primary" Href="/admin/usuarios">Usuarios</MudButton>
-            <MudIconButton Icon="@Icons.Material.Rounded.Refresh" Color="Color.Primary" OnClick="Cargar" />
+<div class="page-content">
+
+    <div class="page-header">
+        <div>
+            <h1 class="h-page-title">Administración Global</h1>
+            <p class="page-subtitle">Vista general de todos los negocios y repartidores</p>
+        </div>
+        <div class="page-header-actions">
+            <MudButton StartIcon="@Icons.Material.Rounded.Store"
+                       Variant="Variant.Outlined" Color="Color.Primary"
+                       Href="/admin/negocios">Negocios</MudButton>
+            <MudButton StartIcon="@Icons.Material.Rounded.ManageAccounts"
+                       Variant="Variant.Outlined" Color="Color.Primary"
+                       Href="/admin/usuarios">Usuarios</MudButton>
+            <MudIconButton Icon="@Icons.Material.Rounded.Refresh"
+                           Color="Color.Primary" title="Actualizar"
+                           OnClick="Cargar" />
         </div>
     </div>
 
     @if (_cargando)
     {
-        <div style="text-align:center;padding:48px;"><MudProgressCircular Color="Color.Primary" Indeterminate="true" /></div>
+        <div class="loading-state">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        </div>
     }
-    else if (_data != null)
+    else if (_data == null)
     {
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px;">
+        <div class="empty-state">
+            <span class="material-symbols-rounded">error_outline</span>
+            <p>No se pudieron cargar los datos.</p>
+        </div>
+    }
+    else
+    {
+        <div class="kpi-grid">
             <div class="kpi-card" style="--accent-color:var(--in);">
                 <div class="kpi-label">Negocios</div>
                 <div class="kpi-value">@_data.TotalNegocios</div>
@@ -32,7 +51,7 @@
             </div>
             <div class="kpi-card" style="--accent-color:var(--vi);">
                 <div class="kpi-label">Efectivo Global Hoy</div>
-                <div class="kpi-value" style="font-size:20px;">@_data.TotalEfectivoGlobal.ToString("C0", new System.Globalization.CultureInfo("es-MX"))</div>
+                <div class="kpi-value" style="font-size:22px;">@_data.TotalEfectivoGlobal.ToString("C0", _mx)</div>
             </div>
         </div>
 
@@ -41,17 +60,26 @@
             <MudCard Class="mb-3">
                 <MudCardHeader>
                     <CardHeaderContent>
-                        <div style="display:flex;align-items:center;justify-content:space-between;">
-                            <MudText Typo="Typo.h6" Style="font-weight:700;">@neg.TenantNombre</MudText>
-                            <div style="display:flex;gap:6px;align-items:center;">
-                                <span style="font-size:12px;color:var(--gray-muted);">@neg.RepartidoresActivos activos · @neg.RepartidoresCerrados cerrados</span>
-                                <span style="font-weight:700;color:var(--in);font-variant-numeric:tabular-nums;">@neg.TotalEfectivoEnCalle.ToString("C0", new System.Globalization.CultureInfo("es-MX"))</span>
+                        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                            <span style="font-size:15px;font-weight:700;color:var(--gray-dark);">@neg.TenantNombre</span>
+                            <div class="neg-stats">
+                                <span class="neg-stat">
+                                    <span class="material-symbols-rounded" style="font-size:16px;color:var(--em);">circle</span>
+                                    <strong>@neg.RepartidoresActivos</strong> activos
+                                </span>
+                                <span class="neg-stat">
+                                    <span class="material-symbols-rounded" style="font-size:16px;color:var(--gray-muted);">circle</span>
+                                    <strong>@neg.RepartidoresCerrados</strong> cerrados
+                                </span>
+                                <span class="tabnum fw-700 text-in" style="font-size:15px;">
+                                    @neg.TotalEfectivoEnCalle.ToString("C0", _mx)
+                                </span>
                             </div>
                         </div>
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent Style="padding:0;">
-                    <MudTable Items="neg.Repartidores" Hover="true" Dense="true">
+                    <MudTable Items="neg.Repartidores" Hover="true" Dense="true" Striped="false">
                         <HeaderContent>
                             <MudTh>Repartidor</MudTh>
                             <MudTh Style="text-align:center;">Clientes</MudTh>
@@ -61,13 +89,17 @@
                             <MudTh Style="text-align:center;">Estado</MudTh>
                         </HeaderContent>
                         <RowTemplate>
-                            <MudTd>@context.FullName</MudTd>
-                            <MudTd Style="text-align:center;">@context.ClientesAtendidos/@context.TotalClientes</MudTd>
-                            <MudTd Style="text-align:right;color:var(--em);font-variant-numeric:tabular-nums;">@context.TotalEntregado.ToString("C0", new System.Globalization.CultureInfo("es-MX"))</MudTd>
-                            <MudTd Style="text-align:right;color:var(--vi);font-weight:600;font-variant-numeric:tabular-nums;">@context.TotalNeto.ToString("C0", new System.Globalization.CultureInfo("es-MX"))</MudTd>
-                            <MudTd Style="text-align:right;color:var(--in);font-weight:700;font-variant-numeric:tabular-nums;">@context.TotalEfectivo.ToString("C0", new System.Globalization.CultureInfo("es-MX"))</MudTd>
+                            <MudTd><span class="fw-500">@context.FullName</span></MudTd>
+                            <MudTd Style="text-align:center;color:var(--gray-muted);">
+                                @context.ClientesAtendidos<span style="opacity:.5;">/</span>@context.TotalClientes
+                            </MudTd>
+                            <MudTd Style="text-align:right;" Class="tabnum text-em">@context.TotalEntregado.ToString("C0", _mx)</MudTd>
+                            <MudTd Style="text-align:right;" Class="tabnum text-vi fw-600">@context.TotalNeto.ToString("C0", _mx)</MudTd>
+                            <MudTd Style="text-align:right;" Class="tabnum text-in fw-700">@context.TotalEfectivo.ToString("C0", _mx)</MudTd>
                             <MudTd Style="text-align:center;">
-                                <MudChip T="string" Color="@(context.Estado == JornadaEstado.Abierta ? Color.Success : Color.Default)" Size="Size.Small">
+                                <MudChip T="string"
+                                         Color="@(context.Estado == JornadaEstado.Abierta ? Color.Success : Color.Default)"
+                                         Size="Size.Small" Variant="Variant.Filled">
                                     @(context.Estado == JornadaEstado.Abierta ? "Activo" : "Cerrado")
                                 </MudChip>
                             </MudTd>
@@ -77,9 +109,12 @@
             </MudCard>
         }
     }
+
 </div>
 
 @code {
+    private static readonly System.Globalization.CultureInfo _mx = new("es-MX");
+
     private DashboardAdminDto? _data;
     private bool _cargando = true;
 
