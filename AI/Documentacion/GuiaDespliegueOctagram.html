@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Despliegue de Octagram Delivery</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --surface-color: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #60a5fa;
+            --code-bg: #0b1120;
+            --border-color: #334155;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--text-main);
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: var(--accent);
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            color: var(--text-main);
+            margin-top: 30px;
+        }
+
+        p, ul, ol {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        strong {
+            color: var(--text-main);
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        code {
+            font-family: 'Fira Code', 'Courier New', Courier, monospace;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+        }
+
+        p > code, li > code {
+            background-color: var(--surface-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--accent-hover);
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            background-color: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid var(--accent);
+        }
+
+        .alert.warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-left-color: var(--warning);
+        }
+        
+        .alert.success {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-left-color: var(--success);
+        }
+
+        .step-number {
+            background-color: var(--accent);
+            color: white;
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>🚀 Guía de Despliegue: Octagram Delivery</h1>
+            <p>Guía paso a paso para desplegar la PWA y la API de Octagram en Ubuntu Server usando Docker, Nginx Proxy Manager y Cloudflare Tunnel.</p>
+        </header>
+
+        <div class="alert warning">
+            <strong>Pre-requisito Importante:</strong> Esta guía asume que ya has seguido la <code>GuiaUbuntuServer.md</code> y tienes instalados y configurados: <strong>Docker, Docker Compose, la red global 'proxy', Nginx Proxy Manager (NPM) y Cloudflare Tunnel</strong>.
+        </div>
+
+        <h2><span class="step-number">1</span> Arquitectura del Proyecto</h2>
+        <p>La aplicación consta de tres contenedores principales definidos en el archivo <code>docker-compose.yml</code>:</p>
+        <ul>
+            <li><strong>octagram-db:</strong> Contenedor de SQL Server 2022.</li>
+            <li><strong>octagram-api:</strong> Backend ASP.NET Core 10 (Puerto interno 8080).</li>
+            <li><strong>octagram-client:</strong> PWA en Blazor WebAssembly servida por Nginx Alpine (Puerto interno 80).</li>
+        </ul>
+        <p>Todos estos contenedores están conectados a la red externa <code>proxy</code> para interactuar de forma segura con Nginx Proxy Manager sin exponer puertos al exterior.</p>
+
+        <h2><span class="step-number">2</span> Preparar el Código en el Servidor</h2>
+        <p>Conéctate a tu servidor Ubuntu por SSH y clona el repositorio de la aplicación dentro de tu carpeta de aplicaciones Docker.</p>
+        <pre><code>cd /root/docker/apps
+git clone &lt;URL_DE_TU_REPOSITORIO&gt; octagram
+cd octagram</code></pre>
+
+        <h2><span class="step-number">3</span> Levantar los Contenedores</h2>
+        <p>Construye y levanta los contenedores en segundo plano. Docker Compose se encargará de compilar la API y el Client usando sus respectivos Dockerfiles.</p>
+        <pre><code>docker compose up -d --build</code></pre>
+        
+        <p>Verifica que los contenedores estén corriendo correctamente:</p>
+        <pre><code>docker ps</code></pre>
+        <p>Deberías ver <code>octagram-db</code>, <code>octagram-api</code> y <code>octagram-client</code> en ejecución.</p>
+
+        <h2><span class="step-number">4</span> Configuración de Nginx Proxy Manager (NPM)</h2>
+        <p>Accede a la interfaz de Nginx Proxy Manager (usualmente <code>http://&lt;IP_DEL_SERVIDOR&gt;:81</code>) y crea dos <strong>Proxy Hosts</strong>.</p>
+
+        <h3>🌐 1. Proxy para la API (Backend)</h3>
+        <ul>
+            <li><strong>Domain Names:</strong> <code>api.octagramdelivery.endevour.mx</code></li>
+            <li><strong>Scheme:</strong> <code>http</code></li>
+            <li><strong>Forward Hostname / IP:</strong> <code>octagram-api</code> (nombre del contenedor)</li>
+            <li><strong>Forward Port:</strong> <code>8080</code></li>
+            <li><strong>Block Common Exploits:</strong> Activado</li>
+            <li><strong>SSL:</strong> Solicitar o asignar certificado SSL, activar <em>Force SSL</em>.</li>
+        </ul>
+
+        <h3>📱 2. Proxy para el Client (PWA)</h3>
+        <ul>
+            <li><strong>Domain Names:</strong> <code>app.octagramdelivery.endevour.mx</code></li>
+            <li><strong>Scheme:</strong> <code>http</code></li>
+            <li><strong>Forward Hostname / IP:</strong> <code>octagram-client</code> (nombre del contenedor)</li>
+            <li><strong>Forward Port:</strong> <code>80</code></li>
+            <li><strong>Block Common Exploits:</strong> Activado</li>
+            <li><strong>SSL:</strong> Solicitar o asignar certificado SSL, activar <em>Force SSL</em>.</li>
+        </ul>
+
+        <h2><span class="step-number">5</span> Configuración de Cloudflare</h2>
+        <p>Asegúrate de que en el panel de DNS de Cloudflare (o en tu <code>config.yml</code> del tunnel) existan los registros apuntando a tu túnel:</p>
+        <pre><code># En config.yml de Cloudflared (Si usas ingress local)
+- hostname: api.octagramdelivery.endevour.mx
+  service: http://npm:80
+
+- hostname: app.octagramdelivery.endevour.mx
+  service: http://npm:80</code></pre>
+        <p><em>Nota: Si configuraste el túnel desde el Dashboard de Cloudflare Zero Trust, simplemente agrega los subdominios públicos apuntando al servicio HTTP de tu NPM (ej. <code>http://localhost:80</code> o la IP del Nginx Proxy Manager).</em></p>
+
+        <h2><span class="step-number">6</span> Migraciones y Base de Datos</h2>
+        <p>El backend se conecta al contenedor <code>octagram-db</code>. Asegúrate de que Entity Framework aplique las migraciones automáticamente al arrancar la API, o ejecútalas manualmente si así lo requiere tu configuración:</p>
+        <pre><code>docker exec -it octagram-api dotnet ef database update</code></pre>
+        <p><em>(Asegúrate de que el contenedor de la API tenga las herramientas de EF si necesitas hacerlo manual, de lo contrario, aplica la migración en el <code>Program.cs</code> en el arranque).</em></p>
+
+        <div class="alert success">
+            <strong>✅ ¡Despliegue Completado!</strong>
+            <p>La aplicación debería estar disponible en:</p>
+            <ul>
+                <li><strong>App PWA:</strong> <a href="https://app.octagramdelivery.endevour.mx" style="color: var(--accent-hover);">https://app.octagramdelivery.endevour.mx</a></li>
+                <li><strong>API Swagger/Endpoints:</strong> <a href="https://api.octagramdelivery.endevour.mx" style="color: var(--accent-hover);">https://api.octagramdelivery.endevour.mx</a></li>
+            </ul>
+        </div>
+
+        <h2>🛠️ Comandos Útiles de Diagnóstico</h2>
+        <p>Para ver los logs de los servicios si algo sale mal:</p>
+        <pre><code># Logs de la API
+docker logs octagram-api
+
+# Logs del Client
+docker logs octagram-client
+
+# Logs de la Base de Datos
+docker logs octagram-db</code></pre>
+    </div>
+
+</body>
+</html>

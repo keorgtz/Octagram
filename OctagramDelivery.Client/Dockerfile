@@ -9,6 +9,6 @@ RUN dotnet publish "OctagramDelivery.Client.csproj" -c Release -o /app/publish
 
 FROM nginx:alpine AS final
 WORKDIR /usr/share/nginx/html
-COPY --from=publish /app/publish/wwwroot .
+COPY --from=build /app/publish/wwwroot .
 COPY OctagramDelivery.Client/nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
