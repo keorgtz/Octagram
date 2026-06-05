@@ -181,9 +181,9 @@
 }
 
 .jornada-table th.col-ronda-header {
-    background: var(--in-bg);
-    color: var(--in);
-    border-bottom: 2px solid var(--in-lt);
+    background: var(--pr-100, #D9F7EA);
+    color: var(--primary, #1EB980);
+    border-bottom: 2px solid var(--pr-300, #97E3C4);
     text-align: center;
 }
 
@@ -305,41 +305,7 @@
 .total-neto   { background: var(--vi-bg); }  .total-neto .t-amount   { color: var(--vi); }
 .total-efect  { background: var(--in-bg); }  .total-efect .t-amount  { color: var(--in); }
 
-/* ── KPI Cards ─────────────────────────────────────────────────── */
-.kpi-card {
-    background: var(--white);
-    border-radius: var(--r-xl, 20px);
-    box-shadow: var(--shadow);
-    padding: 12px 18px 16px;
-    position: relative;
-    overflow: hidden;
-}
-
-.kpi-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    background: var(--accent-color, var(--primary));
-    border-radius: var(--r-xl) var(--r-xl) 0 0;
-}
-
-.kpi-card .kpi-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
-    color: var(--gray-muted);
-}
-
-.kpi-card .kpi-value {
-    font-size: 32px;
-    font-weight: 700;
-    color: var(--accent-color, var(--primary));
-    font-variant-numeric: tabular-nums;
-    line-height: 1.1;
-    margin-top: 4px;
-}
+/* ── KPI Cards — accent bar y valor definidos en app.css ── */
 
 /* ── Save indicator ─────────────────────────────────────────────── */
 .save-indicator {

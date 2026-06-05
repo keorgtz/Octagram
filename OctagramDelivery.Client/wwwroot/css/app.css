@@ -204,6 +204,9 @@ a { color: var(--primary); text-decoration: none; }
     overflow: hidden;
 }
 .nav-item:hover { background: var(--sidebar-hover-bg); color: var(--primary, #1EB980); text-decoration: none; }
+.nav-item:hover .nav-item-icon {
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
 .nav-item.active {
     background: var(--sidebar-active-bg);
     color: var(--sidebar-active-fg);
@@ -293,13 +296,14 @@ a { color: var(--primary); text-decoration: none; }
 .page-header-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
 .h-page-title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--gray-dark, #1C1E26);
-    letter-spacing: -0.3px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
-.page-subtitle { font-size: 13px; color: var(--gray-muted, #6B7280); margin-top: 2px; }
+.page-subtitle { font-size: 12px; color: var(--gray-muted, #6B7280); margin-top: 3px; }
 
 /* ═══════════════════════════════════════════════════════════════════
    KPI CARDS
@@ -317,11 +321,21 @@ a { color: var(--primary); text-decoration: none; }
     background: var(--white, #fff);
     box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06);
     border-radius: 20px;
-    padding: 16px 18px 14px;
+    padding: 18px 18px 14px;
     display: flex;
     flex-direction: column;
     gap: 6px;
-    border-left: 3px solid var(--accent-color, var(--in));
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--accent-color, var(--primary, #1EB980));
+    border-radius: 20px 20px 0 0;
 }
 
 .kpi-label {
@@ -330,6 +344,7 @@ a { color: var(--primary); text-decoration: none; }
     color: var(--gray-muted, #6B7280);
     text-transform: uppercase;
     letter-spacing: .06em;
+    margin-top: 2px;
 }
 
 .kpi-value {
@@ -337,7 +352,7 @@ a { color: var(--primary); text-decoration: none; }
     font-weight: 700;
     line-height: 1;
     font-variant-numeric: tabular-nums;
-    color: var(--gray-dark, #1C1E26);
+    color: var(--accent-color, var(--primary, #1EB980));
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -382,6 +397,24 @@ a { color: var(--primary); text-decoration: none; }
 .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 4px; background: var(--em, #10B981); }
 
 /* ═══════════════════════════════════════════════════════════════════
+   JORNADA ACTION BAR
+   ═══════════════════════════════════════════════════════════════════ */
+.jornada-actionbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: var(--white, #fff);
+    border-bottom: 1px solid var(--gray-line, #E5E7EB);
+    flex-wrap: wrap;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.jornada-actionbar-info { display: flex; align-items: center; flex-wrap: wrap; }
+.jornada-actionbar-controls { display: flex; align-items: center; gap: 8px; }
+
+/* ═══════════════════════════════════════════════════════════════════
    JORNADA GRID (hoja de cálculo)
    ═══════════════════════════════════════════════════════════════════ */
 .jornada-wrapper { flex: 1; overflow: auto; padding: 0; }
@@ -410,8 +443,8 @@ a { color: var(--primary); text-decoration: none; }
 }
 
 .jornada-table th.ronda-header {
-    background: var(--in-bg, #EEF2FF);
-    color: var(--in, #6366F1);
+    background: var(--pr-100, #D9F7EA);
+    color: var(--primary, #1EB980);
 }
 
 .jornada-table td {
@@ -464,8 +497,8 @@ a { color: var(--primary); text-decoration: none; }
 }
 .celda-input:focus {
     outline: none;
-    border-color: var(--in, #6366F1);
-    background: var(--in-bg, #EEF2FF);
+    border-color: var(--primary, #1EB980);
+    background: var(--pr-100, #D9F7EA);
 }
 
 /* ── Totales sticky bar ── */
@@ -554,12 +587,13 @@ a { color: var(--primary); text-decoration: none; }
 .empty-state p { font-size: 13px; }
 
 /* ── Utilidades de color semántico ── */
-.text-em  { color: var(--em,  #10B981); }
-.text-vi  { color: var(--vi,  #8B5CF6); }
-.text-in  { color: var(--in,  #6366F1); }
-.text-am  { color: var(--am,  #F59E0B); }
-.text-or  { color: var(--or,  #F97316); }
-.text-muted { color: var(--gray-muted, #6B7280); }
+.text-em      { color: var(--em,      #10B981); }
+.text-vi      { color: var(--vi,      #8B5CF6); }
+.text-in      { color: var(--in,      #6366F1); }
+.text-am      { color: var(--am,      #F59E0B); }
+.text-or      { color: var(--or,      #F97316); }
+.text-primary { color: var(--primary, #1EB980); }
+.text-muted   { color: var(--gray-muted, #6B7280); }
 
 .fw-500 { font-weight: 500; }
 .fw-600 { font-weight: 600; }

@@ -61,18 +61,20 @@
                     <MudCardHeader>
                         <CardHeaderContent>
                             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-                                <span style="font-size:15px;font-weight:700;color:var(--gray-dark);">@neg.TenantNombre</span>
+                                <span style="font-size:14px;font-weight:700;color:var(--gray-dark);text-transform:uppercase;letter-spacing:0.03em;">@neg.TenantNombre</span>
                                 <div class="neg-stats">
                                     <span class="neg-stat">
-                                        <span class="material-symbols-rounded" style="font-size:16px;color:var(--em);">circle</span>
-                                        <strong>@neg.RepartidoresActivos</strong> activos
+                                        <span class="material-symbols-rounded fill" style="font-size:14px;color:var(--em);">circle</span>
+                                        <strong class="text-em">@neg.RepartidoresActivos</strong>
+                                        <span style="font-size:11px;color:var(--gray-muted);">activos</span>
                                     </span>
                                     <span class="neg-stat">
-                                        <span class="material-symbols-rounded" style="font-size:16px;color:var(--gray-muted);">circle</span>
-                                        <strong>@neg.RepartidoresCerrados</strong> cerrados
+                                        <span class="material-symbols-rounded fill" style="font-size:14px;color:var(--gray-muted);">circle</span>
+                                        <strong>@neg.RepartidoresCerrados</strong>
+                                        <span style="font-size:11px;color:var(--gray-muted);">cerrados</span>
                                     </span>
                                     <span class="tabnum fw-700 text-vi" style="font-size:14px;">
-                                        Neto @neg.TotalNeto.ToString("C0", _mx)
+                                        @neg.TotalNeto.ToString("C0", _mx)
                                     </span>
                                     <span class="tabnum fw-700 text-in" style="font-size:15px;">
                                         @neg.TotalEfectivoEnCalle.ToString("C0", _mx)
