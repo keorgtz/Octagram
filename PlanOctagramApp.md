@@ -101,10 +101,10 @@ Basado en la infraestructura `GuiaUbuntuServer.md` actual:
 - Todos los servicios web y API se conectarán a la red externa `proxy`.
 
 ### 3. Configuración de Dominios (Nginx Proxy Manager & Cloudflare)
-- **Dominio:** `octagramdelivery.endevour.mx`
-- **Subdominios propuestos:**
-  - `api.octagramdelivery.endevour.mx` (Apunta al contenedor ASP.NET).
-  - `app.octagramdelivery.endevour.mx` (Apunta al contenedor Nginx estático con la PWA).
+- **Dominio Base:** `endevour.mx`
+- **Subdominios propuestos (1er nivel para SSL gratuito):**
+  - `octagram-api.endevour.mx` (Apunta al contenedor ASP.NET).
+  - `octagram-app.endevour.mx` (Apunta al contenedor Nginx estático con la PWA).
 - Configuración de certificados SSL automáticos y Force SSL en NPM.
 - Rutas en el `config.yml` del Cloudflare Tunnel para rutear el tráfico hacia los subdominios.
 

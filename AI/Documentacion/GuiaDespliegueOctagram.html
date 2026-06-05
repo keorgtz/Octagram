@@ -170,7 +170,7 @@ cd octagram</code></pre>
 
         <h3>🌐 1. Proxy para la API (Backend)</h3>
         <ul>
-            <li><strong>Domain Names:</strong> <code>api.octagramdelivery.endevour.mx</code></li>
+            <li><strong>Domain Names:</strong> <code>octagram-api.endevour.mx</code></li>
             <li><strong>Scheme:</strong> <code>http</code></li>
             <li><strong>Forward Hostname / IP:</strong> <code>octagram-api</code> (nombre del contenedor)</li>
             <li><strong>Forward Port:</strong> <code>8080</code></li>
@@ -180,7 +180,7 @@ cd octagram</code></pre>
 
         <h3>📱 2. Proxy para el Client (PWA)</h3>
         <ul>
-            <li><strong>Domain Names:</strong> <code>app.octagramdelivery.endevour.mx</code></li>
+            <li><strong>Domain Names:</strong> <code>octagram-app.endevour.mx</code></li>
             <li><strong>Scheme:</strong> <code>http</code></li>
             <li><strong>Forward Hostname / IP:</strong> <code>octagram-client</code> (nombre del contenedor)</li>
             <li><strong>Forward Port:</strong> <code>80</code></li>
@@ -191,10 +191,10 @@ cd octagram</code></pre>
         <h2><span class="step-number">5</span> Configuración de Cloudflare</h2>
         <p>Asegúrate de que en el panel de DNS de Cloudflare (o en tu <code>config.yml</code> del tunnel) existan los registros apuntando a tu túnel:</p>
         <pre><code># En config.yml de Cloudflared (Si usas ingress local)
-- hostname: api.octagramdelivery.endevour.mx
+- hostname: octagram-api.endevour.mx
   service: http://npm:80
 
-- hostname: app.octagramdelivery.endevour.mx
+- hostname: octagram-app.endevour.mx
   service: http://npm:80</code></pre>
         <p><em>Nota: Si configuraste el túnel desde el Dashboard de Cloudflare Zero Trust, simplemente agrega los subdominios públicos apuntando al servicio HTTP de tu NPM (ej. <code>http://localhost:80</code> o la IP del Nginx Proxy Manager).</em></p>
 
@@ -207,8 +207,8 @@ cd octagram</code></pre>
             <strong>✅ ¡Despliegue Completado!</strong>
             <p>La aplicación debería estar disponible en:</p>
             <ul>
-                <li><strong>App PWA:</strong> <a href="https://app.octagramdelivery.endevour.mx" style="color: var(--accent-hover);">https://app.octagramdelivery.endevour.mx</a></li>
-                <li><strong>API Swagger/Endpoints:</strong> <a href="https://api.octagramdelivery.endevour.mx" style="color: var(--accent-hover);">https://api.octagramdelivery.endevour.mx</a></li>
+                <li><strong>App PWA:</strong> <a href="https://octagram-app.endevour.mx" style="color: var(--accent-hover);">https://octagram-app.endevour.mx</a></li>
+                <li><strong>API Swagger/Endpoints:</strong> <a href="https://octagram-api.endevour.mx" style="color: var(--accent-hover);">https://octagram-api.endevour.mx</a></li>
             </ul>
         </div>
 
