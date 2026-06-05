@@ -1,0 +1,101 @@
+@page "/"
+@using OctagramDelivery.Shared.Models
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<PageTitle>Inicialización del Sistema</PageTitle>
+
+@if (isLoading)
+{
+    <div class="d-flex justify-content-center mt-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <span class="ms-3 fs-5">Comprobando estado de la base de datos...</span>
+    </div>
+}
+else if (migrationStatus != null && migrationStatus.PendingMigrations.Any())
+{
+    <div class="card shadow mt-4 border-0">
+        <div class="card-header bg-warning text-dark border-0">
+            <h4 class="mb-0">Atención: Base de Datos Desactualizada</h4>
+        </div>
+        <div class="card-body">
+            @if (!migrationStatus.DbExists)
+            {
+                <p class="fs-5 text-danger">La base de datos <strong>no existe</strong>. Se creará desde cero.</p>
+            }
+            <p>Se detectaron las siguientes migraciones pendientes de aplicar:</p>
+            <ul>
+                @foreach (var migration in migrationStatus.PendingMigrations)
+                {
+                    <li><code>@migration</code></li>
+                }
+            </ul>
+
+            <button class="btn btn-primary btn-lg mt-3" @onclick="ApplyMigrations" disabled="@isApplying">
+                @if (isApplying)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    <span>Aplicando...</span>
+                }
+                else
+                {
+                    <span>⚙️ Aplicar Migraciones Ahora</span>
+                }
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    private bool isLoading = true;
+    private bool isApplying = false;
+    private MigrationStatus? migrationStatus;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Nota: Configurar la URL de la API base en Program.cs o usar ruta absoluta
+            var response = await Http.GetAsync("api/migrations/status");
+            if (response.IsSuccessStatusCode)
+            {
+                migrationStatus = await response.Content.ReadFromJsonAsync<MigrationStatus>();
+                if (migrationStatus == null || !migrationStatus.PendingMigrations.Any())
+                {
+                    // Todo al día, ir al login
+                    Nav.NavigateTo("/login");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al checar migraciones: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ApplyMigrations()
+    {
+        isApplying = true;
+        try
+        {
+            var response = await Http.PostAsync("api/migrations/apply", null);
+            if (response.IsSuccessStatusCode)
+            {
+                // Éxito, ir al login
+                Nav.NavigateTo("/login");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al aplicar migraciones: {ex.Message}");
+        }
+        finally
+        {
+            isApplying = false;
+        }
+    }
+}

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;background:#fff;font-family:var(--font);color:var(--gray-dark);padding:18px}
+  .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  .sw{border-radius:10px;overflow:hidden;border:1px solid var(--gray-line);background:#fff}
+  .sw-bar{height:54px}
+  .sw-meta{padding:8px 10px}
+  .sw-name{font-size:11px;font-weight:600;color:var(--gray-dark);letter-spacing:.04em;text-transform:uppercase}
+  .sw-hex{font-family:var(--font-mono);font-size:10.5px;color:var(--gray-muted);margin-top:2px;letter-spacing:.02em}
+  .row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:6px}
+  .row .cell{height:34px;border-radius:6px;display:flex;align-items:flex-end;justify-content:flex-end;padding:4px 6px;font-family:var(--font-mono);font-size:8.5px;color:rgba(0,0,0,.45);font-weight:600}
+  .row .cell.dark{color:rgba(255,255,255,.75)}
+  h3{font-family:var(--font-display);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-muted);margin:0 0 10px}
+  .group{margin-bottom:16px}
+</style></head><body>
+<div class="group">
+  <h3>Escala — 5 niveles · strong → mid → light → pale → bg</h3>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <!-- Emerald -->
+    <div style="display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:center">
+      <div><div style="font-weight:700;font-size:13px;color:var(--em)">Emerald</div><div style="font-size:10px;color:var(--gray-muted)">OK · Ingreso</div></div>
+      <div class="row">
+        <div class="cell dark" style="background:#10B981">10B981</div>
+        <div class="cell dark" style="background:#34D399">34D399</div>
+        <div class="cell" style="background:#6EE7B7">6EE7B7</div>
+        <div class="cell" style="background:#DCFCE7">DCFCE7</div>
+        <div class="cell" style="background:#F0FDF4;border:1px solid var(--gray-line)">F0FDF4</div>
+      </div>
+    </div>
+    <!-- Amber -->
+    <div style="display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:center">
+      <div><div style="font-weight:700;font-size:13px;color:var(--am)">Amber</div><div style="font-size:10px;color:var(--gray-muted)">Alerta · Rentas</div></div>
+      <div class="row">
+        <div class="cell dark" style="background:#F59E0B">F59E0B</div>
+        <div class="cell" style="background:#FBB95A">FBB95A</div>
+        <div class="cell" style="background:#FDE68A">FDE68A</div>
+        <div class="cell" style="background:#FEF3C7">FEF3C7</div>
+        <div class="cell" style="background:#FFFBEB;border:1px solid var(--gray-line)">FFFBEB</div>
+      </div>
+    </div>
+    <!-- Indigo -->
+    <div style="display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:center">
+      <div><div style="font-weight:700;font-size:13px;color:var(--in)">Indigo</div><div style="font-size:10px;color:var(--gray-muted)">Referencia · Cargos</div></div>
+      <div class="row">
+        <div class="cell dark" style="background:#6366F1">6366F1</div>
+        <div class="cell" style="background:#A5B4FC">A5B4FC</div>
+        <div class="cell" style="background:#C7D2FE">C7D2FE</div>
+        <div class="cell" style="background:#E0E7FF">E0E7FF</div>
+        <div class="cell" style="background:#EEF2FF;border:1px solid var(--gray-line)">EEF2FF</div>
+      </div>
+    </div>
+    <!-- Violet -->
+    <div style="display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:center">
+      <div><div style="font-weight:700;font-size:13px;color:var(--vi)">Violet</div><div style="font-size:10px;color:var(--gray-muted)">Total · Abonos</div></div>
+      <div class="row">
+        <div class="cell dark" style="background:#8B5CF6">8B5CF6</div>
+        <div class="cell" style="background:#C4B5FD">C4B5FD</div>
+        <div class="cell" style="background:#DDD6FE">DDD6FE</div>
+        <div class="cell" style="background:#EDE9FE">EDE9FE</div>
+        <div class="cell" style="background:#F5F3FF;border:1px solid var(--gray-line)">F5F3FF</div>
+      </div>
+    </div>
+    <!-- Orange -->
+    <div style="display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:center">
+      <div><div style="font-weight:700;font-size:13px;color:var(--or)">Orange</div><div style="font-size:10px;color:var(--gray-muted)">Gasto · Advertencia</div></div>
+      <div class="row">
+        <div class="cell dark" style="background:#F97316">F97316</div>
+        <div class="cell dark" style="background:#FB923C">FB923C</div>
+        <div class="cell" style="background:#FED7AA">FED7AA</div>
+        <div class="cell" style="background:#FFEDD5">FFEDD5</div>
+        <div class="cell" style="background:#FFF7ED;border:1px solid var(--gray-line)">FFF7ED</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>

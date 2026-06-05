@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;background:#fff;font-family:var(--font);color:var(--gray-dark);padding:18px}
+  .ms{font-family:'Material Symbols Rounded';font-feature-settings:'liga';line-height:1;font-variation-settings:'FILL' 1,'wght' 500}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .mini{background:#fff;border:1px solid var(--gray-line);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px;min-width:0}
+  .pill{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .pill .ms{font-size:18px}
+  .lbl{font-size:9px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.08em}
+  .val{font-size:14px;font-weight:700;color:var(--gray-dark);line-height:1.15;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .ind .pill{background:#E0E7FF}.ind .pill .ms{color:#6366F1}
+  .vi .pill{background:#EDE9FE}.vi .pill .ms{color:#8B5CF6}
+  .em .pill{background:#DCFCE7}.em .pill .ms{color:#10B981}
+  .am .pill{background:#FEF3C7}.am .pill .ms{color:#F59E0B}
+  .or .pill{background:#FFEDD5}.or .pill .ms{color:#F97316}
+  .meta{font-size:11px;color:var(--gray-muted);margin-top:12px;line-height:1.5;max-width:680px}
+</style></head><body>
+  <div class="grid">
+    <div class="mini ind"><div class="pill"><span class="ms">table_restaurant</span></div><div style="min-width:0"><div class="lbl">Mesa</div><div class="val">06 · Salón principal</div></div></div>
+    <div class="mini vi"><div class="pill"><span class="ms">person</span></div><div style="min-width:0"><div class="lbl">Cliente</div><div class="val">Familia Pérez</div></div></div>
+    <div class="mini em"><div class="pill"><span class="ms">group</span></div><div style="min-width:0"><div class="lbl">Comensales</div><div class="val">6 personas</div></div></div>
+    <div class="mini am"><div class="pill"><span class="ms">schedule</span></div><div style="min-width:0"><div class="lbl">Apertura</div><div class="val">13:08 · María</div></div></div>
+  </div>
+  <div class="meta">Patrón <b style="color:var(--gray-dark)">info-card</b>: icon-pill rellenada (FILL 1) + label uppercase + valor bold tabular-nums. Cuatro tintes semánticos disponibles. Usado en headers de diálogos para resumir contexto.</div>
+</body></html>

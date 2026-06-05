@@ -1,0 +1,2556 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#10B981">
+<title>SHEndevour — Guía Licenciador</title>
+<style>
+/* ── TOKENS ──────────────────────────────────────────────────────────────── */
+:root {
+  --em:#10B981;--em-bg:#ECFDF5;--em-b:#6EE7B7;
+  --am:#F59E0B;--am-bg:#FFFBEB;--am-b:#FCD34D;
+  --in:#6366F1;--in-bg:#EEF2FF;--in-b:#A5B4FC;
+  --vi:#8B5CF6;--vi-bg:#F5F3FF;--vi-b:#C4B5FD;
+  --or:#F97316;--or-bg:#FFF7ED;--or-b:#FED7AA;
+  --danger:#EF4444;--danger-bg:#FEF2F2;--danger-b:#FECACA;
+  --cf:#F6821F;--cf-bg:#FFF4E6;--cf-b:#FDBA74; /* cloudflare */
+  --g1:#F3F4F6;--g2:#E5E7EB;--g3:#D1D5DB;
+  --g4:#9CA3AF;--g5:#6B7280;--g6:#4B5563;
+  --g7:#374151;--g8:#1F2937;--g9:#111827;
+  --page:#F2F3F7;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --font:'Inter','Segoe UI',system-ui,sans-serif;
+  --mono:'JetBrains Mono','Fira Code','Cascadia Code',monospace;
+  --nav-w:236px;
+  --header-h:52px;
+}
+
+/* ── RESET ───────────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--page);color:var(--g8);font-size:14px;line-height:1.6;overflow-x:hidden}
+
+/* ── HEADER ──────────────────────────────────────────────────────────────── */
+.site-header{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:var(--header-h);
+  background:white;border-bottom:1px solid var(--g2);
+  box-shadow:0 1px 8px rgba(0,0,0,.07);
+  display:flex;align-items:center;padding:0 20px;gap:12px;
+}
+.ham-btn{
+  display:none;
+  background:none;border:none;cursor:pointer;
+  padding:6px;border-radius:8px;
+  color:var(--g7);font-size:20px;line-height:1;
+  transition:background .15s;
+}
+.ham-btn:hover{background:var(--g1)}
+.logo-mark{
+  width:30px;height:30px;border-radius:8px;
+  background:linear-gradient(135deg,var(--em),var(--in));
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:13px;font-weight:800;flex-shrink:0;
+}
+.site-title{font-size:14px;font-weight:700;color:var(--g9);white-space:nowrap}
+.site-sub{font-size:11px;color:var(--g4);display:none}
+.header-badge{
+  margin-left:auto;
+  background:var(--em-bg);color:var(--em);
+  border:1px solid var(--em-b);border-radius:20px;
+  padding:3px 10px;font-size:11px;font-weight:600;
+  white-space:nowrap;
+}
+
+/* ── LAYOUT ──────────────────────────────────────────────────────────────── */
+.layout{
+  display:grid;
+  grid-template-columns:var(--nav-w) 1fr;
+  max-width:1200px;margin:0 auto;
+  padding:calc(var(--header-h) + 24px) 20px 40px;
+  gap:24px;align-items:start;
+}
+
+/* ── NAV SIDEBAR ─────────────────────────────────────────────────────────── */
+.nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:150}
+.nav-panel{
+  position:sticky;top:calc(var(--header-h) + 16px);
+  background:white;border-radius:14px;box-shadow:var(--shadow);
+  overflow:hidden;max-height:calc(100vh - var(--header-h) - 32px);
+  overflow-y:auto;
+}
+.nav-close-btn{
+  display:none;
+  width:100%;background:none;border:none;cursor:pointer;
+  padding:14px 16px;text-align:left;
+  font-size:13px;font-weight:700;color:var(--g6);
+  border-bottom:1px solid var(--g1);
+}
+.nav-section-lbl{
+  font-size:10px;font-weight:700;letter-spacing:1px;
+  color:var(--g4);text-transform:uppercase;
+  padding:10px 16px 4px;margin-top:4px;
+}
+.nav-link{
+  display:flex;align-items:center;gap:9px;
+  padding:7px 16px;color:var(--g6);
+  text-decoration:none;font-size:12.5px;
+  border-left:3px solid transparent;
+  transition:background .12s,color .12s;
+}
+.nav-link:hover{background:var(--g1);color:var(--g9)}
+.nav-link.active{background:var(--em-bg);color:var(--em);border-left-color:var(--em);font-weight:600}
+.nav-dot{width:5px;height:5px;border-radius:50%;background:var(--g3);flex-shrink:0}
+.nav-link.active .nav-dot{background:var(--em)}
+.nav-div{height:1px;background:var(--g1);margin:8px 0}
+
+/* ── CONTENT ─────────────────────────────────────────────────────────────── */
+.content{min-width:0}
+
+/* ── HERO ────────────────────────────────────────────────────────────────── */
+.hero{
+  background:white;border-radius:16px;box-shadow:var(--shadow);
+  padding:28px 32px;margin-bottom:20px;
+  border-top:4px solid var(--em);
+}
+.hero h1{font-size:22px;font-weight:800;color:var(--g9);line-height:1.3;margin-bottom:8px}
+.hero p{color:var(--g5);font-size:13.5px;max-width:600px}
+.chips{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap}
+.chip{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 10px;border-radius:20px;
+  font-size:11.5px;font-weight:600;
+}
+.chip-em{background:var(--em-bg);color:var(--em);border:1px solid var(--em-b)}
+.chip-in{background:var(--in-bg);color:var(--in);border:1px solid var(--in-b)}
+.chip-vi{background:var(--vi-bg);color:var(--vi);border:1px solid var(--vi-b)}
+.chip-am{background:var(--am-bg);color:var(--am);border:1px solid var(--am-b)}
+.chip-or{background:var(--or-bg);color:var(--or);border:1px solid var(--or-b)}
+.chip-cf{background:var(--cf-bg);color:var(--cf);border:1px solid var(--cf-b)}
+
+/* ── BANNERS ─────────────────────────────────────────────────────────────── */
+.banner{
+  border-radius:14px;padding:22px 26px;margin-bottom:20px;
+  display:flex;align-items:center;gap:16px;
+}
+.banner-prod{background:linear-gradient(135deg,#1a1f2e,var(--g9))}
+.banner-docker{background:linear-gradient(135deg,#0f172a,#1e3a5f);border:1px solid #1d4ed8}
+.banner-secrets{background:linear-gradient(135deg,#2d1b6e,#1e1b4b);border:1px solid var(--vi-b)}
+.banner-icon{
+  width:44px;height:44px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;
+}
+.bi-prod{background:rgba(16,185,129,.15)}
+.bi-docker{background:rgba(29,78,216,.2)}
+.bi-secrets{background:rgba(139,92,246,.2)}
+.banner h2{font-size:18px;font-weight:800;color:white;margin-bottom:4px}
+.banner p{font-size:12px;color:#9CA3AF}
+.banner-docker p{color:#93C5FD}
+.banner-secrets p{color:#C4B5FD}
+
+/* ── SECTION CARD ────────────────────────────────────────────────────────── */
+.section{background:white;border-radius:14px;box-shadow:var(--shadow);margin-bottom:18px;overflow:hidden}
+.section-header{
+  padding:16px 22px;border-bottom:1px solid var(--g1);
+  display:flex;align-items:center;gap:12px;
+}
+.step-badge{
+  width:34px;height:34px;border-radius:9px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;
+}
+.b-em{background:var(--em-bg);color:var(--em)}
+.b-in{background:var(--in-bg);color:var(--in)}
+.b-vi{background:var(--vi-bg);color:var(--vi)}
+.b-am{background:var(--am-bg);color:var(--am)}
+.b-g{background:var(--g1);color:var(--g6)}
+.b-docker{background:#E0F2FE;color:#0284C7}
+.b-cf{background:var(--cf-bg);color:var(--cf)}
+.b-sec{background:var(--vi-bg);color:var(--vi)}
+.b-ws{background:#ECFEFF;color:#0891B2}
+.sec-title{font-size:15px;font-weight:700;color:var(--g9)}
+.sec-sub{font-size:11.5px;color:var(--g4);margin-top:2px}
+.sec-body{padding:20px 22px}
+
+/* ── CODE BLOCKS ─────────────────────────────────────────────────────────── */
+.code-wrap{background:var(--g9);border-radius:9px;overflow:hidden;margin:10px 0}
+.code-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 14px;background:#1a1f2e;border-bottom:1px solid #2d3748;
+}
+.code-lang{font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase}
+.lc{color:#818CF8}.lx{color:#34D399}.lj{color:#FCD34D}.ls{color:#FB923C}
+.lp{color:#C084FC}.lb{color:#67E8F9}.ly{color:#F472B6}.ld{color:#67E8F9}
+.ln{color:#A7F3D0}.lcf{color:#F6821F}
+.copy-btn{
+  background:none;border:1px solid #374151;color:#9CA3AF;
+  padding:3px 9px;border-radius:5px;font-size:11px;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.copy-btn:hover{border-color:#6B7280;color:white}
+pre{
+  padding:14px 18px;overflow-x:auto;
+  font-family:var(--mono);font-size:12.5px;
+  line-height:1.75;color:#E5E7EB;
+  -webkit-overflow-scrolling:touch;
+}
+
+/* ── CALLOUTS ────────────────────────────────────────────────────────────── */
+.callout{
+  border-radius:9px;padding:12px 16px;margin:10px 0;
+  display:flex;gap:10px;align-items:flex-start;font-size:13px;
+}
+.callout-icon{font-size:15px;flex-shrink:0;margin-top:1px}
+.c-em{background:var(--em-bg);border:1px solid var(--em-b);color:#065F46}
+.c-am{background:var(--am-bg);border:1px solid var(--am-b);color:#92400E}
+.c-in{background:var(--in-bg);border:1px solid var(--in-b);color:#3730A3}
+.c-vi{background:var(--vi-bg);border:1px solid var(--vi-b);color:#4C1D95}
+.c-danger{background:var(--danger-bg);border:1px solid var(--danger-b);color:#991B1B}
+.c-cf{background:var(--cf-bg);border:1px solid var(--cf-b);color:#9A3412}
+.callout strong{font-weight:700}
+
+/* ── TABLES ──────────────────────────────────────────────────────────────── */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:10px 0;border-radius:9px;border:1px solid var(--g2)}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:400px}
+thead th{
+  background:var(--g1);text-align:left;
+  padding:9px 13px;font-weight:700;font-size:11px;
+  text-transform:uppercase;letter-spacing:.4px;color:var(--g5);
+  white-space:nowrap;
+}
+tbody td{padding:9px 13px;border-bottom:1px solid var(--g1);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#FAFAFA}
+code{
+  background:var(--g1);color:var(--in);
+  padding:1px 6px;border-radius:4px;
+  font-family:var(--mono);font-size:11.5px;
+}
+
+/* ── STEP LIST ───────────────────────────────────────────────────────────── */
+.steps{list-style:none;padding:0}
+.step-item{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--g1)}
+.step-item:last-child{border-bottom:none}
+.step-num{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--in-bg);color:var(--in);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;flex-shrink:0;margin-top:2px;
+}
+.step-text{font-size:13px;color:var(--g7);line-height:1.5}
+
+/* ── CHECKLIST ───────────────────────────────────────────────────────────── */
+.checklist{list-style:none;padding:0}
+.check-item{
+  display:flex;gap:10px;align-items:flex-start;
+  padding:6px 0;font-size:13px;cursor:pointer;
+  user-select:none;
+}
+.check-item input[type=checkbox]{
+  width:16px;height:16px;border-radius:4px;
+  accent-color:var(--em);flex-shrink:0;margin-top:1px;cursor:pointer;
+}
+.check-item.done span{text-decoration:line-through;color:var(--g4)}
+
+/* ── GRID ────────────────────────────────────────────────────────────────── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:10px 0}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:10px 0}
+.mini-card{
+  background:var(--g1);border-radius:9px;padding:14px;
+  border:1px solid var(--g2);
+}
+.mc-title{font-size:12px;font-weight:700;color:var(--g7);margin-bottom:5px}
+.mc-body{font-size:12px;color:var(--g5);line-height:1.5}
+
+/* ── SECRET CARD ─────────────────────────────────────────────────────────── */
+.secret-card{
+  border-radius:10px;padding:16px 18px;margin-bottom:12px;
+  border:1px solid var(--g2);background:white;
+}
+.secret-card:last-child{margin-bottom:0}
+.sc-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.sc-badge{
+  padding:4px 10px;border-radius:6px;
+  font-size:11px;font-weight:700;font-family:var(--mono);
+  flex-shrink:0;margin-top:2px;
+}
+.sc-title{font-size:14px;font-weight:700;color:var(--g9)}
+.sc-desc{font-size:12.5px;color:var(--g5);margin-bottom:10px;line-height:1.5}
+.sc-flow{
+  background:var(--g1);border-radius:7px;padding:10px 12px;
+  font-size:12px;color:var(--g6);font-family:var(--mono);line-height:1.7;
+}
+.sc-flow .arrow{color:var(--em);font-weight:700}
+
+/* ── ARCH DIAGRAM ────────────────────────────────────────────────────────── */
+.arch{
+  background:var(--g9);border-radius:10px;padding:18px 22px;
+  font-family:var(--mono);font-size:12.5px;color:#E5E7EB;
+  line-height:1.85;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  margin:10px 0;white-space:pre;
+}
+.a-em{color:#34D399}.a-in{color:#818CF8}.a-am{color:#FCD34D}
+.a-vi{color:#C084FC}.a-red{color:#FC8181}.a-gr{color:#6B7280}
+.a-cf{color:#F6821F}
+
+/* ── FILE TREE ───────────────────────────────────────────────────────────── */
+.file-tree{
+  background:var(--g9);border-radius:9px;padding:14px 18px;
+  font-family:var(--mono);font-size:12.5px;
+  line-height:1.9;color:#E5E7EB;margin:10px 0;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:pre;
+}
+.ft-dir{color:#67E8F9}.ft-file{color:#A7F3D0}.ft-comment{color:#6B7280}
+
+/* ── ENDPOINT ────────────────────────────────────────────────────────────── */
+.method{
+  display:inline-block;padding:2px 7px;border-radius:4px;
+  font-size:11px;font-weight:700;font-family:var(--mono);
+}
+.m-get{background:var(--em-bg);color:var(--em)}
+.m-post{background:var(--in-bg);color:var(--in)}
+
+/* ── STATUS ──────────────────────────────────────────────────────────────── */
+.ok{color:var(--em);font-weight:700}
+.err{color:var(--danger);font-weight:700}
+.warn{color:var(--am);font-weight:700}
+
+/* ── MOBILE OVERLAY ──────────────────────────────────────────────────────── */
+body.nav-open .nav-overlay{display:block}
+body.nav-open .nav-panel{
+  position:fixed;left:0;top:0;bottom:0;z-index:300;
+  width:260px;max-height:100vh;border-radius:0;
+  box-shadow:4px 0 20px rgba(0,0,0,.2);
+}
+body.nav-open .nav-close-btn{display:block}
+body.nav-open .nav-panel{overflow-y:auto}
+
+/* ── SCROLLBAR ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--g3);border-radius:3px}
+
+/* ── FOOTER ──────────────────────────────────────────────────────────────── */
+.footer{text-align:center;padding:28px 0 16px;color:var(--g4);font-size:11.5px}
+
+/* ── RESPONSIVE ──────────────────────────────────────────────────────────── */
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr;padding-top:calc(var(--header-h) + 16px)}
+  .nav-panel{position:fixed;display:none;left:0;top:0;bottom:0;z-index:300;width:260px;max-height:100vh;border-radius:0}
+  body.nav-open .nav-panel{display:block}
+  .ham-btn{display:flex;align-items:center;justify-content:center}
+  .site-sub{display:block}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .hero{padding:20px}
+  .hero h1{font-size:18px}
+  .sec-body{padding:16px}
+  .banner{padding:16px 18px;gap:12px}
+  .banner-icon{width:36px;height:36px;font-size:18px}
+  .banner h2{font-size:15px}
+}
+@media(max-width:480px){
+  .site-header{padding:0 12px}
+  .hero{padding:16px}
+  .hero h1{font-size:16px}
+  .chips{gap:4px}
+  .chip{font-size:11px;padding:2px 8px}
+  pre{font-size:11.5px;padding:12px}
+  .arch{font-size:11px;padding:14px}
+  .banner{flex-direction:column;gap:10px;text-align:center}
+  .banner-icon{margin:0 auto}
+}
+
+/* ── PRINT ───────────────────────────────────────────────────────────────── */
+@media print{
+  .site-header,.nav-panel,.nav-overlay{display:none!important}
+  .layout{grid-template-columns:1fr;padding-top:0}
+  .section{box-shadow:none;border:1px solid var(--g2);page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ════════════════════════════════════════════════════════════ -->
+<header class="site-header">
+  <button class="ham-btn" onclick="toggleNav()" aria-label="Menú">☰</button>
+  <div class="logo-mark">SH</div>
+  <div>
+    <div class="site-title">SHEndevour · Licenciador</div>
+    <div class="site-sub">Guía de Integración y Despliegue</div>
+  </div>
+  <div class="header-badge">v5.1 · EmpresaId · Mayo 2026</div>
+</header>
+
+<!-- ══ OVERLAY ══════════════════════════════════════════════════════════ -->
+<div class="nav-overlay" onclick="toggleNav()"></div>
+
+<!-- ══ LAYOUT ════════════════════════════════════════════════════════════ -->
+<div class="layout">
+
+  <!-- NAV -->
+  <nav class="nav-panel" id="navPanel">
+    <button class="nav-close-btn" onclick="toggleNav()">✕ Cerrar menú</button>
+    <div class="nav-section-lbl">Integración WPF</div>
+    <a href="#arquitectura" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>Arquitectura</a>
+    <a href="#paso1" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>1 · Código instalación</a>
+    <a href="#paso2" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>2 · Storage local</a>
+    <a href="#paso3" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>3 · Prueba conexión</a>
+    <a href="#paso4" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>4 · Validar online</a>
+    <a href="#paso5" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>5 · Modo offline</a>
+    <a href="#paso6" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>6 · Login completo</a>
+    <a href="#paso7" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>7 · Diálogo activación</a>
+    <a href="#paso8" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>8 · Config cliente</a>
+    <div class="nav-div"></div>
+    <div class="nav-section-lbl">Secretos y Seguridad</div>
+    <a href="#sec-apikey" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>API Key</a>
+    <a href="#sec-jwt" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>JWT Secret</a>
+    <a href="#sec-sql" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>SQL / Contraseñas</a>
+    <a href="#sec-gen" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>Generar valores</a>
+    <div class="nav-div"></div>
+    <div class="nav-section-lbl">Producción · Windows</div>
+    <a href="#p1" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>P1 · Requisitos</a>
+    <a href="#p2" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>P2 · SQL Server</a>
+    <a href="#p3" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>P3 · appsettings</a>
+    <a href="#p4" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>P4 · Publicar API</a>
+    <a href="#p5" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>P5 · Windows Service</a>
+    <a href="#p6" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>P6 · IIS</a>
+    <a href="#p7" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>P7 · Migraciones</a>
+    <a href="#p8" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>P8 · Firewall</a>
+    <a href="#p9" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>P9 · HTTPS</a>
+    <a href="#p10" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>P10 · Clientes WPF</a>
+    <a href="#p11" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>P11 · Checklist</a>
+    <div class="nav-div"></div>
+    <div class="nav-section-lbl">Producción · Ubuntu/Docker</div>
+    <a href="#d1" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>D1 · Requisitos previos</a>
+    <a href="#d2" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>D2 · Estructura servidor</a>
+    <a href="#d3" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>D3 · Clonar repositorio</a>
+    <a href="#d4" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>D4 · Variables .env</a>
+    <a href="#d5" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>D5 · docker-compose.yml</a>
+    <a href="#d6" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>D6 · WebSockets (código)</a>
+    <a href="#d7" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>D7 · Levantar contenedores</a>
+    <a href="#d8" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>D8 · Base de datos</a>
+    <a href="#d9" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>D9 · cloudflared config</a>
+    <a href="#d10" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>D10 · DNS Cloudflare</a>
+    <a href="#d11" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>D11 · NPM + WebSockets</a>
+    <a href="#d12" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>D12 · Verificar WS</a>
+    <a href="#d13" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>D13 · Verificar deploy</a>
+    <a href="#d14" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>D14 · GitHub CI/CD</a>
+    <a href="#d15" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>D15 · Mantenimiento</a>
+    <a href="#d16" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>D16 · Errores comunes</a>
+    <a href="#d17" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>D17 · Checklist final</a>
+    <a href="#d18" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>D18 · Actualización</a>
+    <a href="#d19" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>D19 · Backups</a>
+    <div class="nav-div"></div>
+    <div class="nav-section-lbl">Referencia</div>
+    <a href="#endpoints" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>Endpoints</a>
+    <a href="#seguridad" class="nav-link" onclick="closeNavMobile()"><span class="nav-dot"></span>Modelo seguridad</a>
+  </nav>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- HERO -->
+    <div class="hero">
+      <h1>Guía de Integración y Despliegue<br>del Licenciador Endevour</h1>
+      <p>Todo lo necesario para integrar la validación de licencias en la app WPF y desplegar el servidor — Windows, Ubuntu Server con Docker + Cloudflare Tunnel.</p>
+      <div class="chips">
+        <span class="chip chip-em">✓ Online + Offline</span>
+        <span class="chip chip-in">.NET 10 · API</span>
+        <span class="chip chip-vi">Blazor Server</span>
+        <span class="chip chip-cf">Cloudflare Tunnel</span>
+        <span class="chip chip-am">GitHub CI/CD</span>
+      </div>
+    </div>
+
+    <!-- ── ARQUITECTURA ──────────────────────────────────────────── -->
+    <div class="section" id="arquitectura">
+      <div class="section-header">
+        <div class="step-badge b-em">🗺</div>
+        <div>
+          <div class="sec-title">Arquitectura de Validación</div>
+          <div class="sec-sub">Flujo completo del login — online y modo sin conexión</div>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="arch">
+<span class="a-em">App WPF — Login</span>
+│
+├─ Generar <span class="a-in">CodigoInstalacion</span>  <span class="a-gr">(MachineGuid → sum estable → 8 chars A–Z)</span>
+├─ <span class="a-in">EmpresaId</span>               <span class="a-gr">(config local — usuario ingresa la primera vez, dado por el admin)</span>
+│
+├─ <span class="a-am">¿API disponible?</span>
+│       │
+│    <span class="a-em">SÍ</span> └─ POST <span class="a-in">/api/licencia/obtener</span>  <span class="a-gr">{EmpresaId, CodigoInstalacion}</span>
+│              │
+│              ├─ <span class="a-em">200 OK</span>  <span class="a-gr">(licencia encontrada en BD)</span>
+│              │    ├─ Verificar CodigoInstalacion == hardware actual  <span class="a-gr">(seguridad)</span>
+│              │    ├─ Verificar EmpresaId coincide con el storage     <span class="a-gr">(seguridad)</span>
+│              │    ├─ Verificar FechaLicencia &gt;= hoy                  <span class="a-gr">(vigencia)</span>
+│              │    ├─ Actualizar storage local con todos los datos
+│              │    └─ <span class="a-em">✓ PERMITIR acceso</span>
+│              │
+│              └─ <span class="a-red">404 Not Found</span>  →  <span class="a-red">✗ BLOQUEAR</span>  <span class="a-gr">(equipo sin licencia)</span>
+│
+└─ <span class="a-red">NO</span> (API caída) → Validar con datos locales
+            ├─ Sin datos locales          → <span class="a-red">✗ BLOQUEAR</span>
+            ├─ FechaLicencia &lt; hoy        → <span class="a-red">✗ BLOQUEAR</span>
+            ├─ CodigoInstalacion ≠ equipo → <span class="a-red">✗ BLOQUEAR</span>
+            └─ TODO OK                   → <span class="a-am">⚠ PERMITIR (modo sin conexión)</span></div>
+        <div class="callout c-in" style="margin-top:12px;">
+          <span class="callout-icon">ℹ</span>
+          <span><strong>Compatibilidad legacy:</strong> El endpoint también acepta <code>{CodigoInstalacion, RFC}</code> si aún no se dispone de <code>EmpresaId</code> (instalaciones anteriores a v4.0).</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PASO 1 ──────────────────────────────────────────────── -->
+    <div class="section" id="paso1">
+      <div class="section-header">
+        <div class="step-badge b-in">1</div>
+        <div>
+          <div class="sec-title">Generar el Código de Instalación</div>
+          <div class="sec-sub">Identificador único y estable por equipo — basado en MachineGuid</div>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="callout c-danger">
+          <span class="callout-icon">⚠</span>
+          <span><strong>CRÍTICO:</strong> Este algoritmo debe ser idéntico al del servidor (<code>LicenseGeneratorService</code>). Si cambia tras el primer despliegue, todos los equipos activados fallarán con <code>HardwareInvalido</code>.</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lc">C#</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>using Microsoft.Win32;
+
+public static class MachineHelper
+{
+    private static string GetMachineGuid()
+    {
+        using var key = Registry.LocalMachine.OpenSubKey(
+            @"SOFTWARE\Microsoft\Cryptography");
+        return key?.GetValue("MachineGuid")?.ToString() ?? "UNKNOWN";
+    }
+
+    public static string GetCodigoInstalacion()
+    {
+        string guid = GetMachineGuid();
+        int seed = guid.Where(char.IsLetterOrDigit).Sum(c => c);
+        var rng = new Random(seed);
+        var code = new char[8];
+        for (int i = 0; i &lt; 8; i++)
+            code[i] = (char)rng.Next(65, 91); // A-Z
+        return new string(code);
+    }
+}</pre>
+        </div>
+        <div class="callout c-in">
+          <span class="callout-icon">ℹ</span>
+          <span>Se usa <code>.Sum(c =&gt; c)</code> en lugar de <code>.GetHashCode()</code> porque <code>GetHashCode()</code> no es estable entre versiones de .NET.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PASO 2 ──────────────────────────────────────────────── -->
+    <div class="section" id="paso2">
+      <div class="section-header">
+        <div class="step-badge b-in">2</div>
+        <div>
+          <div class="sec-title">Almacenamiento Local — LicenciaLocal</div>
+          <div class="sec-sub">Registro de Windows como storage persistente · EmpresaId y CodigoInstalacion son inmutables</div>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="callout c-em">
+          <span class="callout-icon">🔒</span>
+          <span><strong>Regla de seguridad:</strong> <code>CodigoInstalacion</code> y <code>EmpresaId</code> se establecen <strong>una sola vez</strong> y nunca se sobreescriben — evita que un cliente use la licencia de otro.</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lc">C#</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>using Microsoft.Win32;
+using System.Text.Json;
+
+public class LicenciaLocal
+{
+    // Inmutables — primera activación, NUNCA se sobreescriben
+    public string CodigoInstalacion { get; set; } = string.Empty;
+    public string EmpresaId         { get; set; } = string.Empty; // Identificador permanente del hotel
+
+    // Mutables — se actualizan en cada sincronización exitosa
+    public string RFC              { get; set; } = string.Empty;
+    public string ClaveLicencia    { get; set; } = string.Empty;
+    public string ClaveInstalacion { get; set; } = string.Empty;
+    public DateTime FechaLicencia  { get; set; }
+    public string NombreComercial  { get; set; } = string.Empty;
+    public string RazonSocial      { get; set; } = string.Empty;
+    public string NombreCliente    { get; set; } = string.Empty;
+    public DateTime UltimaSincronizacion { get; set; }
+}
+
+public static class LicenciaStorage
+{
+    private const string RegPath = @"SOFTWARE\SHEndevour\Licensing";
+
+    public static LicenciaLocal? Leer()
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(RegPath);
+            var json = key?.GetValue("LicenciaData")?.ToString();
+            return string.IsNullOrWhiteSpace(json)
+                ? null
+                : JsonSerializer.Deserialize&lt;LicenciaLocal&gt;(json);
+        }
+        catch { return null; }
+    }
+
+    public static void Guardar(LicenciaLocal nueva, LicenciaLocal? existente)
+    {
+        var g = existente ?? new LicenciaLocal();
+
+        if (string.IsNullOrWhiteSpace(g.CodigoInstalacion)) g.CodigoInstalacion = nueva.CodigoInstalacion;
+        if (string.IsNullOrWhiteSpace(g.EmpresaId))         g.EmpresaId         = nueva.EmpresaId;
+
+        g.RFC                  = nueva.RFC;
+        g.ClaveLicencia        = nueva.ClaveLicencia;
+        g.ClaveInstalacion     = nueva.ClaveInstalacion;
+        g.FechaLicencia        = nueva.FechaLicencia;
+        g.NombreComercial      = nueva.NombreComercial;
+        g.UltimaSincronizacion = DateTime.UtcNow;
+
+        using var key = Registry.CurrentUser.CreateSubKey(RegPath);
+        key.SetValue("LicenciaData", JsonSerializer.Serialize(g));
+    }
+
+    public static void Borrar()
+    {
+        using var key = Registry.CurrentUser.OpenSubKey(RegPath, writable: true);
+        key?.DeleteValue("LicenciaData", throwOnMissingValue: false);
+    }
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PASO 3 ──────────────────────────────────────────────── -->
+    <div class="section" id="paso3">
+      <div class="section-header">
+        <div class="step-badge b-in">3</div>
+        <div>
+          <div class="sec-title">Prueba de Conexión</div>
+          <div class="sec-sub">Verificar disponibilidad del servidor antes de validar</div>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lc">C#</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>public class LicenseService
+{
+    private readonly HttpClient _http;
+    private readonly string _apiBase;
+    private readonly string _apiKey;
+
+    public LicenseService(string apiBaseUrl, string apiKey)
+    {
+        _apiBase = apiBaseUrl.TrimEnd('/');
+        _apiKey  = apiKey;
+        _http    = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+    }
+
+    public async Task&lt;bool&gt; TestConnectionAsync()
+    {
+        try
+        {
+            var resp = await _http.GetAsync($"{_apiBase}/api/health");
+            return resp.IsSuccessStatusCode;
+        }
+        catch { return false; }
+    }
+}</pre>
+        </div>
+        <div class="callout c-em">
+          <span class="callout-icon">✓</span>
+          <span><code>GET /api/health</code> no requiere autenticación. Responde <code>{"Estado":"OK","Timestamp":"..."}</code>.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PASO 4 ──────────────────────────────────────────────── -->
+    <div class="section" id="paso4">
+      <div class="section-header">
+        <div class="step-badge b-in">4</div>
+        <div>
+          <div class="sec-title">Obtener Licencia de la API (online)</div>
+          <div class="sec-sub">POST /api/licencia/obtener — busca por EmpresaId + CodigoInstalacion (o legacy CodigoInstalacion + RFC)</div>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="grid-2">
+          <div>
+            <p style="font-size:12px;font-weight:700;color:var(--g5);margin-bottom:6px">REQUEST</p>
+            <div class="code-wrap">
+              <div class="code-bar"><span class="code-lang lj">JSON</span></div>
+              <pre>POST /api/licencia/obtener
+X-Api-Key: &lt;tu-api-key&gt;
+
+// Nuevo — EmpresaId + CodigoInstalacion
+{
+  "empresaId":         "SHE-A1B2C3D4",
+  "codigoInstalacion": "QWERTYUI"
+}
+
+// Legacy — CodigoInstalacion + RFC (backward compatible)
+{
+  "codigoInstalacion": "QWERTYUI",
+  "rfc":               "XAXX010101000"
+}</pre>
+            </div>
+          </div>
+          <div>
+            <p style="font-size:12px;font-weight:700;color:var(--g5);margin-bottom:6px">RESPONSE 200 OK</p>
+            <div class="code-wrap">
+              <div class="code-bar"><span class="code-lang lj">JSON</span></div>
+              <pre>{
+  "empresaId":         "SHE-A1B2C3D4",
+  "codigoInstalacion": "QWERTYUI",
+  "claveInstalacion":  "XJDKQWPE",
+  "claveLicencia":     "PLMKQWAZ",
+  "fechaLicencia":     "2027-05-26T00:00:00",
+  "rfc":               "XAXX010101000",
+  "razonSocial":       "Mi Empresa S.A. de C.V.",
+  "nombreComercial":   "Mi Empresa",
+  "nombreCliente":     "Juan Pérez"
+}</pre>
+            </div>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>HTTP Status</th><th>Significado</th></tr></thead>
+            <tbody>
+              <tr><td><code>200 OK</code></td><td class="ok">✓ Licencia activa encontrada — datos completos en el body</td></tr>
+              <tr><td><code>404 Not Found</code></td><td class="err">✗ No existe licencia activa para ese EmpresaId / CodigoInstalacion</td></tr>
+              <tr><td><code>401 Unauthorized</code></td><td class="err">✗ X-Api-Key inválida o ausente</td></tr>
+              <tr><td><code>400 Bad Request</code></td><td class="warn">⚠ Falta EmpresaId y no se proporcionó CodigoInstalacion+RFC</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout c-in">
+          <span class="callout-icon">ℹ</span>
+          <span>La API devuelve los datos tal como están en la BD. La <strong>validación criptográfica</strong> (verificar que <code>ClaveLicencia</code> corresponde al algoritmo) ocurre en la app WPF con los datos recibidos.</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lc">C#</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>private record ObtenerLicenciaRequest(
+    string? EmpresaId,
+    string? CodigoInstalacion,
+    string? RFC = null);
+
+private record ObtenerLicenciaResponse(
+    string EmpresaId, string CodigoInstalacion, string ClaveInstalacion, string ClaveLicencia,
+    DateTime FechaLicencia,  string RFC,
+    string RazonSocial,      string NombreComercial,  string NombreCliente);
+
+public async Task&lt;ObtenerLicenciaResponse?&gt; ObtenerLicenciaOnlineAsync(
+    string empresaId, string codigoInstalacion)
+{
+    var req = new HttpRequestMessage(HttpMethod.Post, $"{_apiBase}/api/licencia/obtener");
+    req.Headers.Add("X-Api-Key", _apiKey);
+    req.Content = JsonContent.Create(new ObtenerLicenciaRequest(empresaId, codigoInstalacion));
+    try
+    {
+        var resp = await _http.SendAsync(req);
+        if (resp.StatusCode == System.Net.HttpStatusCode.NotFound) return null;
+        if (!resp.IsSuccessStatusCode) return null;
+        return await resp.Content.ReadFromJsonAsync&lt;ObtenerLicenciaResponse&gt;();
+    }
+    catch { return null; }
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PASO 5 ──────────────────────────────────────────────── -->
+    <div class="section" id="paso5">
+      <div class="section-header">
+        <div class="step-badge b-am">5</div>
+        <div>
+          <div class="sec-title">Validar sin Conexión (Offline)</div>
+          <div class="sec-sub">Fallback cuando el servidor no está disponible</div>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lc">C#</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>public static (bool Valida, string Mensaje) ValidarOffline(string codigoMaquina)
+{
+    var local = LicenciaStorage.Leer();
+    if (local == null)
+        return (false, "No hay licencia activada en este equipo.");
+    if (local.FechaLicencia &lt; DateTime.Today)
+        return (false, $"La licencia expiró el {local.FechaLicencia:dd/MM/yyyy}.");
+    if (local.CodigoInstalacion != codigoMaquina)
+        return (false, "La licencia almacenada no corresponde a este equipo.");
+    return (true, string.Empty);
+}</pre>
+        </div>
+        <div class="callout c-am">
+          <span class="callout-icon">⚠</span>
+          <span>El modo offline solo funciona si la licencia fue validada online al menos una vez. Sin datos en el storage, se bloquea el acceso.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PASO 6 ──────────────────────────────────────────────── -->
+    <div class="section" id="paso6">
+      <div class="section-header">
+        <div class="step-badge b-vi">6</div>
+        <div>
+          <div class="sec-title">Flujo Completo en el Login</div>
+          <div class="sec-sub">Método principal — integra online + offline + verificaciones de seguridad</div>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lc">C#</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>public async Task&lt;bool&gt; VerificarLicenciaAlLoginAsync()
+{
+    string codigoMaquina = MachineHelper.GetCodigoInstalacion();
+    LicenciaLocal? localActual = LicenciaStorage.Leer();
+
+    // Primera vez: pedir EmpresaId al usuario (el admin se lo proporciona)
+    string? empresaId = localActual?.EmpresaId;
+    if (string.IsNullOrWhiteSpace(empresaId))
+    {
+        empresaId = MostrarDialogoEmpresaId(codigoMaquina); // muestra CodigoInstalacion, pide EmpresaId
+        if (string.IsNullOrWhiteSpace(empresaId)) return false;
+    }
+
+    if (await TestConnectionAsync())
+    {
+        var r = await ObtenerLicenciaOnlineAsync(empresaId, codigoMaquina);
+
+        if (r == null)
+        {
+            MostrarError("No existe licencia activa para este equipo. " +
+                         $"Proporciona al administrador el código: {codigoMaquina}");
+            return false;
+        }
+
+        // Verificaciones de seguridad
+        if (r.CodigoInstalacion != codigoMaquina)
+        { MostrarError("Inconsistencia de hardware. Contacta a tu proveedor."); return false; }
+
+        if (!string.Equals(r.EmpresaId, empresaId, StringComparison.OrdinalIgnoreCase))
+        { MostrarError("El EmpresaId no coincide con la licencia registrada."); return false; }
+
+        if (r.FechaLicencia &lt; DateTime.Today)
+        { MostrarError($"La licencia venció el {r.FechaLicencia:dd/MM/yyyy}. Renuévala con tu proveedor."); return false; }
+
+        LicenciaStorage.Guardar(new LicenciaLocal
+        {
+            EmpresaId         = r.EmpresaId,
+            CodigoInstalacion = r.CodigoInstalacion,
+            RFC               = r.RFC,
+            ClaveLicencia     = r.ClaveLicencia,
+            ClaveInstalacion  = r.ClaveInstalacion,
+            FechaLicencia     = r.FechaLicencia,
+            NombreComercial   = r.NombreComercial,
+            RazonSocial       = r.RazonSocial,
+            NombreCliente     = r.NombreCliente
+        }, localActual);
+
+        if (r.FechaLicencia &lt;= DateTime.Today.AddDays(30))
+            MessageBox.Show($"Tu licencia vence el {r.FechaLicencia:dd/MM/yyyy}.",
+                "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
+        return true;
+    }
+
+    var (valida, msg2) = ValidarOffline(codigoMaquina);
+    if (!valida) { MostrarError("Sin conexión.\n" + msg2); return false; }
+    MessageBox.Show(
+        $"Modo sin conexión. Licencia válida hasta {localActual!.FechaLicencia:dd/MM/yyyy}.",
+        "Modo sin conexión", MessageBoxButton.OK, MessageBoxImage.Information);
+    return true;
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PASO 7 ──────────────────────────────────────────────── -->
+    <div class="section" id="paso7">
+      <div class="section-header">
+        <div class="step-badge b-in">7</div>
+        <div>
+          <div class="sec-title">Diálogo de Activación (primera vez)</div>
+          <div class="sec-sub">Solo se muestra cuando no hay EmpresaId guardado localmente</div>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Campo</th><th>Descripción</th></tr></thead>
+            <tbody>
+              <tr><td><code>Código de instalación</code></td><td>Solo lectura — el usuario lo comunica al administrador para que registre la licencia en el panel</td></tr>
+              <tr><td><code>EmpresaId</code></td><td>Input donde el usuario ingresa el <code>EmpresaId</code> dado por el administrador (ej. <code>SHE-A1B2C3D4</code>) — se guarda inmutable en el storage local</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout c-in">
+          <span class="callout-icon">ℹ</span>
+          <span>El administrador registra la licencia en el panel web, copia el <code>EmpresaId</code> del cliente (visible con botón copiar en el listado y en el detalle del cliente), y se lo proporciona al hotel para ingresar en el diálogo de activación.</span>
+        </div>
+        <div class="callout c-am">
+          <span class="callout-icon">⚠</span>
+          <span><strong>Migración desde versiones con RFC:</strong> Si el WPF aún tiene RFC pero no EmpresaId en el storage, mostrar el diálogo de activación nuevamente para capturar el EmpresaId. El endpoint legacy <code>{CodigoInstalacion, RFC}</code> sigue activo para la transición.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PASO 8 ──────────────────────────────────────────────── -->
+    <div class="section" id="paso8">
+      <div class="section-header">
+        <div class="step-badge b-g">8</div>
+        <div>
+          <div class="sec-title">Configuración del Cliente WPF</div>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lx">App.config</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>&lt;appSettings&gt;
+  &lt;add key="LicenseApiUrl" value="https://licencias.tu-dominio.com" /&gt;
+  &lt;add key="LicenseApiKey" value="TU_API_KEY_PRODUCCION" /&gt;
+&lt;/appSettings&gt;</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SECRETOS ══════════════════════════════════════════════ -->
+    <div class="banner banner-secrets">
+      <div class="banner-icon bi-secrets">🔑</div>
+      <div>
+        <h2>Secretos y Seguridad</h2>
+        <p>Qué son, cómo funcionan y cómo generar API Keys, JWT Secret y contraseñas seguras</p>
+      </div>
+    </div>
+
+    <!-- SEC — API KEY -->
+    <div class="section" id="sec-apikey">
+      <div class="section-header">
+        <div class="step-badge b-sec">🔐</div>
+        <div>
+          <div class="sec-title">API Key — Clave compartida cliente↔servidor</div>
+          <div class="sec-sub">Protege todos los endpoints de negocio de la API</div>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="secret-card">
+          <div class="sc-header">
+            <span class="sc-badge" style="background:var(--in-bg);color:var(--in)">API_KEY</span>
+            <div class="sc-title">¿Qué es?</div>
+          </div>
+          <div class="sc-desc">Una cadena aleatoria larga que identifica a <strong>tu aplicación WPF</strong> frente a la API. No identifica a un usuario, identifica al <em>cliente de la API</em>. Es como una contraseña compartida entre la app y el servidor.</div>
+          <div class="sc-flow">
+            App WPF  <span class="arrow">→</span>  POST /api/licencia/validar<br>
+                     <span class="arrow">   </span>  Header: X-Api-Key: <strong>TU_API_KEY</strong><br>
+            API      <span class="arrow">→</span>  Compara con ApiKey en appsettings / .env<br>
+                     <span class="arrow">   </span>  Si no coincide <span style="color:#FC8181">→ 401 Unauthorized</span>
+          </div>
+        </div>
+        <div class="callout c-danger" style="margin-top:10px">
+          <span class="callout-icon">⚠</span>
+          <div>
+            <strong>Nunca expongas la API Key en:</strong><br>
+            · Código fuente público en GitHub<br>
+            · Variables de entorno sin cifrar en CI/CD sin protección<br>
+            · Mensajes de error o logs del servidor
+          </div>
+        </div>
+        <div class="callout c-am">
+          <span class="callout-icon">💡</span>
+          <span>En el cliente WPF es aceptable tenerla en <code>App.config</code> cifrado o como recurso embebido, ya que el usuario final no debería tener acceso al binario descompilado. Para extra seguridad, usa ofuscación.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC — JWT -->
+    <div class="section" id="sec-jwt">
+      <div class="section-header">
+        <div class="step-badge b-sec">🎫</div>
+        <div>
+          <div class="sec-title">JWT Secret — Firma de tokens del panel admin</div>
+          <div class="sec-sub">Autentica a los usuarios del panel web de licencias</div>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="secret-card">
+          <div class="sc-header">
+            <span class="sc-badge" style="background:var(--vi-bg);color:var(--vi)">JWT_SECRET</span>
+            <div class="sc-title">¿Qué es un JWT?</div>
+          </div>
+          <div class="sc-desc">JSON Web Token — un ticket firmado digitalmente. Cuando un administrador hace login en el panel web, la API genera un JWT firmado con el <strong>JWT Secret</strong>. En cada request subsiguiente, el panel manda ese token y la API lo verifica con el mismo secret.</div>
+          <div class="sc-flow">
+            Admin login  <span class="arrow">→</span>  POST /api/auth/login (user+pass)<br>
+            API          <span class="arrow">→</span>  Genera JWT firmado con <strong>JWT_SECRET</strong><br>
+            Panel Web    <span class="arrow">→</span>  Almacena JWT · lo envía en cada request<br>
+            API          <span class="arrow">→</span>  Verifica firma con <strong>JWT_SECRET</strong><br>
+                         <span class="arrow">   </span>  Si ok <span style="color:#34D399">→ acceso permitido</span> | si no <span style="color:#FC8181">→ 401</span>
+          </div>
+        </div>
+        <div class="callout c-danger">
+          <span class="callout-icon">⚠</span>
+          <div>
+            <strong>Si el JWT Secret se filtra:</strong><br>
+            · Un atacante puede forjar tokens admin válidos sin conocer ninguna contraseña<br>
+            · Solución: cambiar el secret inmediatamente (invalida TODOS los tokens activos)<br>
+            · Mínimo <strong>32 caracteres aleatorios</strong>, idealmente 48+
+          </div>
+        </div>
+        <div class="callout c-in">
+          <span class="callout-icon">ℹ</span>
+          <span>El JWT tiene un tiempo de expiración (<code>ExpirationMinutes: 480</code> = 8 horas). Después el admin debe hacer login de nuevo. No afecta a los clientes WPF — ellos usan API Key, no JWT.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC — SQL -->
+    <div class="section" id="sec-sql">
+      <div class="section-header">
+        <div class="step-badge b-sec">🗄</div>
+        <div>
+          <div class="sec-title">SQL Server — Contraseña de Base de Datos</div>
+          <div class="sec-sub">Usuario sa · configuración actual del proyecto</div>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="secret-card">
+          <div class="sc-header">
+            <span class="sc-badge" style="background:#FEF2F2;color:#EF4444">SQL SA</span>
+            <div class="sc-title">Usuario sa (System Administrator)</div>
+          </div>
+          <div class="sc-desc">El usuario <code>sa</code> es el administrador total de SQL Server. El proyecto está configurado para usar <code>sa / InfoHotel01</code> tanto en Windows como en Docker. Esto simplifica la configuración pero da acceso completo a todas las bases de datos del servidor.</div>
+          <div class="sc-flow">
+            docker-compose.yml  <span class="arrow">→</span>  SA_PASSWORD: "InfoHotel01"<br>
+            Contenedor API/Web  <span class="arrow">→</span>  User Id=sa;Password=InfoHotel01<br>
+            SQL Server          <span class="arrow">→</span>  Acceso completo a SHEWebLicenseDb
+          </div>
+        </div>
+        <div class="callout c-am">
+          <span class="callout-icon">⚠</span>
+          <span>En producción pública se recomienda un usuario dedicado con permisos mínimos. Para uso interno/pyme con SQL Server en Docker aislado, <code>sa</code> es aceptable.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC — GENERAR -->
+    <div class="section" id="sec-gen">
+      <div class="section-header">
+        <div class="step-badge b-sec">⚙</div>
+        <div>
+          <div class="sec-title">Cómo Generar Valores Seguros</div>
+          <div class="sec-sub">Comandos para generar API Key, JWT Secret y contraseñas</div>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="callout c-em">
+          <span class="callout-icon">✓</span>
+          <span><strong>Regla de oro:</strong> genera secretos con herramientas criptográficas, nunca a mano ni con patrones predecibles. Usa una de estas opciones:</span>
+        </div>
+        <div class="grid-2">
+          <div>
+            <p style="font-size:12px;font-weight:700;color:var(--g6);margin-bottom:6px">PowerShell (Windows)</p>
+            <div class="code-wrap">
+              <div class="code-bar"><span class="code-lang lp">PowerShell</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+              <pre># JWT Secret (64 chars base64)
+[Convert]::ToBase64String(
+  (1..48 | % { Get-Random -Max 256 }))
+
+# API Key (hex, 64 chars)
+-join ((1..32) | % {
+  '{0:x2}' -f (Get-Random -Max 256) })</pre>
+            </div>
+          </div>
+          <div>
+            <p style="font-size:12px;font-weight:700;color:var(--g6);margin-bottom:6px">Bash (Linux / Ubuntu)</p>
+            <div class="code-wrap">
+              <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+              <pre># JWT Secret (base64, 64 chars)
+openssl rand -base64 48
+
+# API Key (hex, 64 chars)
+openssl rand -hex 32</pre>
+            </div>
+          </div>
+        </div>
+        <div class="callout c-vi">
+          <span class="callout-icon">📋</span>
+          <div>
+            <strong>Resumen de secretos del proyecto:</strong><br>
+            <code>JWT_SECRET</code> → mínimo 32 chars · genera con openssl · expira tokens del panel admin<br>
+            <code>API_KEY</code> → hex de 32 bytes · va en el header X-Api-Key de la app WPF<br>
+            <code>SA_PASSWORD</code> → mínimo 8 chars · mayúscula + minúscula + número (req. SQL Server)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SECCIÓN WINDOWS ════════════════════════════════════════ -->
+    <div class="banner banner-prod">
+      <div class="banner-icon bi-prod">🖥</div>
+      <div>
+        <h2>Despliegue en Producción — Windows Server</h2>
+        <p>Opción A: Windows Service · Opción B: IIS</p>
+      </div>
+    </div>
+
+    <!-- P1 -->
+    <div class="section" id="p1">
+      <div class="section-header"><div class="step-badge b-em">P1</div>
+        <div><div class="sec-title">Requisitos del Servidor Windows</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Componente</th><th>Mínimo</th></tr></thead>
+          <tbody>
+            <tr><td><strong>OS</strong></td><td>Windows Server 2019/2022 (o Win 10/11 Pro)</td></tr>
+            <tr><td><strong>RAM</strong></td><td>2 GB</td></tr>
+            <tr><td><strong>.NET</strong></td><td>.NET 10 Runtime (o Hosting Bundle para IIS)</td></tr>
+            <tr><td><strong>SQL Server</strong></td><td>SQL Server 2019+ Express/Standard/Developer</td></tr>
+            <tr><td><strong>Red</strong></td><td>Puerto 5000 (HTTP) o 5001 (HTTPS) abierto</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- P2 -->
+    <div class="section" id="p2">
+      <div class="section-header"><div class="step-badge b-em">P2</div>
+        <div><div class="sec-title">Preparar SQL Server en Producción</div>
+        <div class="sec-sub">Base de datos y usuario dedicado con permisos mínimos</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang ls">SQL Server</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>CREATE DATABASE SHEWebLicenseDb;
+GO
+
+CREATE LOGIN she_app WITH PASSWORD = 'UnaContraseñaSegura123!';
+GO
+
+USE SHEWebLicenseDb;
+GO
+
+CREATE USER she_app FOR LOGIN she_app;
+ALTER ROLE db_datareader ADD MEMBER she_app;
+ALTER ROLE db_datawriter ADD MEMBER she_app;
+ALTER ROLE db_ddladmin   ADD MEMBER she_app;
+GO</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- P3 -->
+    <div class="section" id="p3">
+      <div class="section-header"><div class="step-badge b-em">P3</div>
+        <div><div class="sec-title">Configurar appsettings.Production.json</div>
+        <div class="sec-sub">Nunca subir a git — valores reales antes de publicar</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lj">JSON</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=.;Database=SHEWebLicenseDb;User Id=she_app;Password=...;TrustServerCertificate=True"
+  },
+  "JwtSettings": {
+    "Secret": "minimo-32-chars-random-aqui",
+    "Issuer": "SHE.License.API",
+    "Audience": "SHE.License.Web",
+    "ExpirationMinutes": 480
+  },
+  "ApiKey": "tu-api-key-produccion",
+  "AllowedOrigins": "https://tu-dominio.com"
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- P4 -->
+    <div class="section" id="p4">
+      <div class="section-header"><div class="step-badge b-em">P4</div>
+        <div><div class="sec-title">Publicar la API</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lp">PowerShell</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>dotnet publish SHE.License.API/SHE.License.API.csproj `
+    -c Release -o C:\Deploy\SHELicenseAPI `
+    --runtime win-x64 --self-contained false</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- P5 -->
+    <div class="section" id="p5">
+      <div class="section-header"><div class="step-badge b-em">P5</div>
+        <div><div class="sec-title">Opción A — Windows Service</div>
+        <div class="sec-sub">Recomendado para pyme · sin IIS · reinicio automático</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lp">PowerShell (Admin)</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>sc.exe create "SHELicenseAPI" `
+    binPath= "C:\Deploy\SHELicenseAPI\SHE.License.API.exe" `
+    start= auto DisplayName= "SHEndevour License API"
+
+sc.exe failure "SHELicenseAPI" reset= 86400 actions= restart/5000/restart/10000/restart/30000
+
+[System.Environment]::SetEnvironmentVariable(
+    "ASPNETCORE_ENVIRONMENT","Production",
+    [System.EnvironmentVariableTarget]::Machine)
+
+Start-Service "SHELicenseAPI"
+Invoke-RestMethod "http://localhost:5000/api/health"</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- P6 -->
+    <div class="section" id="p6">
+      <div class="section-header"><div class="step-badge b-g">P6</div>
+        <div><div class="sec-title">Opción B — IIS</div></div>
+      </div>
+      <div class="sec-body">
+        <ul class="steps">
+          <li class="step-item"><span class="step-num">1</span><div class="step-text">Instala el <strong>.NET 10 Hosting Bundle</strong> y ejecuta <code>iisreset</code></div></li>
+          <li class="step-item"><span class="step-num">2</span><div class="step-text">IIS Manager → Add Website: ruta <code>C:\Deploy\SHELicenseAPI</code>, puerto <code>5000</code></div></li>
+          <li class="step-item"><span class="step-num">3</span><div class="step-text">App Pool → Basic Settings: <strong>.NET CLR = No Managed Code</strong></div></li>
+          <li class="step-item"><span class="step-num">4</span><div class="step-text">Agrega <code>ASPNETCORE_ENVIRONMENT=Production</code> en <code>web.config</code> o en las variables del App Pool</div></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- P7 -->
+    <div class="section" id="p7">
+      <div class="section-header"><div class="step-badge b-em">P7</div>
+        <div><div class="sec-title">Aplicar Migraciones</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lp">PowerShell</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>Invoke-RestMethod -Method POST `
+    -Uri "http://localhost:5000/api/admin/migrations/apply" `
+    -Headers @{ "X-Api-Key" = "tu-api-key" }</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- P8 -->
+    <div class="section" id="p8">
+      <div class="section-header"><div class="step-badge b-em">P8</div>
+        <div><div class="sec-title">Firewall Windows</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lp">PowerShell (Admin)</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>New-NetFirewallRule -DisplayName "SHE API HTTP" `
+    -Direction Inbound -Protocol TCP -LocalPort 5000 -Action Allow
+New-NetFirewallRule -DisplayName "SHE API HTTPS" `
+    -Direction Inbound -Protocol TCP -LocalPort 5001 -Action Allow</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- P9 -->
+    <div class="section" id="p9">
+      <div class="section-header"><div class="step-badge b-em">P9</div>
+        <div><div class="sec-title">HTTPS — Self-Signed o Let's Encrypt</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="grid-2">
+          <div>
+            <p style="font-size:12px;font-weight:700;color:var(--g5);margin-bottom:6px">Self-Signed (red interna)</p>
+            <div class="code-wrap">
+              <div class="code-bar"><span class="code-lang lp">PowerShell</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+              <pre>$cert = New-SelfSignedCertificate `
+    -DnsName "she-api","localhost" `
+    -CertStoreLocation "Cert:\LocalMachine\My" `
+    -NotAfter (Get-Date).AddYears(5)
+
+$pwd = ConvertTo-SecureString "pwd-pfx" -AsPlainText -Force
+Export-PfxCertificate -Cert $cert `
+    -FilePath "C:\Certs\she-api.pfx" -Password $pwd</pre>
+            </div>
+          </div>
+          <div>
+            <p style="font-size:12px;font-weight:700;color:var(--g5);margin-bottom:6px">Let's Encrypt (dominio público)</p>
+            <div class="callout c-em" style="margin:0">
+              <span class="callout-icon">✓</span>
+              <div>Instala <strong>win-acme</strong>, ejecuta <code>wacs.exe</code>, sigue el asistente. Renovación automática cada 60 días.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- P10 -->
+    <div class="section" id="p10">
+      <div class="section-header"><div class="step-badge b-em">P10</div>
+        <div><div class="sec-title">Actualizar Clientes WPF</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lx">App.config</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>&lt;appSettings&gt;
+  &lt;add key="LicenseApiUrl" value="https://192.168.1.100:5001" /&gt;
+  &lt;add key="LicenseApiKey" value="tu-api-key-produccion" /&gt;
+&lt;/appSettings&gt;</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- P11 CHECKLIST WINDOWS -->
+    <div class="section" id="p11">
+      <div class="section-header"><div class="step-badge b-em">P11</div>
+        <div><div class="sec-title">Checklist — Despliegue Windows</div></div>
+      </div>
+      <div class="sec-body">
+        <ul class="checklist">
+          <li class="check-item"><input type="checkbox"><span>SQL Server corriendo y base de datos <code>SHEWebLicenseDb</code> creada</span></li>
+          <li class="check-item"><input type="checkbox"><span><code>appsettings.Production.json</code> con valores reales</span></li>
+          <li class="check-item"><input type="checkbox"><span>API publicada y servicio Windows creado/iniciado</span></li>
+          <li class="check-item"><input type="checkbox"><span><code>ASPNETCORE_ENVIRONMENT=Production</code> aplicado</span></li>
+          <li class="check-item"><input type="checkbox"><span><code>GET /api/health</code> responde OK desde el servidor</span></li>
+          <li class="check-item"><input type="checkbox"><span><code>GET /api/health</code> responde OK desde una PC cliente</span></li>
+          <li class="check-item"><input type="checkbox"><span>Migraciones aplicadas</span></li>
+          <li class="check-item"><input type="checkbox"><span>Login de usuario admin funcional en el panel web</span></li>
+          <li class="check-item"><input type="checkbox"><span>Puertos 5000/5001 abiertos en firewall</span></li>
+          <li class="check-item"><input type="checkbox"><span><code>App.config</code> de clientes WPF actualizado</span></li>
+          <li class="check-item"><input type="checkbox"><span>Prueba de activación exitosa desde equipo cliente</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ══ SECCIÓN DOCKER/UBUNTU ══════════════════════════════════ -->
+    <div class="banner banner-docker">
+      <div class="banner-icon bi-docker">🐳</div>
+      <div>
+        <h2>Despliegue en Ubuntu Server + Docker</h2>
+        <p>Paso a paso completo — código, contenedores, WebSockets, NPM y Cloudflare Tunnel. Sigue el orden D1→D17.</p>
+      </div>
+    </div>
+
+    <!-- ARCH DOCKER -->
+    <div class="section">
+      <div class="section-header">
+        <div class="step-badge b-cf">🗺</div>
+        <div><div class="sec-title">Arquitectura de red en el servidor</div>
+        <div class="sec-sub">Cómo fluye el tráfico desde internet hasta los contenedores</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="arch">
+Internet
+   ↓
+<span class="a-cf">Cloudflare DNS</span>  (CNAME → TUNNEL_ID.cfargotunnel.com · Proxy ON)
+   ↓
+<span class="a-cf">Cloudflare Tunnel</span>  (cifrado · sin abrir puertos en el router)
+   ↓
+<span class="a-in">cloudflared</span>  (contenedor Docker · red proxy · apunta todo a npm:80)
+   ↓
+<span class="a-in">Nginx Proxy Manager</span>  (contenedor Docker · red proxy · puerto 80/443)
+   ↓  (enruta por hostname)
+   ├─ api.endevour.mx    →  <span class="a-em">she-license-api:5000</span>
+   └─ panel.endevour.mx  →  <span class="a-em">she-license-web:5287</span>
+                                      ↓
+                          <span class="a-gr">she-sqlserver:1433</span>  (solo red interna, sin expose público)</div>
+        <div class="callout c-in">
+          <span class="callout-icon">ℹ</span>
+          <span>Todos los contenedores comparten la red Docker <code>proxy</code>. Los de SHEWeb usan <code>expose</code> (no <code>ports</code>) — ningún puerto queda accesible desde la IP del servidor. Solo NPM puede alcanzarlos, por nombre de contenedor dentro de la red.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- D1 -->
+    <div class="section" id="d1">
+      <div class="section-header"><div class="step-badge b-docker">D1</div>
+        <div><div class="sec-title">Requisitos Previos en el Servidor</div>
+        <div class="sec-sub">Estas piezas deben estar corriendo antes de desplegar SHEWeb</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Componente</th><th>Requerido</th><th>Verificar</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Docker Engine</strong></td><td>Instalado y activo</td><td><code>docker --version</code></td></tr>
+            <tr><td><strong>Docker Compose v2</strong></td><td>Instalado</td><td><code>docker compose version</code></td></tr>
+            <tr><td><strong>Red <code>proxy</code></strong></td><td>Creada</td><td><code>docker network ls | grep proxy</code></td></tr>
+            <tr><td><strong>Nginx Proxy Manager</strong></td><td>Corriendo en <code>/root/docker</code></td><td><code>docker ps | grep npm</code></td></tr>
+            <tr><td><strong>cloudflared</strong></td><td>Corriendo como contenedor en red <code>proxy</code></td><td><code>docker ps | grep cloudflared</code></td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout c-in">
+          <span class="callout-icon">ℹ</span>
+          <span>Si alguno no está listo, consulta <code>GuiaUbuntuServer.md</code> para instalarlo. La red <code>proxy</code> se crea con <code>docker network create proxy</code> y se hace una sola vez en todo el servidor.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- D2 -->
+    <div class="section" id="d2">
+      <div class="section-header"><div class="step-badge b-docker">D2</div>
+        <div><div class="sec-title">Estructura de Directorios en el Servidor</div>
+        <div class="sec-sub">Dónde va el proyecto dentro del árbol de Docker del servidor</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="file-tree">
+/root/docker/
+├── docker-compose.yml          <span class="ft-comment">← Nginx Proxy Manager (ya existente)</span>
+├── cloudflared/
+│   ├── config.yml              <span class="ft-comment">← agregar rutas api/panel (ver D7)</span>
+│   └── TU_TUNNEL_ID.json
+└── apps/
+    └── <span class="ft-dir">SHEWeb/</span>              <span class="ft-comment">← el proyecto va aquí</span>
+        ├── <span class="ft-file">docker-compose.yml</span>
+        ├── <span class="ft-file">.env</span>             <span class="ft-comment">← crear en el servidor, NO en git</span>
+        ├── <span class="ft-dir">SHE.License.API/</span>
+        │   └── <span class="ft-file">Dockerfile</span>   <span class="ft-comment">← expone puerto 5000</span>
+        └── <span class="ft-dir">SHE.License.Web/</span>
+            └── <span class="ft-file">Dockerfile</span>   <span class="ft-comment">← expone puerto 5287</span></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Contenedor</th><th>Puerto (interno)</th><th>Acceso desde</th></tr></thead>
+          <tbody>
+            <tr><td><code>she-sqlserver</code></td><td>1433</td><td>Solo red <code>proxy</code> (solo otros contenedores)</td></tr>
+            <tr><td><code>she-license-api</code></td><td>5000</td><td>NPM la alcanza por <code>she-license-api:5000</code></td></tr>
+            <tr><td><code>she-license-web</code></td><td>5287</td><td>NPM la alcanza por <code>she-license-web:5287</code></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- D3 -->
+    <div class="section" id="d3">
+      <div class="section-header"><div class="step-badge b-docker">D3</div>
+        <div><div class="sec-title">Clonar el Repositorio</div>
+        <div class="sec-sub">Descargar SHEWeb al servidor — punto de partida</div></div>
+      </div>
+      <div class="sec-body">
+        <ul class="steps">
+          <li class="step-item"><span class="step-num">1</span>
+            <div class="step-text"><strong>Crear carpeta de apps y entrar</strong></div>
+          </li>
+        </ul>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>mkdir -p /root/docker/apps
+cd /root/docker/apps</pre>
+        </div>
+        <ul class="steps">
+          <li class="step-item"><span class="step-num">2</span>
+            <div class="step-text"><strong>Clonar el repositorio</strong></div>
+          </li>
+        </ul>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>git clone https://github.com/TU_USUARIO/SHEWeb.git
+cd SHEWeb</pre>
+        </div>
+        <ul class="steps">
+          <li class="step-item"><span class="step-num">3</span>
+            <div class="step-text"><strong>Verificar estructura del proyecto</strong></div>
+          </li>
+        </ul>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>ls -la
+# Debe verse: docker-compose.yml  .env.example  .gitignore
+#             SHE.License.API/    SHE.License.Web/   SHE.License.Domain/</pre>
+        </div>
+        <div class="callout c-in">
+          <span class="callout-icon">&#9432;</span>
+          <span>Si el repositorio es privado, configura un deploy key SSH antes de clonar: <code>ssh-keygen -t ed25519 -C deploy</code> y agrega la clave p&uacute;blica en GitHub &rarr; Settings &rarr; Deploy keys. El <code>.env</code> est&aacute; en <code>.gitignore</code> &mdash; deber&aacute;s crearlo manualmente en el siguiente paso.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- D4 -->
+    <div class="section" id="d4">
+      <div class="section-header"><div class="step-badge b-docker">D4</div>
+        <div><div class="sec-title">Variables de Entorno &mdash; archivo .env</div>
+        <div class="sec-sub">Secretos fuera del c&oacute;digo &middot; el repo solo tiene .env.example</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="callout c-danger">
+          <span class="callout-icon">&#128274;</span>
+          <span><strong>.env est&aacute; en .gitignore</strong> &mdash; nunca se sube al repo. Debe crearse manualmente en el servidor cada vez que se clona el proyecto.</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">.env &mdash; contenido con valores reales</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>JWT_SECRET=genera-con-openssl-rand-base64-48
+API_KEY=genera-con-openssl-rand-hex-32
+ALLOWED_ORIGINS=https://panel.endevour.mx</pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash &mdash; generar valores seguros</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>openssl rand -base64 48   # JWT_SECRET
+openssl rand -hex 32       # API_KEY</pre>
+        </div>
+        <div class="callout c-am">
+          <span class="callout-icon">&#9888;</span>
+          <span>La contrase&ntilde;a de SQL Server (<code>InfoHotel01</code>) est&aacute; fija en <code>docker-compose.yml</code>. SQL Server no es accesible desde fuera de la red <code>proxy</code>, por lo que esto es aceptable para uso interno.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- D5 -->
+    <div class="section" id="d5">
+      <div class="section-header"><div class="step-badge b-docker">D5</div>
+        <div><div class="sec-title">docker-compose.yml del Proyecto</div>
+        <div class="sec-sub">Usa expose (no ports) y se integra a la red proxy existente</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="callout c-in">
+          <span class="callout-icon">&#9432;</span>
+          <span><strong><code>expose</code> vs <code>ports</code>:</strong> <code>expose</code> abre el puerto solo dentro de la red Docker &mdash; no aparece en la IP del servidor. <code>ports</code> lo expone al host. Usamos <code>expose</code> porque NPM accede por nombre de contenedor dentro de la misma red <code>proxy</code>.</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang ly">docker-compose.yml</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>version: '3.9'
+
+services:
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: she-sqlserver
+    environment:
+      SA_PASSWORD: "InfoHotel01"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Express"
+    volumes:
+      - sqldata:/var/opt/mssql
+    expose:
+      - "1433"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"InfoHotel01\" -Q \"SELECT 1\" -C -N -b -o /dev/null"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - proxy
+    restart: unless-stopped
+
+  she-api:
+    build:
+      context: .
+      dockerfile: SHE.License.API/Dockerfile
+    container_name: she-license-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:5000
+      ConnectionStrings__DefaultConnection: "Server=she-sqlserver,1433;Database=SHEWebLicenseDb;User Id=sa;Password=InfoHotel01;TrustServerCertificate=True;Encrypt=True"
+      JwtSettings__Secret: "${JWT_SECRET}"
+      JwtSettings__Issuer: "SHE.License.API"
+      JwtSettings__Audience: "SHE.License.Web"
+      JwtSettings__ExpirationMinutes: "480"
+      ApiKey: "${API_KEY}"
+      AllowedOrigins: "${ALLOWED_ORIGINS}"
+    expose:
+      - "5000"
+    networks:
+      - proxy
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    restart: unless-stopped
+
+  she-web:
+    build:
+      context: .
+      dockerfile: SHE.License.Web/Dockerfile
+    container_name: she-license-web
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:5287
+      ConnectionStrings__DefaultConnection: "Server=she-sqlserver,1433;Database=SHEWebLicenseDb;User Id=sa;Password=InfoHotel01;TrustServerCertificate=True;Encrypt=True"
+      JwtSettings__Secret: "${JWT_SECRET}"
+      JwtSettings__Issuer: "SHE.License.API"
+      JwtSettings__Audience: "SHE.License.Web"
+      JwtSettings__ExpirationMinutes: "480"
+    expose:
+      - "5287"
+    networks:
+      - proxy
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    restart: unless-stopped
+
+networks:
+  proxy:
+    external: true   # Red global del servidor &mdash; ya creada
+
+volumes:
+  sqldata:</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- D6 -->
+    <div class="section" id="d6">
+      <div class="section-header"><div class="step-badge b-ws">D6</div>
+        <div><div class="sec-title">WebSockets en Program.cs</div>
+        <div class="sec-sub">Tres cambios obligatorios &mdash; sin ellos Blazor Server no funciona en producci&oacute;n</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="callout c-in">
+          <span class="callout-icon">&#9432;</span>
+          <span>Este c&oacute;digo ya est&aacute; aplicado en el repositorio. Revisa esta secci&oacute;n para entender por qu&eacute; cada cambio es necesario y c&oacute;mo verificarlo si algo no funciona.</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lc">C# &mdash; SHE.License.Web/Program.cs (partes cr&iacute;ticas para WebSocket)</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>// &#9312; Circuit retention: retiene el circuit 10 min tras desconexi&oacute;n
+//    (tab minimizado, red ca&iacute;da) &mdash; evita reiniciar sesi&oacute;n al reconectar
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents(options =&gt;
+    {
+        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(10);
+    });
+
+// &#9313; SignalR keepalive: Cloudflare cierra conexiones idle a 100 s
+//    KeepAliveInterval = 15 s &rarr; ping cada 15 s &rarr; nunca alcanza el timeout
+builder.Services.AddSignalR(options =&gt;
+{
+    options.ClientTimeoutInterval     = TimeSpan.FromSeconds(30);
+    options.HandshakeTimeout          = TimeSpan.FromSeconds(15);
+    options.KeepAliveInterval         = TimeSpan.FromSeconds(15);
+    options.MaximumReceiveMessageSize = 32 * 1024;
+});
+
+// ... (DB, repositorios, auth, MediatR &mdash; sin cambios WebSocket) ...
+
+var app = builder.Build();
+
+// En producci&oacute;n: NPM y Cloudflare manejan TLS; el contenedor solo recibe HTTP.
+// UseHttpsRedirection causar&iacute;a bucle HTTP&rarr;HTTPS dentro del contenedor.
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+else
+{
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+}
+
+// &#9314; UseWebSockets ANTES de UseAuthentication y del routing de componentes.
+//    Kestrel intercepta el handshake HTTP&rarr;WS antes de que el router procese la petici&oacute;n.
+app.UseWebSockets();
+app.UseAuthentication();
+app.UseAntiforgery();
+
+app.MapStaticAssets();
+app.MapRazorComponents&lt;App&gt;()
+    .AddInteractiveServerRenderMode();
+
+app.Run();</pre>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Cambio</th><th>Sin este cambio</th><th>Motivo</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>DisconnectedCircuitRetentionPeriod = 10 min</code></td>
+              <td>El estado del circuit se destruye en segundos tras desconexi&oacute;n; al reconectar el usuario pierde todo el estado de la UI</td>
+              <td>Mantiene en memoria el circuit de cada tab durante 10 min; la reconexiones autom&aacute;ticas de Blazor recuperan el estado sin recargar</td>
+            </tr>
+            <tr>
+              <td><code>KeepAliveInterval = 15 s</code></td>
+              <td>Cloudflare cierra la conexi&oacute;n WebSocket a los 100 s de inactividad; el panel se desconecta silenciosamente mientras el usuario lee</td>
+              <td>SignalR env&iacute;a un ping cada 15 s; la conexi&oacute;n nunca supera el umbral de 100 s de Cloudflare</td>
+            </tr>
+            <tr>
+              <td><code>app.UseWebSockets()</code> antes de <code>UseAuthentication</code></td>
+              <td>El middleware de auth o antiforgery ve la petici&oacute;n WebSocket como HTTP normal y la rechaza con 400 o 401</td>
+              <td>Kestrel procesa el handshake <em>Upgrade: websocket</em> antes de que el pipeline de middlewares lo intercepte</td>
+            </tr>
+            <tr>
+              <td><code>UseHttpsRedirection</code> solo en Development</td>
+              <td>En producci&oacute;n el contenedor recibe HTTP de NPM; redirigir a HTTPS genera un bucle de redirecci&oacute;n infinita (HTTP 307 &rarr; HTTP 307 &rarr; ...)</td>
+              <td>NPM y Cloudflare ya terminan TLS; el contenedor solo necesita HTTP internamente</td>
+            </tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- D7 -->
+    <div class="section" id="d7">
+      <div class="section-header"><div class="step-badge b-docker">D7</div>
+        <div><div class="sec-title">Levantar los Contenedores</div>
+        <div class="sec-sub">Build + up &mdash; primera vez tarda 3-5 min (descarga im&aacute;genes .NET)</div></div>
+      </div>
+      <div class="sec-body">
+        <ul class="steps">
+          <li class="step-item"><span class="step-num">1</span>
+            <div class="step-text"><strong>Construir im&aacute;genes y arrancar todos los servicios</strong></div>
+          </li>
+        </ul>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>cd /root/docker/apps/SHEWeb
+docker compose up -d --build</pre>
+        </div>
+        <ul class="steps">
+          <li class="step-item"><span class="step-num">2</span>
+            <div class="step-text"><strong>Verificar que los 3 contenedores est&aacute;n corriendo</strong></div>
+          </li>
+        </ul>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>docker compose ps
+# Esperado:
+# NAME                STATUS
+# she-sqlserver       running (healthy)
+# she-license-api     running
+# she-license-web     running</pre>
+        </div>
+        <ul class="steps">
+          <li class="step-item"><span class="step-num">3</span>
+            <div class="step-text"><strong>Revisar logs si algo falla</strong></div>
+          </li>
+        </ul>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>docker compose logs --tail 30 she-license-web
+docker compose logs --tail 30 she-license-api
+# Buscar: "Now listening on http://[::]:5287" &mdash; confirma que Kestrel arranc&oacute;</pre>
+        </div>
+        <div class="callout c-in">
+          <span class="callout-icon">&#9432;</span>
+          <span>SQL Server tarda 30-60 s en ponerse en estado <code>healthy</code>. La API y el Web dependen de &eacute;l (<code>condition: service_healthy</code>) &mdash; si los contenedores no arrancan de inmediato, espera a que SQL Server complete su inicio antes de preocuparte.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- D8 -->
+    <div class="section" id="d8">
+      <div class="section-header"><div class="step-badge b-docker">D8</div>
+        <div><div class="sec-title">Crear la Base de Datos</div>
+        <div class="sec-sub">Crear SHEWebLicenseDb y aplicar migraciones de EF Core</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash &mdash; esperar ~30 s y crear la BD</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>docker exec -it she-sqlserver /opt/mssql-tools18/bin/sqlcmd \
+    -S localhost -U sa -P "InfoHotel01" -C -N \
+    -Q "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name='SHEWebLicenseDb') CREATE DATABASE SHEWebLicenseDb;"</pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash &mdash; aplicar migraciones EF Core</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>docker exec -it she-license-api \
+    curl -s -X POST -H "X-Api-Key: TU_API_KEY" \
+    http://localhost:5000/api/admin/migrations/apply</pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash &mdash; verificar health (interno)</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>docker exec -it she-license-api curl http://localhost:5000/api/health
+# {"estado":"OK","timestamp":"..."}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- D9 -->
+    <div class="section" id="d9">
+      <div class="section-header"><div class="step-badge b-cf">D9</div>
+        <div><div class="sec-title">Actualizar config.yml de cloudflared</div>
+        <div class="sec-sub">Agregar las rutas de SHEWeb apuntando a npm:80</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="callout c-cf">
+          <span class="callout-icon">&#9729;</span>
+          <span>Todos los hostnames en <code>config.yml</code> apuntan a <code>http://npm:80</code>. cloudflared env&iacute;a el tr&aacute;fico a NPM, que enruta seg&uacute;n el hostname al contenedor correcto. cloudflared pasa WebSockets de forma transparente &mdash; no requiere configuraci&oacute;n adicional.</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang ly">/root/docker/cloudflared/config.yml</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>tunnel: TU_TUNNEL_ID
+credentials-file: /etc/cloudflared/TU_TUNNEL_ID.json
+
+ingress:
+
+  # Rutas existentes (conservar)
+  - hostname: endevour.mx
+    service: http://npm:80
+
+  - hostname: grafana.endevour.mx
+    service: http://npm:80
+
+  # Rutas nuevas para SHEWeb
+  - hostname: api.endevour.mx
+    service: http://npm:80
+
+  - hostname: panel.endevour.mx
+    service: http://npm:80
+
+  - service: http_status:404</pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash &mdash; reiniciar cloudflared para aplicar cambios</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>docker restart cloudflared
+docker logs cloudflared --tail 20
+# Buscar: "Registered tunnel connection" &mdash; confirma que el t&uacute;nel reconect&oacute;</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- D10 -->
+    <div class="section" id="d10">
+      <div class="section-header"><div class="step-badge b-cf">D10</div>
+        <div><div class="sec-title">Crear Registros DNS en Cloudflare</div>
+        <div class="sec-sub">Dashboard Cloudflare &rarr; tu dominio &rarr; DNS &rarr; Add record</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Tipo</th><th>Nombre</th><th>Contenido</th><th>Proxy</th></tr></thead>
+          <tbody>
+            <tr><td><code>CNAME</code></td><td><code>api</code></td><td><code>TU_TUNNEL_ID.cfargotunnel.com</code></td><td class="ok">&#10003; ON (naranja)</td></tr>
+            <tr><td><code>CNAME</code></td><td><code>panel</code></td><td><code>TU_TUNNEL_ID.cfargotunnel.com</code></td><td class="ok">&#10003; ON (naranja)</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout c-in">
+          <span class="callout-icon">&#9432;</span>
+          <span>El mismo <code>TUNNEL_ID</code> para todos los subdominios. cloudflared distribuye seg&uacute;n el hostname del <code>config.yml</code>. Si los registros ya existen para otros subdominios, solo agrega los dos nuevos.</span>
+        </div>
+        <div class="callout c-em">
+          <span class="callout-icon">&#128274;</span>
+          <span>SSL lo gestiona Cloudflare autom&aacute;ticamente. En el dashboard: <strong>SSL/TLS &rarr; Overview &rarr; Full (strict)</strong>.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- D11 -->
+    <div class="section" id="d11">
+      <div class="section-header"><div class="step-badge b-cf">D11</div>
+        <div><div class="sec-title">Nginx Proxy Manager &mdash; Proxy Hosts + WebSockets</div>
+        <div class="sec-sub">Panel NPM: http://IP_SERVIDOR:81 &rarr; Proxy Hosts &rarr; Add Proxy Host</div></div>
+      </div>
+      <div class="sec-body">
+
+        <p style="font-size:13px;font-weight:700;color:var(--g7);margin-bottom:12px">Proxy host 1 &mdash; API de licencias</p>
+        <ul class="steps">
+          <li class="step-item"><span class="step-num">1</span>
+            <div class="step-text">Ir a <strong>Proxy Hosts &rarr; Add Proxy Host</strong></div>
+          </li>
+          <li class="step-item"><span class="step-num">2</span>
+            <div class="step-text">Pesta&ntilde;a <strong>Details</strong> &mdash; rellenar el formulario:</div>
+          </li>
+        </ul>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Campo NPM</th><th>Valor</th></tr></thead>
+          <tbody>
+            <tr><td>Domain Names</td><td><code>api.endevour.mx</code></td></tr>
+            <tr><td>Forward Hostname / IP</td><td><code>she-license-api</code></td></tr>
+            <tr><td>Forward Port</td><td><code>5000</code></td></tr>
+            <tr><td>HTTP/2 Support</td><td>&#10003; activado</td></tr>
+          </tbody>
+        </table></div>
+        <ul class="steps">
+          <li class="step-item"><span class="step-num">3</span>
+            <div class="step-text">Pesta&ntilde;a <strong>SSL</strong> &rarr; <em>Request a new SSL Certificate</em>, activar <em>Force SSL</em> &rarr; <strong>Save</strong></div>
+          </li>
+        </ul>
+
+        <p style="font-size:13px;font-weight:700;color:var(--g7);margin:20px 0 12px">
+          Proxy host 2 &mdash; Panel web (Blazor Server)
+          <span style="color:var(--danger);font-size:12px;margin-left:8px">&#9733; WebSockets obligatorio</span>
+        </p>
+        <ul class="steps">
+          <li class="step-item"><span class="step-num">1</span>
+            <div class="step-text">Ir a <strong>Proxy Hosts &rarr; Add Proxy Host</strong></div>
+          </li>
+          <li class="step-item"><span class="step-num">2</span>
+            <div class="step-text">Pesta&ntilde;a <strong>Details</strong> &mdash; rellenar el formulario:</div>
+          </li>
+        </ul>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Campo NPM</th><th>Valor</th></tr></thead>
+          <tbody>
+            <tr><td>Domain Names</td><td><code>panel.endevour.mx</code></td></tr>
+            <tr><td>Forward Hostname / IP</td><td><code>she-license-web</code></td></tr>
+            <tr><td>Forward Port</td><td><code>5287</code></td></tr>
+            <tr><td>HTTP/2 Support</td><td>&#10003; activado</td></tr>
+            <tr style="background:var(--or-bg)">
+              <td style="font-weight:700;color:var(--or)">WebSockets Support</td>
+              <td style="font-weight:700;color:var(--danger)">&#10003; ACTIVAR &mdash; obligatorio para Blazor Server</td>
+            </tr>
+          </tbody>
+        </table></div>
+        <ul class="steps">
+          <li class="step-item"><span class="step-num">3</span>
+            <div class="step-text">Pesta&ntilde;a <strong>SSL</strong> &rarr; <em>Request a new SSL Certificate</em>, activar <em>Force SSL</em> &rarr; <strong>Save</strong></div>
+          </li>
+        </ul>
+
+        <div class="callout c-danger">
+          <span class="callout-icon">&#9888;</span>
+          <span><strong>WebSockets Support es el paso m&aacute;s cr&iacute;tico de todo el deploy.</strong> Al activarlo, NPM agrega al proxy estas cabeceras HTTP: <code>proxy_set_header Upgrade $http_upgrade</code> y <code>proxy_set_header Connection "upgrade"</code>. Sin ellas, el servidor recibe la petici&oacute;n WebSocket como HTTP normal, rechaza el upgrade y Blazor Server muestra pantalla en blanco o da un error de conexi&oacute;n.</span>
+        </div>
+
+        <div class="tbl-wrap" style="margin-top:14px"><table>
+          <thead><tr><th>Capa</th><th>Soporte WebSocket</th><th>Requiere configuraci&oacute;n manual</th></tr></thead>
+          <tbody>
+            <tr><td>Cloudflare Edge</td><td class="ok">&#10003; Nativo en todos los planes</td><td>No</td></tr>
+            <tr><td>cloudflared (t&uacute;nel)</td><td class="ok">&#10003; Transparente</td><td>No</td></tr>
+            <tr><td>Nginx Proxy Manager</td><td class="ok">&#10003; Con checkbox</td><td><strong>S&iacute; &mdash; activar WebSockets Support (D11)</strong></td></tr>
+            <tr><td>Kestrel / ASP.NET</td><td class="ok">&#10003; Con middleware</td><td><strong>S&iacute; &mdash; <code>app.UseWebSockets()</code> en Program.cs (D6)</strong></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- D12 -->
+    <div class="section" id="d12">
+      <div class="section-header"><div class="step-badge b-ws">D12</div>
+        <div><div class="sec-title">Verificar WebSockets</div>
+        <div class="sec-sub">Confirmar que el circuit Blazor establece conexi&oacute;n WebSocket correctamente</div></div>
+      </div>
+      <div class="sec-body">
+        <p style="font-size:13px;font-weight:700;color:var(--g7);margin-bottom:8px">M&eacute;todo 1 &mdash; Chrome DevTools (m&aacute;s r&aacute;pido)</p>
+        <ul class="steps">
+          <li class="step-item"><span class="step-num">1</span>
+            <div class="step-text">Abrir <code>https://panel.endevour.mx</code> en Chrome</div>
+          </li>
+          <li class="step-item"><span class="step-num">2</span>
+            <div class="step-text">Presionar <kbd>F12</kbd> &rarr; pesta&ntilde;a <strong>Network</strong></div>
+          </li>
+          <li class="step-item"><span class="step-num">3</span>
+            <div class="step-text">Hacer clic en el filtro <strong>WS</strong> (WebSocket) en la barra de filtros</div>
+          </li>
+          <li class="step-item"><span class="step-num">4</span>
+            <div class="step-text">Recargar la p&aacute;gina (<kbd>Ctrl+Shift+R</kbd>)</div>
+          </li>
+          <li class="step-item"><span class="step-num">5</span>
+            <div class="step-text">Debe aparecer una entrada <code>_blazor</code> &mdash; la columna <strong>Status</strong> debe mostrar <code>101</code></div>
+          </li>
+        </ul>
+        <div class="callout c-em">
+          <span class="callout-icon">&#10003;</span>
+          <span><strong>HTTP 101 Switching Protocols</strong> = WebSocket establecido correctamente. Puedes hacer clic en la entrada <code>_blazor</code> y ver la pesta&ntilde;a <em>Messages</em> para ver el flujo de mensajes SignalR en tiempo real.</span>
+        </div>
+
+        <p style="font-size:13px;font-weight:700;color:var(--g7);margin:16px 0 8px">M&eacute;todo 2 &mdash; curl desde el servidor</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash &mdash; test de upgrade HTTP &rarr; WebSocket</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>curl -i -N \
+  -H "Host: panel.endevour.mx" \
+  -H "Connection: Upgrade" \
+  -H "Upgrade: websocket" \
+  -H "Sec-WebSocket-Version: 13" \
+  -H "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==" \
+  https://panel.endevour.mx/_blazor
+
+# Respuesta esperada: HTTP/1.1 101 Switching Protocols
+#                    Upgrade: websocket
+#                    Connection: Upgrade</pre>
+        </div>
+        <div class="callout c-am">
+          <span class="callout-icon">&#9888;</span>
+          <span>Si la respuesta es <strong>400 Bad Request</strong>: <code>UseWebSockets()</code> no est&aacute; configurado o est&aacute; en el orden incorrecto en Program.cs (revisa D6). Si es <strong>502 Bad Gateway</strong>: el contenedor no est&aacute; corriendo o NPM tiene el proxy host mal configurado. Si es <strong>200 OK</strong> sin <em>Upgrade</em>: NPM no tiene WebSockets Support activado (revisa D11).</span>
+        </div>
+
+        <p style="font-size:13px;font-weight:700;color:var(--g7);margin:16px 0 8px">M&eacute;todo 3 &mdash; wscat (opcional, requiere Node.js)</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash &mdash; conectar directamente al endpoint WebSocket de Blazor</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre># Instalar wscat globalmente
+npm install -g wscat
+
+# Conectar al endpoint del circuit de Blazor
+wscat -c wss://panel.endevour.mx/_blazor
+
+# Resultado esperado: conectado + mensajes SignalR en formato JSON
+# Para salir: Ctrl+C</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- D13 -->
+    <div class="section" id="d13">
+      <div class="section-header"><div class="step-badge b-docker">D13</div>
+        <div><div class="sec-title">Verificar el Despliegue Completo</div>
+        <div class="sec-sub">Pruebas internas y desde internet</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre># 1. Contenedores corriendo
+docker compose ps
+
+# 2. Health interno (sin pasar por Cloudflare/NPM)
+docker exec -it she-license-api curl http://localhost:5000/api/health
+
+# 3. Health desde internet
+curl https://api.endevour.mx/api/health
+
+# 4. Panel web accesible desde internet
+curl -I https://panel.endevour.mx
+
+# 5. Logs si algo falla
+docker compose logs -f she-license-api
+docker logs cloudflared --tail 30
+docker logs npm --tail 30</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- D14 -->
+    <div class="section" id="d14">
+      <div class="section-header"><div class="step-badge b-docker">D14</div>
+        <div><div class="sec-title">GitHub Actions &mdash; Deploy Autom&aacute;tico</div>
+        <div class="sec-sub">Push a main &rarr; SSH al servidor &rarr; git pull &rarr; docker compose up --build</div></div>
+      </div>
+      <div class="sec-body">
+        <p style="font-size:13px;font-weight:700;color:var(--g7);margin-bottom:8px">Secretos en GitHub (Settings &rarr; Secrets &rarr; Actions)</p>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Secret</th><th>Valor</th></tr></thead>
+          <tbody>
+            <tr><td><code>SERVER_HOST</code></td><td>IP del servidor Ubuntu</td></tr>
+            <tr><td><code>SERVER_USER</code></td><td><code>root</code></td></tr>
+            <tr><td><code>SERVER_SSH_KEY</code></td><td>Contenido completo de la clave privada SSH</td></tr>
+            <tr><td><code>SERVER_PROJECT_PATH</code></td><td><code>/root/docker/apps/SHEWeb</code></td></tr>
+          </tbody>
+        </table></div>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash &mdash; generar clave SSH para CI/CD</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre># En tu PC de desarrollo
+ssh-keygen -t ed25519 -C "github-deploy-sheweb" -f ~/.ssh/sheweb_deploy
+ssh-copy-id -i ~/.ssh/sheweb_deploy.pub root@IP_SERVIDOR
+# El contenido de ~/.ssh/sheweb_deploy va en SERVER_SSH_KEY</pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang ly">.github/workflows/deploy.yml (ya en el repo)</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>name: Deploy to Ubuntu Server
+on:
+  push:
+    branches: [ main ]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd ${{ secrets.SERVER_PROJECT_PATH }}
+            git pull origin main
+            docker compose up -d --build
+            docker image prune -f</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- D15 -->
+    <div class="section" id="d15">
+      <div class="section-header"><div class="step-badge b-docker">D15</div>
+        <div><div class="sec-title">Comandos de Mantenimiento</div>
+        <div class="sec-sub">Actualizaciones, reinicio, logs, backup y limpieza</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre># Actualizar manualmente (sin CI/CD)
+cd /root/docker/apps/SHEWeb
+git pull && docker compose up -d --build
+
+# Reiniciar un servicio
+docker restart she-license-api
+
+# Logs en tiempo real
+docker compose logs -f
+
+# Uso de recursos
+docker stats
+
+# Backup de la base de datos
+docker exec she-sqlserver /opt/mssql-tools18/bin/sqlcmd \
+    -S localhost -U sa -P "InfoHotel01" -C -N \
+    -Q "BACKUP DATABASE SHEWebLicenseDb TO DISK='/var/opt/mssql/backup.bak'"
+
+# Limpiar im&aacute;genes antiguas
+docker image prune -f</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- D16 -->
+    <div class="section" id="d16">
+      <div class="section-header"><div class="step-badge b-docker">D16</div>
+        <div><div class="sec-title">Errores Comunes</div>
+        <div class="sec-sub">Diagn&oacute;stico r&aacute;pido &mdash; errores de infraestructura y WebSocket</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Error</th><th>Causa m&aacute;s probable</th><th>Soluci&oacute;n</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="err">Panel en blanco / pantalla vac&iacute;a</td>
+              <td>WebSockets no activado en NPM para el proxy host del panel</td>
+              <td>NPM &rarr; editar el proxy host <code>panel.endevour.mx</code> &rarr; pesta&ntilde;a Details &rarr; activar <strong>WebSockets Support</strong> &rarr; Save</td>
+            </tr>
+            <tr>
+              <td class="err">HTTP 400 en <code>/_blazor</code></td>
+              <td><code>UseWebSockets()</code> no est&aacute; en Program.cs o est&aacute; despu&eacute;s de <code>UseAuthentication</code></td>
+              <td>Verificar Program.cs: <code>app.UseWebSockets()</code> debe ir antes de <code>app.UseAuthentication()</code> y de <code>app.UseAntiforgery()</code></td>
+            </tr>
+            <tr>
+              <td class="err">Desconexi&oacute;n frecuente (~100 s)</td>
+              <td>KeepAliveInterval demasiado alto &mdash; Cloudflare cierra conexiones idle a 100 s</td>
+              <td>Verificar en Program.cs: <code>options.KeepAliveInterval = TimeSpan.FromSeconds(15)</code> (&#8804; 90 s)</td>
+            </tr>
+            <tr>
+              <td class="err">Bucle de redirecci&oacute;n (ERR_TOO_MANY_REDIRECTS)</td>
+              <td><code>UseHttpsRedirection</code> activo en producci&oacute;n &mdash; el contenedor recibe HTTP de NPM y redirige a HTTPS</td>
+              <td>Verificar Program.cs: <code>UseHttpsRedirection</code> solo dentro del bloque <code>if (IsDevelopment())</code></td>
+            </tr>
+            <tr>
+              <td class="err">CF-1016 Cloudflare</td>
+              <td>CNAME apunta a un tunnel_id incorrecto o no existe</td>
+              <td>Verificar que el CNAME apunta exactamente a <code>TU_TUNNEL_ID.cfargotunnel.com</code></td>
+            </tr>
+            <tr>
+              <td class="err">502 Bad Gateway en NPM</td>
+              <td>Forward Hostname o Port incorrectos, o el contenedor no est&aacute; corriendo</td>
+              <td>Verificar nombre exacto del contenedor (<code>she-license-web</code>) y puerto (<code>5287</code>). Verificar <code>docker compose ps</code></td>
+            </tr>
+            <tr>
+              <td class="err">NPM no llega al contenedor</td>
+              <td>El contenedor no est&aacute; en la red <code>proxy</code></td>
+              <td><code>docker network connect proxy she-license-web</code> &middot; <code>docker network connect proxy she-license-api</code></td>
+            </tr>
+            <tr>
+              <td class="err">API no responde (primer inicio)</td>
+              <td>SQL Server a&uacute;n arrancando &mdash; no ha llegado a estado <code>healthy</code></td>
+              <td>Esperar 30-60 s y revisar <code>docker compose ps</code> &mdash; esperar estado <code>healthy</code> en sqlserver</td>
+            </tr>
+            <tr>
+              <td class="err">404 en cloudflared</td>
+              <td>Hostname no est&aacute; en <code>config.yml</code></td>
+              <td>Agregar la ruta en <code>/root/docker/cloudflared/config.yml</code> y reiniciar cloudflared</td>
+            </tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- D17 -->
+    <div class="section" id="d17">
+      <div class="section-header"><div class="step-badge b-em">D17</div>
+        <div><div class="sec-title">Checklist Final &mdash; Ubuntu/Docker</div>
+        <div class="sec-sub">Marca cada punto antes de dar acceso a los clientes</div></div>
+      </div>
+      <div class="sec-body">
+        <ul class="checklist">
+          <li class="check-item"><input type="checkbox"><span>Red <code>proxy</code> existe: <code>docker network ls | grep proxy</code></span></li>
+          <li class="check-item"><input type="checkbox"><span>NPM corriendo: <code>docker ps | grep npm</code></span></li>
+          <li class="check-item"><input type="checkbox"><span>cloudflared corriendo: <code>docker ps | grep cloudflared</code></span></li>
+          <li class="check-item"><input type="checkbox"><span>Repositorio clonado en <code>/root/docker/apps/SHEWeb</code></span></li>
+          <li class="check-item"><input type="checkbox"><span>Archivo <code>.env</code> creado con <code>JWT_SECRET</code>, <code>API_KEY</code> y <code>ALLOWED_ORIGINS</code></span></li>
+          <li class="check-item"><input type="checkbox"><span>Program.cs: <code>app.UseWebSockets()</code> est&aacute; antes de <code>app.UseAuthentication()</code></span></li>
+          <li class="check-item"><input type="checkbox"><span>Program.cs: <code>UseHttpsRedirection</code> solo dentro de <code>if (IsDevelopment())</code></span></li>
+          <li class="check-item"><input type="checkbox"><span>Program.cs: <code>KeepAliveInterval = TimeSpan.FromSeconds(15)</code> en <code>AddSignalR</code></span></li>
+          <li class="check-item"><input type="checkbox"><span><code>docker compose up -d --build</code> sin errores</span></li>
+          <li class="check-item"><input type="checkbox"><span>Los 3 contenedores en estado <code>running</code> (sqlserver en <code>healthy</code>)</span></li>
+          <li class="check-item"><input type="checkbox"><span>Base de datos <code>SHEWebLicenseDb</code> creada</span></li>
+          <li class="check-item"><input type="checkbox"><span>Migraciones EF Core aplicadas</span></li>
+          <li class="check-item"><input type="checkbox"><span>Health interno OK: <code>docker exec she-license-api curl http://localhost:5000/api/health</code></span></li>
+          <li class="check-item"><input type="checkbox"><span><code>config.yml</code> de cloudflared actualizado con rutas <code>api.endevour.mx</code> y <code>panel.endevour.mx</code></span></li>
+          <li class="check-item"><input type="checkbox"><span>cloudflared reiniciado y sin errores en logs</span></li>
+          <li class="check-item"><input type="checkbox"><span>CNAME <code>api</code> y <code>panel</code> creados en DNS Cloudflare (Proxy ON)</span></li>
+          <li class="check-item"><input type="checkbox"><span>Proxy host <code>api.endevour.mx &rarr; she-license-api:5000</code> en NPM con SSL</span></li>
+          <li class="check-item"><input type="checkbox"><span>Proxy host <code>panel.endevour.mx &rarr; she-license-web:5287</code> en NPM con SSL + <strong>WebSockets Support activado</strong></span></li>
+          <li class="check-item"><input type="checkbox"><span>Verificaci&oacute;n WebSocket: Chrome DevTools &rarr; Network &rarr; WS &rarr; entrada <code>_blazor</code> con status <code>101</code></span></li>
+          <li class="check-item"><input type="checkbox"><span><code>https://api.endevour.mx/api/health</code> responde OK desde internet</span></li>
+          <li class="check-item"><input type="checkbox"><span>Panel de login accesible en <code>https://panel.endevour.mx</code> (sin pantalla en blanco)</span></li>
+          <li class="check-item"><input type="checkbox"><span>Login de usuario admin funcional</span></li>
+          <li class="check-item"><input type="checkbox"><span>Navegar por el panel durante 2+ min sin desconexi&oacute;n involuntaria</span></li>
+          <li class="check-item"><input type="checkbox"><span>GitHub Actions workflow configurado (4 secretos: HOST, USER, SSH_KEY, PATH)</span></li>
+          <li class="check-item"><input type="checkbox"><span><code>App.config</code> de clientes WPF actualizado con URL y ApiKey de producci&oacute;n</span></li>
+          <li class="check-item"><input type="checkbox"><span>Prueba de activaci&oacute;n de licencia exitosa desde equipo cliente</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── D18 ACTUALIZACIÓN ──────────────────────────────────────── -->
+    <div class="section" id="d18">
+      <div class="section-header">
+        <div class="step-badge b-em">D18</div>
+        <div>
+          <div class="sec-title">Actualización del Servidor</div>
+          <div class="sec-sub">Aplicar cambios del repositorio GitHub en el servidor Ubuntu</div>
+        </div>
+      </div>
+      <div class="sec-body">
+
+        <div class="callout c-em">
+          <span class="callout-icon">✓</span>
+          <span>Cada vez que hagas <code>git push</code> a tu repositorio, ejecuta estos comandos en el servidor para aplicar los cambios.</span>
+        </div>
+
+        <p style="font-size:13px;font-weight:700;color:var(--g7);margin:14px 0 6px">Actualización estándar</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>cd /root/docker/apps/SHEWeb
+
+# 1. Obtener cambios del repositorio
+git pull origin Master
+
+# 2. Reconstruir imágenes y reiniciar contenedores
+docker compose up -d --build
+
+# 3. Limpiar imágenes antiguas
+docker image prune -f</pre>
+        </div>
+
+        <p style="font-size:13px;font-weight:700;color:var(--g7);margin:14px 0 6px">Verificar después de actualizar</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre># Estado de los contenedores
+docker compose ps
+
+# Health check de la API
+docker exec she-license-api curl -s http://localhost:5000/api/health
+# Esperado: {"estado":"OK","timestamp":"..."}
+
+# Logs recientes si algo falla
+docker compose logs --tail 30 she-license-api
+docker compose logs --tail 30 she-license-web</pre>
+        </div>
+
+        <p style="font-size:13px;font-weight:700;color:var(--g7);margin:14px 0 6px">Si el update incluye nuevas migraciones de EF Core</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre># Verificar si hay migraciones pendientes
+docker exec she-license-api curl -s \
+  -H "X-Api-Key: TU_API_KEY" \
+  http://localhost:5000/api/admin/migrations/pending
+
+# Aplicar si devuelve una lista no vacía
+docker exec she-license-api curl -s -X POST \
+  -H "X-Api-Key: TU_API_KEY" \
+  http://localhost:5000/api/admin/migrations/apply</pre>
+        </div>
+
+        <p style="font-size:13px;font-weight:700;color:var(--g7);margin:14px 0 6px">Rollback a versión anterior</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre># Ver últimos commits
+git log --oneline -10
+
+# Volver a un commit específico
+git checkout &lt;COMMIT_HASH&gt;
+docker compose up -d --build
+
+# Volver al estado actual cuando esté listo
+git checkout Master &amp;&amp; git pull origin Master
+docker compose up -d --build</pre>
+        </div>
+
+        <p style="font-size:13px;font-weight:700;color:var(--g7);margin:14px 0 6px">Script de actualización completa — un solo comando</p>
+        <div class="callout c-in" style="margin-bottom:8px">
+          <span class="callout-icon">ℹ</span>
+          <span>Crea <code>/root/update_sheweb.sh</code> una sola vez y úsalo para cada actualización futura.</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>#!/bin/bash
+set -e
+cd /root/docker/apps/SHEWeb
+echo "[1/3] Obteniendo cambios..."
+git pull origin Master
+echo "[2/3] Reconstruyendo contenedores..."
+docker compose up -d --build
+echo "[3/3] Limpiando imágenes antiguas..."
+docker image prune -f
+echo "✓ Actualización completada"
+docker compose ps</pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>chmod +x /root/update_sheweb.sh
+# Ejecutar en cualquier momento con:
+/root/update_sheweb.sh</pre>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── D19 BACKUPS ─────────────────────────────────────────────── -->
+    <div class="section" id="d19">
+      <div class="section-header">
+        <div class="step-badge b-am">D19</div>
+        <div>
+          <div class="sec-title">Backups y Recuperación ante Desastres</div>
+          <div class="sec-sub">Estrategia de respaldo — BD, secretos y configuración — restauración en &lt;30 min</div>
+        </div>
+      </div>
+      <div class="sec-body">
+
+        <div class="callout c-danger">
+          <span class="callout-icon">⚠</span>
+          <span><strong>Ransomware / fallo de disco:</strong> un backup en el mismo servidor que falla no sirve. Transfiere los archivos a un segundo sitio (ver sección "Transferir backups").</span>
+        </div>
+
+        <p style="font-size:13px;font-weight:700;color:var(--g7);margin:14px 0 8px">¿Qué respaldar?</p>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Recurso</th><th>Ubicación</th><th>Crítico</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Base de datos</strong> <code>SHEWebLicenseDb</code></td><td>Volumen Docker <code>sqldata</code></td><td class="ok">✓ Sí — todos los datos</td></tr>
+              <tr><td><strong>.env</strong> (secretos)</td><td><code>/root/docker/apps/SHEWeb/.env</code></td><td class="ok">✓ Sí — JWT_SECRET y API_KEY</td></tr>
+              <tr><td><strong>Cloudflare tunnel</strong></td><td><code>/root/docker/cloudflared/</code></td><td class="ok">✓ Sí — credenciales del túnel</td></tr>
+              <tr><td><strong>NPM proxy + SSL</strong></td><td><code>/root/docker/npm_data/</code></td><td class="warn">⚠ Recom. — evita reconfigurar NPM</td></tr>
+              <tr><td>Código fuente</td><td>GitHub</td><td>— Ya está en el repositorio</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p style="font-size:13px;font-weight:700;color:var(--g7);margin:14px 0 6px">Script de backup</p>
+        <div class="callout c-in" style="margin-bottom:8px">
+          <span class="callout-icon">ℹ</span>
+          <span>Crea <code>/root/backup_sheweb.sh</code> y dale permisos de ejecución una sola vez.</span>
+        </div>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>#!/bin/bash
+set -e
+DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="/root/backups/$DATE"
+APP_DIR="/root/docker/apps/SHEWeb"
+
+mkdir -p "$BACKUP_DIR"
+
+echo "[1/4] Base de datos..."
+docker exec she-sqlserver /opt/mssql-tools18/bin/sqlcmd \
+    -S localhost -U sa -P "InfoHotel01" -C -N \
+    -Q "BACKUP DATABASE SHEWebLicenseDb TO DISK='/var/opt/mssql/bak_tmp.bak' WITH FORMAT, COMPRESSION"
+docker cp she-sqlserver:/var/opt/mssql/bak_tmp.bak "$BACKUP_DIR/db.bak"
+docker exec she-sqlserver rm /var/opt/mssql/bak_tmp.bak
+
+echo "[2/4] Secretos y configuración..."
+cp "$APP_DIR/.env"              "$BACKUP_DIR/.env"
+cp "$APP_DIR/docker-compose.yml" "$BACKUP_DIR/docker-compose.yml"
+
+echo "[3/4] Cloudflare tunnel..."
+cp -r /root/docker/cloudflared/ "$BACKUP_DIR/cloudflared/"
+
+echo "[4/4] Nginx Proxy Manager..."
+cp -r /root/docker/npm_data/ "$BACKUP_DIR/npm_data/" 2>/dev/null \
+    || echo "  (npm_data no encontrado — omitido)"
+
+tar -czf "/root/backups/sheweb_${DATE}.tar.gz" -C "/root/backups" "$DATE"
+rm -rf "$BACKUP_DIR"
+echo "✓ Backup: /root/backups/sheweb_${DATE}.tar.gz"</pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>chmod +x /root/backup_sheweb.sh
+mkdir -p /root/backups
+# Ejecutar backup manual:
+/root/backup_sheweb.sh</pre>
+        </div>
+
+        <p style="font-size:13px;font-weight:700;color:var(--g7);margin:14px 0 6px">Backup diario automático con cron</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre>crontab -e
+
+# Agrega esta línea — backup cada día a las 2:00 AM
+0 2 * * * /root/backup_sheweb.sh >> /root/backups/backup.log 2>&1
+
+# Verificar que quedó registrado
+crontab -l</pre>
+        </div>
+
+        <p style="font-size:13px;font-weight:700;color:var(--g7);margin:14px 0 6px">Transferir backups fuera del servidor</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre># Opción A — SCP a otra máquina
+scp /root/backups/sheweb_*.tar.gz usuario@OTRO_SERVIDOR:/backups/
+
+# Opción B — rclone a Google Drive (recomendado)
+curl https://rclone.org/install.sh | sudo bash
+rclone config                  # sigue el asistente, elige Google Drive
+rclone copy /root/backups/ gdrive:Backups/SHEWeb/ --include "*.tar.gz"
+
+# Agregar rclone al cron (30 min después del backup)
+30 2 * * * rclone copy /root/backups/ gdrive:Backups/SHEWeb/ --include "*.tar.gz" >> /root/backups/backup.log 2>&1
+
+# Limpiar backups locales con más de 7 días
+find /root/backups/ -name "sheweb_*.tar.gz" -mtime +7 -delete</pre>
+        </div>
+
+        <p style="font-size:13px;font-weight:700;color:var(--g7);margin:14px 0 6px">Restauración en servidor nuevo</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span class="code-lang lb">Bash</span><button class="copy-btn" onclick="cp(this)">Copiar</button></div>
+          <pre># ── PREREQUISITOS ────────────────────────────────────────────────────────────
+# Servidor nuevo con Docker + Docker Compose instalados (GuiaUbuntuServer.md)
+docker network create proxy
+
+# ── EXTRAER BACKUP ────────────────────────────────────────────────────────────
+scp usuario@ORIGEN:/root/backups/sheweb_FECHA.tar.gz /tmp/
+cd /tmp &amp;&amp; tar -xzf sheweb_FECHA.tar.gz
+BACKUP="/tmp/FECHA"       # ajusta al nombre de carpeta extraída
+
+# ── CLOUDFLARED ───────────────────────────────────────────────────────────────
+mkdir -p /root/docker/cloudflared/
+cp -r $BACKUP/cloudflared/* /root/docker/cloudflared/
+# Levantar cloudflared con su docker-compose
+
+# ── NPM ───────────────────────────────────────────────────────────────────────
+mkdir -p /root/docker/npm_data/
+cp -r $BACKUP/npm_data/* /root/docker/npm_data/
+# Levantar NPM — proxy hosts y certificados ya estarán presentes
+
+# ── APLICACIÓN ────────────────────────────────────────────────────────────────
+git clone https://github.com/TU_USUARIO/SHEWeb.git /root/docker/apps/SHEWeb
+cp "$BACKUP/.env" /root/docker/apps/SHEWeb/.env
+
+# ── CONTENEDORES ──────────────────────────────────────────────────────────────
+cd /root/docker/apps/SHEWeb
+docker compose up -d
+# Esperar ~60 s a que SQL Server esté healthy
+watch docker compose ps    # Ctrl+C cuando los tres estén Running
+
+# ── RESTAURAR BD ──────────────────────────────────────────────────────────────
+docker cp "$BACKUP/db.bak" she-sqlserver:/var/opt/mssql/restore.bak
+
+docker exec she-sqlserver /opt/mssql-tools18/bin/sqlcmd \
+    -S localhost -U sa -P "InfoHotel01" -C -N \
+    -Q "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name='SHEWebLicenseDb') \
+        CREATE DATABASE SHEWebLicenseDb;"
+
+docker exec she-sqlserver /opt/mssql-tools18/bin/sqlcmd \
+    -S localhost -U sa -P "InfoHotel01" -C -N \
+    -Q "RESTORE DATABASE SHEWebLicenseDb FROM DISK='/var/opt/mssql/restore.bak' \
+        WITH REPLACE, RECOVERY;"
+
+docker exec she-sqlserver rm /var/opt/mssql/restore.bak
+
+# ── VERIFICAR ─────────────────────────────────────────────────────────────────
+docker exec she-license-api curl http://localhost:5000/api/health</pre>
+        </div>
+
+        <p style="font-size:13px;font-weight:700;color:var(--g7);margin:14px 0 8px">Checklist de restauración</p>
+        <ul class="checklist">
+          <li class="check-item"><input type="checkbox"><span>Servidor nuevo con Docker + Compose instalados</span></li>
+          <li class="check-item"><input type="checkbox"><span>Red proxy creada: <code>docker network create proxy</code></span></li>
+          <li class="check-item"><input type="checkbox"><span>Backup descomprimido en <code>/tmp/</code></span></li>
+          <li class="check-item"><input type="checkbox"><span>cloudflared restaurado y corriendo (túnel visible en Cloudflare dashboard)</span></li>
+          <li class="check-item"><input type="checkbox"><span>NPM restaurado y levantado (proxy hosts y certificados SSL presentes)</span></li>
+          <li class="check-item"><input type="checkbox"><span>Repositorio clonado en <code>/root/docker/apps/SHEWeb</code></span></li>
+          <li class="check-item"><input type="checkbox"><span><code>.env</code> restaurado con <code>JWT_SECRET</code> y <code>API_KEY</code> originales</span></li>
+          <li class="check-item"><input type="checkbox"><span><code>docker compose up -d</code> sin errores · <code>she-sqlserver</code> en estado <code>healthy</code></span></li>
+          <li class="check-item"><input type="checkbox"><span>Base de datos restaurada desde <code>db.bak</code></span></li>
+          <li class="check-item"><input type="checkbox"><span>Health check OK: <code>docker exec she-license-api curl http://localhost:5000/api/health</code></span></li>
+          <li class="check-item"><input type="checkbox"><span>Panel accesible desde internet: <code>https://panel.endevour.mx</code></span></li>
+          <li class="check-item"><input type="checkbox"><span>Login admin funcional</span></li>
+          <li class="check-item"><input type="checkbox"><span>Prueba de licencia desde equipo WPF exitosa</span></li>
+        </ul>
+
+      </div>
+    </div>
+
+    <!-- ── ENDPOINTS ─────────────────────────────────────────────── -->
+    <div class="section" id="endpoints">
+      <div class="section-header"><div class="step-badge b-g">📋</div>
+        <div><div class="sec-title">Referencia de Endpoints</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Método</th><th>Ruta</th><th>Auth</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method m-get">GET</span></td><td><code>/api/health</code></td><td>Ninguna</td><td>Prueba de conexión</td></tr>
+            <tr><td><span class="method m-post">POST</span></td><td><code>/api/licencia/obtener</code></td><td><code>X-Api-Key</code></td><td><strong>Flujo principal.</strong> Acepta <code>{EmpresaId, CodigoInstalacion}</code>, <code>{EmpresaId}</code> solo, o <code>{CodigoInstalacion, RFC}</code> (legacy). Devuelve <code>EmpresaId</code> + datos completos</td></tr>
+            <tr><td><span class="method m-post">POST</span></td><td><code>/api/licencia/validar</code></td><td><code>X-Api-Key</code></td><td>Valida <code>ClaveLicencia</code> + <code>CodigoInstalacion</code> criptográficamente. Devuelve <code>EmpresaId</code> en la respuesta</td></tr>
+            <tr><td><span class="method m-post">POST</span></td><td><code>/api/auth/login</code></td><td>user/pass en body</td><td>Login del panel admin → JWT</td></tr>
+            <tr><td><span class="method m-get">GET</span></td><td><code>/api/admin/migrations/pending</code></td><td><code>X-Api-Key</code></td><td>Migraciones pendientes</td></tr>
+            <tr><td><span class="method m-post">POST</span></td><td><code>/api/admin/migrations/apply</code></td><td><code>X-Api-Key</code></td><td>Aplica todas las migraciones</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ── SEGURIDAD ──────────────────────────────────────────────── -->
+    <div class="section" id="seguridad">
+      <div class="section-header"><div class="step-badge b-em">🔒</div>
+        <div><div class="sec-title">Modelo de Seguridad</div></div>
+      </div>
+      <div class="sec-body">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Amenaza</th><th>Protección</th></tr></thead>
+          <tbody>
+            <tr><td>Clave inventada</td><td class="ok">✓ API → <code>Invalida_NoEncontrada</code></td></tr>
+            <tr><td>Licencia de otro equipo</td><td class="ok">✓ API → <code>HardwareInvalido</code></td></tr>
+            <tr><td>Clave de otro cliente</td><td class="ok">✓ RFC local ≠ RFC respuesta → bloquea</td></tr>
+            <tr><td>EmpresaId de otro cliente</td><td class="ok">✓ EmpresaId almacenado ≠ recibido del servidor → rechazado</td></tr>
+            <tr><td>Copiar storage a otra máquina</td><td class="ok">✓ CodigoInstalacion local ≠ equipo → rechazado offline</td></tr>
+            <tr><td>EmpresaId alterado manualmente</td><td class="ok">✓ Inmutable en storage + verificado contra respuesta del servidor</td></tr>
+            <tr><td>API caída con licencia expirada</td><td class="ok">✓ FechaLicencia &lt; hoy → bloquea offline</td></tr>
+            <tr><td>Acceso no autorizado a la API</td><td class="ok">✓ X-Api-Key en todos los endpoints de negocio</td></tr>
+            <tr><td>Contraseñas en texto plano</td><td class="ok">✓ BCrypt en passwords · secretos en .env / appsettings</td></tr>
+            <tr><td>Secretos en repositorio</td><td class="ok">✓ .env y appsettings.Development.json en .gitignore</td></tr>
+            <tr><td>Puertos expuestos al exterior</td><td class="ok">✓ Puertos Docker solo en 127.0.0.1 · Cloudflare Tunnel maneja el acceso</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <div class="footer">Endevour Licensing System · Keorsoft · v5.0 · Mayo 2026</div>
+
+  </main>
+</div>
+
+<script>
+function toggleNav(){document.body.classList.toggle('nav-open')}
+function closeNavMobile(){if(window.innerWidth<900)document.body.classList.remove('nav-open')}
+
+// Scroll spy
+const sections=document.querySelectorAll('[id]');
+const links=document.querySelectorAll('.nav-link');
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      links.forEach(l=>l.classList.remove('active'));
+      const a=document.querySelector(`.nav-link[href="#${e.target.id}"]`);
+      if(a)a.classList.add('active');
+    }
+  });
+},{rootMargin:'-15% 0px -70% 0px'});
+sections.forEach(s=>io.observe(s));
+
+// Copy code
+function cp(btn){
+  const pre=btn.closest('.code-wrap').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(()=>{
+    const o=btn.textContent;
+    btn.textContent='✓ Copiado';btn.style.color='#34D399';
+    setTimeout(()=>{btn.textContent=o;btn.style.color=''},2000);
+  }).catch(()=>{
+    // Fallback para Android/iOS sin clipboard API
+    const r=document.createRange();
+    r.selectNode(pre);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(r);
+    document.execCommand('copy');
+    window.getSelection().removeAllRanges();
+    btn.textContent='✓ Copiado';btn.style.color='#34D399';
+    setTimeout(()=>{btn.textContent='Copiar';btn.style.color=''},2000);
+  });
+}
+
+// Checklist interactivo
+document.querySelectorAll('.check-item input[type=checkbox]').forEach(cb=>{
+  cb.addEventListener('change',()=>cb.closest('.check-item').classList.toggle('done',cb.checked));
+});
+</script>
+</body>
+</html>

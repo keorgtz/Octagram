@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;background:var(--page-bg);font-family:var(--font);color:var(--gray-dark);padding:16px}
+  .card{background:#fff;border-radius:14px;box-shadow:var(--shadow);overflow:hidden;width:520px}
+  .h{padding:12px 16px;background:#EEF2FF;display:flex;align-items:center;justify-content:space-between}
+  .h-left{display:flex;flex-direction:column;gap:2px}
+  .h-title{font-size:10.5px;font-weight:600;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.06em}
+  .h-sub{font-size:12px;color:#6366F1;font-weight:500}
+  .h-badge{background:#6366F1;color:#fff;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  thead th{background:#fff;padding:7px 12px;text-align:left;font-size:10.5px;font-weight:600;color:var(--gray-muted);border-bottom:1px solid var(--gray-line);text-transform:uppercase;letter-spacing:.05em}
+  thead th.right{text-align:right}
+  tbody td{padding:6px 12px;border-bottom:.5px solid var(--gray-line);color:#374151}
+  tbody td.right{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+  tbody td.center{text-align:center;color:var(--gray-muted)}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:#FAFAFA}
+  .foot{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:var(--gray-foot)}
+  .foot-l{font-size:11px;color:var(--gray-muted)}
+  .foot-r{font-size:13px;font-weight:700;color:#6366F1;font-variant-numeric:tabular-nums}
+</style></head><body>
+  <div class="card">
+    <div class="h">
+      <div class="h-left">
+        <span class="h-title">CARGOS</span>
+        <span class="h-sub">movimientos del turno</span>
+      </div>
+      <span class="h-badge">4</span>
+    </div>
+    <table>
+      <thead><tr><th>Cuenta</th><th class="center">Movs.</th><th class="right">Total</th></tr></thead>
+      <tbody>
+        <tr><td>206 · Garcia, Luis</td><td class="center">3</td><td class="right">$ 4,820.00</td></tr>
+        <tr><td>112 · Robles, Ana</td><td class="center">1</td><td class="right">$ 1,240.00</td></tr>
+        <tr><td>318 · Méndez, Roberto</td><td class="center">2</td><td class="right">$ 2,960.00</td></tr>
+        <tr><td>204 · Hernández, María</td><td class="center">1</td><td class="right">$ 980.00</td></tr>
+      </tbody>
+    </table>
+    <div class="foot"><span class="foot-l">Total acumulado</span><span class="foot-r">$ 10,000.00</span></div>
+  </div>
+</body></html>

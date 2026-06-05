@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;background:var(--page-bg);font-family:var(--font);color:var(--gray-dark);padding:20px}
+  .dock{background:#fff;border-radius:12px;box-shadow:0 -2px 8px rgba(0,0,0,.04),var(--shadow);padding:12px 14px;display:flex;flex-direction:column;gap:8px;max-width:880px}
+  .header{display:flex;align-items:center;gap:8px;padding:0 4px}
+  .h-lbl{font-size:10px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.08em}
+  .h-count{background:#1C1E26;color:#fff;border-radius:999px;padding:2px 8px;font-size:10px;font-weight:700}
+  .row{display:flex;gap:10px;overflow-x:auto;padding:2px 4px 4px}
+
+  .card{flex:0 0 240px;background:#fff;border-radius:12px;padding:10px 12px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px}
+  .card.active{box-shadow:0 0 0 2px var(--in),var(--shadow)}
+  .top{display:flex;align-items:center;gap:8px}
+  .mesa{background:#1C1E26;color:#fff;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:800;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+  .client{font-size:13px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ms{font-family:'Material Symbols Rounded';font-feature-settings:'liga';line-height:1;font-size:13px}
+  .party{font-size:10px;color:var(--gray-muted);display:flex;align-items:center;gap:2px}
+  .info{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--gray-muted)}
+  .info span{display:flex;align-items:center;gap:3px}
+  .total{margin-left:auto;color:var(--gray-dark);font-weight:700;font-variant-numeric:tabular-nums}
+  .bottom{display:flex;align-items:center;justify-content:space-between}
+  .chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;font-size:10.5px;font-weight:700}
+  .server{font-size:10.5px;color:var(--gray-muted)}
+
+  .st-kitchen{background:#FEF3C7;color:#92400E}
+  .st-served{background:#E0E7FF;color:#4338CA}
+  .st-bill{background:#EDE9FE;color:#6D28D9}
+  .st-draft{background:#F3F4F6;color:#374151}
+  .st-ready{background:#DCFCE7;color:#065F46}
+  .chip .ms{font-size:13px}
+</style></head><body>
+  <div class="dock">
+    <div class="header">
+      <span class="h-lbl">Pedidos rápidos</span>
+      <span class="h-count">8</span>
+    </div>
+    <div class="row">
+      <div class="card active">
+        <div class="top"><span class="mesa">01</span><span class="client">Garcia, L.</span><span class="party"><span class="ms">group</span>3</span></div>
+        <div class="info">
+          <span><span class="ms">restaurant_menu</span>5 ítems</span>
+          <span><span class="ms">schedule</span>12m</span>
+          <span class="total">$ 640.00</span>
+        </div>
+        <div class="bottom">
+          <span class="chip st-kitchen"><span class="ms">soup_kitchen</span>En cocina</span>
+          <span class="server">María</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="top"><span class="mesa">04</span><span class="client">Pareja</span><span class="party"><span class="ms">group</span>2</span></div>
+        <div class="info">
+          <span><span class="ms">restaurant_menu</span>3 ítems</span>
+          <span><span class="ms">schedule</span>8m</span>
+          <span class="total">$ 420.00</span>
+        </div>
+        <div class="bottom">
+          <span class="chip st-served"><span class="ms">restaurant</span>Servido</span>
+          <span class="server">Luis</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="top"><span class="mesa">06</span><span class="client">Familia Pérez</span><span class="party"><span class="ms">group</span>6</span></div>
+        <div class="info">
+          <span><span class="ms">restaurant_menu</span>9 ítems</span>
+          <span><span class="ms">schedule</span>25m</span>
+          <span class="total">$ 1,850.00</span>
+        </div>
+        <div class="bottom">
+          <span class="chip st-bill"><span class="ms">receipt_long</span>Cuenta</span>
+          <span class="server">Pedro</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="top"><span class="mesa">TO-GO</span><span class="client">Mtz. (recoge)</span><span class="party"><span class="ms">group</span>1</span></div>
+        <div class="info">
+          <span><span class="ms">restaurant_menu</span>4 ítems</span>
+          <span><span class="ms">schedule</span>22m</span>
+          <span class="total">$ 480.00</span>
+        </div>
+        <div class="bottom">
+          <span class="chip st-ready"><span class="ms">room_service</span>Listo</span>
+          <span class="server">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body></html>

@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MeridianUI — SHEndevour Dashboard Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<style>
+/* ════════════════════════════════════════════════════
+   TOKENS — Design System SHEndevour Web v1.0
+════════════════════════════════════════════════════ */
+:root {
+  /* Semánticos */
+  --em:#10B981;--em-md:#34D399;--em-lt:#6EE7B7;--em-pl:#DCFCE7;--em-bg:#F0FDF4;
+  --am:#F59E0B;--am-md:#FBB95A;--am-lt:#FDE68A;--am-pl:#FEF3C7;--am-bg:#FFFBEB;
+  --in:#6366F1;--in-md:#A5B4FC;--in-lt:#C7D2FE;--in-pl:#E0E7FF;--in-bg:#EEF2FF;
+  --vi:#8B5CF6;--vi-md:#C4B5FD;--vi-lt:#DDD6FE;--vi-pl:#EDE9FE;--vi-bg:#F5F3FF;
+  --or:#F97316;--or-md:#FB923C;--or-pl:#FFEDD5;--or-bg:#FFF7ED;
+  --pk:#EC4899;
+  /* Material CFDI */
+  --cargo:#2196F3;--abono:#4CAF50;--dscto:#FF9800;--devol:#F44336;
+  /* Primario */
+  --primary:#1976D2;--primary-dark:#1565C0;--primary-light:#BBDEFB;
+  /* Neutros */
+  --gray-dark:#1C1E26;--gray-700:#374151;--gray-muted:#6B7280;
+  --gray-line:#E5E7EB;--gray-foot:#F9FAFB;--page-bg:#F2F3F7;--white:#fff;
+  /* Shell — Light theme */
+  --sidebar-bg:#FFFFFF;--sidebar-active:#F0FDF4;--sidebar-border:#E5E7EB;
+  --shell-text:#1C1E26;--shell-muted:#6B7280;
+  --titlebar-h:48px;--statusbar-h:28px;--sidebar-w:220px;
+  /* Misc */
+  --font:'Segoe UI',system-ui,sans-serif;
+  --font-display:'Montserrat','Segoe UI',sans-serif;
+  --r-sm:6px;--r-md:10px;--r-lg:14px;--r-xl:20px;
+  --shadow:0 1px 4px rgba(0,0,0,.08),0 0 0 .5px rgba(0,0,0,.06);
+  --shadow-2:0 2px 6px rgba(0,0,0,.15),0 1px 3px rgba(0,0,0,.12);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--font);color:var(--gray-dark);overflow:hidden}
+
+/* ════════════════════════════════════════════════════
+   APP SHELL
+════════════════════════════════════════════════════ */
+.shell{
+  display:grid;
+  grid-template-rows:var(--titlebar-h) 1fr var(--statusbar-h);
+  grid-template-columns:var(--sidebar-w) 1fr;
+  height:100vh;
+  grid-template-areas:
+    "titlebar titlebar"
+    "sidebar  main"
+    "statusbar statusbar";
+}
+
+/* ── TITLEBAR ── */
+.titlebar{
+  grid-area:titlebar;
+  background:var(--white);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px 0 0;
+  z-index:200;
+  border-bottom:1px solid var(--gray-line);
+  box-shadow:var(--shadow);
+}
+.tb-left{display:flex;align-items:center;gap:0;height:100%}
+.tb-logo{
+  width:var(--sidebar-w);height:100%;
+  display:flex;align-items:center;gap:10px;
+  padding:0 16px;
+  border-right:1px solid var(--gray-line);
+  flex-shrink:0;
+}
+.tb-logo-icon{
+  width:28px;height:28px;
+  background:linear-gradient(135deg,var(--em),var(--in));
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:14px;font-weight:800;
+  font-family:var(--font-display);
+  flex-shrink:0;
+}
+.tb-logo-name{
+  font-family:var(--font-display);font-size:15px;font-weight:700;
+  color:var(--gray-dark);letter-spacing:.03em;
+}
+.tb-logo-name span{color:var(--em);font-weight:800}
+
+.tb-breadcrumb{
+  display:flex;align-items:center;gap:6px;
+  padding-left:20px;
+  font-size:13px;color:var(--gray-muted);
+}
+.tb-breadcrumb .sep{opacity:.5}
+.tb-breadcrumb .current{color:var(--gray-dark);font-weight:500}
+
+.tb-right{display:flex;align-items:center;gap:10px}
+.tb-chip{
+  display:flex;align-items:center;gap:6px;
+  background:var(--gray-foot);
+  border:1px solid var(--gray-line);
+  border-radius:var(--r-md);
+  padding:5px 10px;
+  font-size:12px;color:var(--gray-700);
+  cursor:pointer;transition:background .15s;
+}
+.tb-chip:hover{background:#F3F4F6}
+.tb-chip .mi{font-size:14px;color:var(--gray-muted)}
+.tb-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--em);flex-shrink:0}
+.tb-avatar{
+  width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,var(--vi),var(--in));
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#fff;cursor:pointer;
+  flex-shrink:0;
+}
+.tb-icon-btn{
+  background:transparent;border:none;
+  color:var(--gray-muted);cursor:pointer;
+  width:32px;height:32px;border-radius:var(--r-sm);
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s,color .15s;
+}
+.tb-icon-btn:hover{background:var(--gray-foot);color:var(--gray-dark)}
+.tb-icon-btn .mi{font-size:18px}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  grid-area:sidebar;
+  background:var(--white);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  border-right:1px solid var(--gray-line);
+  z-index:100;
+}
+.sidebar-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 0}
+.sidebar-scroll::-webkit-scrollbar{width:4px}
+.sidebar-scroll::-webkit-scrollbar-track{background:transparent}
+.sidebar-scroll::-webkit-scrollbar-thumb{background:var(--gray-line);border-radius:4px}
+
+.nav-group-label{
+  font-size:9px;font-weight:700;letter-spacing:.12em;
+  color:var(--gray-muted);text-transform:uppercase;
+  padding:12px 16px 4px;
+}
+.nav-sep{height:1px;background:var(--gray-line);margin:4px 0}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 12px;
+  margin:1px 8px;
+  cursor:pointer;
+  border-left:none;
+  border-radius:var(--r-md);
+  transition:background .12s;
+  text-decoration:none;
+  position:relative;
+}
+.nav-item:hover{background:#F0F4FF}
+.nav-item.active{
+  background:var(--in-bg);
+  box-shadow:0 1px 3px rgba(99,102,241,.12);
+}
+.nav-item .mi{
+  font-size:18px;
+  color:var(--gray-muted);
+  flex-shrink:0;
+  transition:color .12s;
+}
+.nav-item.active .mi{color:var(--in)}
+.nav-item:hover .mi{color:var(--in)}
+.nav-item-label{
+  font-size:13px;font-weight:500;
+  color:var(--gray-muted);
+  transition:color .12s;white-space:nowrap;
+}
+.nav-item.active .nav-item-label{color:var(--in);font-weight:600}
+.nav-item:hover .nav-item-label{color:var(--in)}
+.nav-badge{
+  margin-left:auto;
+  background:var(--em);color:#fff;
+  font-size:9px;font-weight:700;
+  padding:2px 6px;border-radius:10px;
+}
+.nav-badge.amber{background:var(--am)}
+
+.sidebar-footer{
+  padding:10px 12px;
+  border-top:1px solid var(--gray-line);
+  flex-shrink:0;
+}
+.sidebar-user{
+  display:flex;align-items:center;gap:10px;
+  padding:8px;border-radius:var(--r-md);
+  cursor:pointer;transition:background .15s;
+}
+.sidebar-user:hover{background:var(--gray-foot)}
+.sidebar-user-avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,var(--vi),var(--in));
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.sidebar-user-info{flex:1;min-width:0}
+.sidebar-user-name{font-size:12px;font-weight:600;color:var(--gray-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-user-role{font-size:10px;color:var(--gray-muted);white-space:nowrap}
+/* logout btn inside sidebar footer (reuse tb-icon-btn but dark) */
+.sidebar .tb-icon-btn{color:var(--gray-muted)}
+.sidebar .tb-icon-btn:hover{background:var(--gray-foot);color:var(--gray-dark)}
+
+/* ── MAIN AREA ── */
+.main-area{
+  grid-area:main;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  background:var(--page-bg);
+}
+
+/* Content Header */
+.content-header{
+  background:var(--white);
+  border-bottom:1px solid var(--gray-line);
+  padding:0 20px;
+  height:54px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+  box-shadow:var(--shadow);
+  z-index:50;
+}
+.ch-left{display:flex;align-items:center;gap:12px}
+.ch-title{font-size:17px;font-weight:700;color:var(--gray-dark);font-family:var(--font-display)}
+.ch-sub{font-size:12px;color:var(--vi);font-weight:500}
+.ch-right{display:flex;align-items:center;gap:8px}
+.btn-sm{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:6px 12px;border-radius:var(--r-md);
+  font-family:var(--font);font-size:12px;font-weight:500;
+  cursor:pointer;border:none;transition:background .15s;
+}
+.btn-outlined-sm{background:transparent;border:1.5px solid var(--gray-line);color:var(--gray-muted)}
+.btn-outlined-sm:hover{background:var(--gray-foot);border-color:#D1D5DB}
+.btn-primary-sm{background:var(--primary);color:#fff;box-shadow:var(--shadow)}
+.btn-primary-sm:hover{background:var(--primary-dark)}
+.btn-sm .mi{font-size:15px}
+
+/* Main scroll */
+.main-scroll{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  padding:0;
+  background:var(--page-bg);
+}
+.main-scroll::-webkit-scrollbar{width:6px}
+.main-scroll::-webkit-scrollbar-track{background:transparent}
+.main-scroll::-webkit-scrollbar-thumb{background:var(--gray-line);border-radius:4px}
+
+/* ── STATUS BAR ── */
+.statusbar{
+  grid-area:statusbar;
+  background:var(--white);
+  border-top:1px solid var(--gray-line);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;
+  font-size:11px;color:var(--gray-muted);
+  z-index:200;
+}
+.sb-left,.sb-right{display:flex;align-items:center;gap:0}
+.sb-item{display:flex;align-items:center;gap:5px;padding:0 10px;border-right:1px solid var(--gray-line)}
+.sb-item:first-child{padding-left:0}
+.sb-right .sb-item{border-right:none;border-left:1px solid var(--gray-line)}
+.sb-item .mi{font-size:12px;color:var(--gray-muted)}
+.sb-dot{width:6px;height:6px;border-radius:50%;background:var(--em);flex-shrink:0}
+
+/* ════════════════════════════════════════════════════
+   METRICS DASHBOARD (contenido principal)
+════════════════════════════════════════════════════ */
+.metrics-root{
+  display:grid;
+  grid-template-rows:auto auto 1fr auto;
+  min-height:100%;
+}
+
+/* Header del módulo */
+.m-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px 6px;
+}
+.m-header-titles h1{font-size:22px;font-weight:600;color:var(--gray-dark);line-height:1.2}
+.m-header-titles p{font-size:12px;color:var(--vi);margin-top:2px}
+.btn-refresh{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:var(--r-md);
+  border:1px solid #D1D5DB;background:white;
+  color:var(--gray-muted);font-size:12px;font-family:var(--font);
+  cursor:pointer;transition:background .15s;
+}
+.btn-refresh:hover{background:#F9FAFB}
+
+/* KPI Row */
+.kpi-row{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:0;padding:4px 10px;
+}
+.kpi-card{
+  background:var(--white);border-radius:var(--r-xl);
+  margin:6px;box-shadow:var(--shadow);overflow:hidden;position:relative;
+}
+.kpi-accent{height:4px;border-radius:20px 20px 0 0}
+.kpi-body{padding:12px 18px 16px}
+.kpi-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.kpi-label{font-size:11px;font-weight:600;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.6px}
+.kpi-icon{width:20px;height:20px;opacity:.9}
+.kpi-number-row{display:flex;align-items:flex-end;gap:10px;margin:4px 0 0}
+.kpi-number{font-size:42px;font-weight:700;line-height:1}
+.kpi-badge{border-radius:10px;padding:3px 9px;font-size:13px;font-weight:700;margin-bottom:3px}
+.seg-bar{display:flex;height:10px;border-radius:6px;overflow:hidden;margin:12px 0 10px;gap:1px}
+.seg-bar span{border-radius:0;transition:flex .4s ease}
+.seg-bar span:first-child{border-radius:5px 0 0 5px}
+.seg-bar span:last-child{border-radius:0 5px 5px 0}
+.legend{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:4px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--gray-muted)}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+/* Tables Row */
+.tables-row{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  padding:2px 10px;gap:0;
+}
+.table-card{
+  background:var(--white);border-radius:var(--r-lg);
+  margin:6px;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;overflow:hidden;min-height:0;
+}
+.table-header{
+  padding:10px 14px;
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.table-header-label{font-size:10px;font-weight:600;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.5px;line-height:1}
+.table-header-sub{font-size:12px;font-weight:400;margin-top:2px}
+.table-count-badge{border-radius:var(--r-md);padding:4px 10px;font-size:12px;font-weight:700}
+.table-scroll{flex:1;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{
+  position:sticky;top:0;
+  background:#fff;padding:7px 10px;text-align:left;
+  font-size:11px;font-weight:600;color:var(--gray-muted);
+  border-bottom:1px solid var(--gray-line);
+}
+thead th.right{text-align:right}
+tbody tr:hover{background:#FAFAFA}
+tbody td{padding:6px 10px;border-bottom:.5px solid var(--gray-line);color:#374151}
+tbody td.right{text-align:right;font-weight:600}
+tbody td.center{text-align:center}
+.table-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;background:var(--gray-foot);
+  border-radius:0 0 var(--r-lg) var(--r-lg);flex-shrink:0;
+}
+.table-footer-label{font-size:11px;color:var(--gray-muted)}
+.table-footer-total{font-size:13px;font-weight:700}
+
+/* Caja Footer */
+.caja-footer{padding:4px 16px 12px}
+.caja-card{
+  background:var(--white);border-radius:18px;
+  box-shadow:var(--shadow);display:flex;align-items:center;
+}
+.caja-item{flex:1;display:flex;align-items:center;gap:12px;padding:10px 16px}
+.caja-icon-pill{
+  border-radius:var(--r-md);padding:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.caja-icon-pill svg{width:20px;height:20px}
+.caja-text-label{font-size:10px;font-weight:600;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.5px}
+.caja-text-amount{font-size:18px;font-weight:700;margin-top:1px}
+.caja-text-amount.total{font-size:22px}
+.caja-sep{width:1px;background:var(--gray-line);height:44px;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ══════════════════════════════════════════
+       TITLEBAR
+  ══════════════════════════════════════════ -->
+  <header class="titlebar">
+    <div class="tb-left">
+      <div class="tb-logo">
+        <div class="tb-logo-icon">SH</div>
+        <div class="tb-logo-name">SH<span>Endeavour</span></div>
+      </div>
+      <nav class="tb-breadcrumb">
+        <span>Hotel Misión GDL</span>
+        <span class="sep">›</span>
+        <span class="current">Dashboard</span>
+      </nav>
+    </div>
+    <div class="tb-right">
+      <div class="tb-chip">
+        <div class="dot"></div>
+        Turno Matutino
+      </div>
+      <div class="tb-chip">
+        <span class="material-icons-round mi">notifications_none</span>
+        <span>3</span>
+      </div>
+      <button class="tb-icon-btn" title="Modo oscuro">
+        <span class="material-icons-round mi">dark_mode</span>
+      </button>
+      <button class="tb-icon-btn" title="Ayuda">
+        <span class="material-icons-round mi">help_outline</span>
+      </button>
+      <div class="tb-avatar">JR</div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════
+       SIDEBAR
+  ══════════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-scroll">
+
+      <!-- Principal -->
+      <div class="nav-item active" onclick="setActive(this)">
+        <span class="material-icons-round mi">dashboard</span>
+        <span class="nav-item-label">Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="setActive(this)">
+        <span class="material-icons-round mi">bar_chart</span>
+        <span class="nav-item-label">Métricas del Turno</span>
+      </div>
+
+      <div class="nav-sep"></div>
+      <div class="nav-group-label">Operaciones</div>
+
+      <div class="nav-item" onclick="setActive(this)">
+        <span class="material-icons-round mi">bed</span>
+        <span class="nav-item-label">Habitaciones</span>
+      </div>
+      <div class="nav-item" onclick="setActive(this)">
+        <span class="material-icons-round mi">login</span>
+        <span class="nav-item-label">Registros</span>
+        <span class="nav-badge">8</span>
+      </div>
+      <div class="nav-item" onclick="setActive(this)">
+        <span class="material-icons-round mi">event</span>
+        <span class="nav-item-label">Reservas</span>
+        <span class="nav-badge amber">3</span>
+      </div>
+      <div class="nav-item" onclick="setActive(this)">
+        <span class="material-icons-round mi">account_balance_wallet</span>
+        <span class="nav-item-label">Caja</span>
+      </div>
+      <div class="nav-item" onclick="setActive(this)">
+        <span class="material-icons-round mi">restaurant</span>
+        <span class="nav-item-label">Restaurante</span>
+      </div>
+
+      <div class="nav-sep"></div>
+      <div class="nav-group-label">Gerencial</div>
+
+      <div class="nav-item" onclick="setActive(this)">
+        <span class="material-icons-round mi">refresh</span>
+        <span class="nav-item-label">Reproceso</span>
+      </div>
+      <div class="nav-item" onclick="setActive(this)">
+        <span class="material-icons-round mi">receipt_long</span>
+        <span class="nav-item-label">Facturación</span>
+      </div>
+      <div class="nav-item" onclick="setActive(this)">
+        <span class="material-icons-round mi">summarize</span>
+        <span class="nav-item-label">Reportes</span>
+      </div>
+
+      <div class="nav-sep"></div>
+      <div class="nav-group-label">Sistema</div>
+
+      <div class="nav-item" onclick="setActive(this)">
+        <span class="material-icons-round mi">settings</span>
+        <span class="nav-item-label">Configuración</span>
+      </div>
+      <div class="nav-item" onclick="setActive(this)">
+        <span class="material-icons-round mi">manage_accounts</span>
+        <span class="nav-item-label">Usuarios</span>
+      </div>
+
+    </div>
+
+    <!-- User footer -->
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">JR</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">J. Rodríguez</div>
+          <div class="sidebar-user-role">Recepcionista · Mat.</div>
+        </div>
+        <button class="tb-icon-btn" title="Cerrar sesión" style="width:28px;height:28px">
+          <span class="material-icons-round" style="font-size:16px">logout</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══════════════════════════════════════════
+       MAIN AREA
+  ══════════════════════════════════════════ -->
+  <main class="main-area">
+
+    <!-- Content Header (módulo) -->
+    <div class="content-header">
+      <div class="ch-left">
+        <span class="material-icons-round" style="color:var(--vi);font-size:22px">dashboard</span>
+        <div>
+          <div class="ch-title">Resumen del Sistema</div>
+          <div class="ch-sub">jueves, 21 de mayo de 2026</div>
+        </div>
+      </div>
+      <div class="ch-right">
+        <button class="btn-sm btn-outlined-sm">
+          <span class="material-icons-round mi">tune</span> Filtros
+        </button>
+        <button class="btn-sm btn-outlined-sm">
+          <span class="material-icons-round mi">download</span> Exportar
+        </button>
+        <button class="btn-sm btn-primary-sm">
+          <span class="material-icons-round mi">refresh</span> Actualizar
+        </button>
+      </div>
+    </div>
+
+    <!-- Scroll area con el MetricsDashboard -->
+    <div class="main-scroll">
+      <div class="metrics-root">
+
+        <!-- Header del módulo -->
+        <header class="m-header">
+          <div class="m-header-titles">
+            <h1>Resumen del Día</h1>
+            <p>Turno Matutino · 08:00 – 16:00 · Hotel Misión GDL</p>
+          </div>
+          <button class="btn-refresh">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+              <path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+            </svg>
+            Actualizar
+          </button>
+        </header>
+
+        <!-- ══ KPI ROW ══ -->
+        <div class="kpi-row">
+
+          <!-- Llegadas -->
+          <div class="kpi-card">
+            <div class="kpi-accent" style="background:var(--em)"></div>
+            <div class="kpi-body">
+              <div class="kpi-head">
+                <span class="kpi-label">Llegadas</span>
+                <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="var(--em)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 8l4 4-4 4"/><path d="M2 12h13"/><path d="M15 5l7 7-7 7"/><path d="M15 12h7"/>
+                </svg>
+              </div>
+              <div class="kpi-number-row">
+                <span class="kpi-number" style="color:var(--em)">28</span>
+              </div>
+              <div class="seg-bar">
+                <span style="flex:10.7;background:var(--em)"></span>
+                <span style="flex:57.1;background:var(--em-md)"></span>
+                <span style="flex:32.2;background:var(--em-lt)"></span>
+                <span style="flex:0;background:var(--gray-line)"></span>
+              </div>
+              <div class="legend">
+                <div class="legend-item"><div class="dot" style="background:var(--em)"></div>Directos 3</div>
+                <div class="legend-item"><div class="dot" style="background:var(--em-md)"></div>Reservas 16</div>
+                <div class="legend-item"><div class="dot" style="background:var(--em-lt)"></div>Probables 9</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Salidas -->
+          <div class="kpi-card">
+            <div class="kpi-accent" style="background:var(--am)"></div>
+            <div class="kpi-body">
+              <div class="kpi-head">
+                <span class="kpi-label">Salidas</span>
+                <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="var(--am)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 8l-4 4 4 4"/><path d="M22 12H9"/><path d="M9 5L2 12l7 7"/><path d="M9 12H2"/>
+                </svg>
+              </div>
+              <div class="kpi-number-row">
+                <span class="kpi-number" style="color:var(--am)">19</span>
+              </div>
+              <div class="seg-bar">
+                <span style="flex:63.2;background:var(--am)"></span>
+                <span style="flex:15.8;background:var(--am-md)"></span>
+                <span style="flex:21.0;background:var(--am-lt)"></span>
+                <span style="flex:0;background:var(--gray-line)"></span>
+              </div>
+              <div class="legend">
+                <div class="legend-item"><div class="dot" style="background:var(--am)"></div>Realizadas 12</div>
+                <div class="legend-item"><div class="dot" style="background:var(--am-md)"></div>Inesperadas 3</div>
+                <div class="legend-item"><div class="dot" style="background:var(--am-lt)"></div>Programadas 4</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ocupación -->
+          <div class="kpi-card">
+            <div class="kpi-accent" style="background:var(--in)"></div>
+            <div class="kpi-body">
+              <div class="kpi-head">
+                <span class="kpi-label">Ocupación</span>
+                <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="var(--in)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/>
+                </svg>
+              </div>
+              <div class="kpi-number-row">
+                <span class="kpi-number" style="color:var(--in)">51</span>
+                <div class="kpi-badge" style="background:var(--in-bg);color:var(--in)">72.9%</div>
+              </div>
+              <div class="seg-bar">
+                <span style="flex:62.9;background:var(--in)"></span>
+                <span style="flex:10.0;background:var(--in-md)"></span>
+                <span style="flex:5.7;background:var(--pk)"></span>
+                <span style="flex:21.4;background:var(--gray-line)"></span>
+              </div>
+              <div class="legend">
+                <div class="legend-item"><div class="dot" style="background:var(--in)"></div>Ocupadas 44</div>
+                <div class="legend-item"><div class="dot" style="background:var(--in-md)"></div>Uso Casa 7</div>
+                <div class="legend-item"><div class="dot" style="background:var(--pk)"></div>Bloq. 4</div>
+                <div class="legend-item"><div class="dot" style="background:var(--gray-line)"></div>Libres 15</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Forecast -->
+          <div class="kpi-card">
+            <div class="kpi-accent" style="background:var(--vi)"></div>
+            <div class="kpi-body">
+              <div class="kpi-head">
+                <span class="kpi-label">Forecast</span>
+                <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="var(--vi)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+                  <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+                </svg>
+              </div>
+              <div class="kpi-number-row">
+                <span class="kpi-number" style="color:var(--vi)">58</span>
+                <div class="kpi-badge" style="background:var(--vi-bg);color:var(--vi)">82.9%</div>
+              </div>
+              <div class="seg-bar">
+                <span style="flex:60.0;background:var(--vi)"></span>
+                <span style="flex:12.9;background:var(--vi-md)"></span>
+                <span style="flex:5.7;background:var(--pk)"></span>
+                <span style="flex:21.4;background:var(--gray-line)"></span>
+              </div>
+              <div class="legend">
+                <div class="legend-item"><div class="dot" style="background:var(--vi)"></div>Ocupadas 42</div>
+                <div class="legend-item"><div class="dot" style="background:var(--vi-md)"></div>UC 9</div>
+                <div class="legend-item"><div class="dot" style="background:var(--pk)"></div>Bloq. 4</div>
+                <div class="legend-item"><div class="dot" style="background:var(--gray-line)"></div>Libres 15</div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /kpi-row -->
+
+        <!-- ══ TABLAS ══ -->
+        <div class="tables-row">
+
+          <!-- Registros -->
+          <div class="table-card">
+            <div class="table-header" style="background:var(--em-bg);border-radius:var(--r-lg) var(--r-lg) 0 0">
+              <div>
+                <div class="table-header-label">Registros en Turno</div>
+                <div class="table-header-sub" style="color:var(--em)">Check-ins de hoy</div>
+              </div>
+              <div class="table-count-badge" style="background:var(--em-pl);color:var(--em)">8</div>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead><tr><th>Hab.</th><th>Huésped</th><th class="right">Tarifa</th></tr></thead>
+                <tbody>
+                  <tr><td>101</td><td>García Martínez, L.</td><td class="right">$1,450</td></tr>
+                  <tr><td>205</td><td>Rodríguez Pérez, A.</td><td class="right">$2,100</td></tr>
+                  <tr><td>312</td><td>López Hernández, M.</td><td class="right">$1,800</td></tr>
+                  <tr><td>118</td><td>Sánchez Torres, R.</td><td class="right">$1,650</td></tr>
+                  <tr><td>407</td><td>Morales Cruz, J.</td><td class="right">$3,200</td></tr>
+                  <tr><td>220</td><td>Flores Ramírez, C.</td><td class="right">$1,450</td></tr>
+                  <tr><td>309</td><td>Rivera Díaz, P.</td><td class="right">$2,400</td></tr>
+                  <tr><td>115</td><td>González Vega, E.</td><td class="right">$1,800</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="table-footer">
+              <span class="table-footer-label">Total rentas</span>
+              <span class="table-footer-total" style="color:var(--em)">$15,850</span>
+            </div>
+          </div>
+
+          <!-- Rentas y Extras -->
+          <div class="table-card">
+            <div class="table-header" style="background:var(--am-bg);border-radius:var(--r-lg) var(--r-lg) 0 0">
+              <div>
+                <div class="table-header-label">Rentas y Extras</div>
+                <div class="table-header-sub" style="color:var(--am)">Cargos de habitación</div>
+              </div>
+              <div class="table-count-badge" style="background:var(--am-pl);color:var(--am)">5</div>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead><tr><th>Cuenta</th><th class="center">Movs.</th><th class="right">Total</th></tr></thead>
+                <tbody>
+                  <tr><td>1001 · Habitación Estándar</td><td class="center">14</td><td class="right">$18,200</td></tr>
+                  <tr><td>1002 · Habitación Suite</td><td class="center">6</td><td class="right">$14,400</td></tr>
+                  <tr><td>1003 · Junior Suite</td><td class="center">4</td><td class="right">$8,800</td></tr>
+                  <tr><td>1010 · Minibar</td><td class="center">9</td><td class="right">$2,340</td></tr>
+                  <tr><td>1015 · Room Service</td><td class="center">5</td><td class="right">$1,890</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="table-footer">
+              <span class="table-footer-label">Acumulado rentas</span>
+              <span class="table-footer-total" style="color:var(--am)">$45,630</span>
+            </div>
+          </div>
+
+          <!-- Cargos -->
+          <div class="table-card">
+            <div class="table-header" style="background:var(--in-bg);border-radius:var(--r-lg) var(--r-lg) 0 0">
+              <div>
+                <div class="table-header-label">Cargos en Turno</div>
+                <div class="table-header-sub" style="color:var(--in)">Consumos y servicios</div>
+              </div>
+              <div class="table-count-badge" style="background:var(--in-pl);color:var(--in)">6</div>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead><tr><th>Cuenta</th><th class="center">Movs.</th><th class="right">Total</th></tr></thead>
+                <tbody>
+                  <tr><td>2001 · Restaurante</td><td class="center">22</td><td class="right">$8,450</td></tr>
+                  <tr><td>2002 · Bar Lobby</td><td class="center">11</td><td class="right">$3,120</td></tr>
+                  <tr><td>2010 · Lavandería</td><td class="center">4</td><td class="right">$960</td></tr>
+                  <tr><td>2015 · Spa y Wellness</td><td class="center">3</td><td class="right">$2,700</td></tr>
+                  <tr><td>2020 · Estacionamiento</td><td class="center">8</td><td class="right">$400</td></tr>
+                  <tr><td>2030 · Teléfono</td><td class="center">2</td><td class="right">$180</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="table-footer">
+              <span class="table-footer-label">Acumulado cargos</span>
+              <span class="table-footer-total" style="color:var(--in)">$15,810</span>
+            </div>
+          </div>
+
+          <!-- Abonos -->
+          <div class="table-card">
+            <div class="table-header" style="background:var(--vi-bg);border-radius:var(--r-lg) var(--r-lg) 0 0">
+              <div>
+                <div class="table-header-label">Abonos en Turno</div>
+                <div class="table-header-sub" style="color:var(--vi)">Pagos recibidos</div>
+              </div>
+              <div class="table-count-badge" style="background:var(--vi-pl);color:var(--vi)">4</div>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead><tr><th>Cuenta</th><th class="center">Movs.</th><th class="right">Total</th></tr></thead>
+                <tbody>
+                  <tr><td>EFECTIVO</td><td class="center">7</td><td class="right">$12,400</td></tr>
+                  <tr><td>VISA / MASTERCARD</td><td class="center">11</td><td class="right">$28,650</td></tr>
+                  <tr><td>AMEX</td><td class="center">3</td><td class="right">$9,800</td></tr>
+                  <tr><td>TRANSFERENCIA</td><td class="center">2</td><td class="right">$6,200</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="table-footer">
+              <span class="table-footer-label">Acumulado abonos</span>
+              <span class="table-footer-total" style="color:var(--vi)">$57,050</span>
+            </div>
+          </div>
+
+        </div><!-- /tables-row -->
+
+        <!-- ══ FOOTER CAJA ══ -->
+        <div class="caja-footer">
+          <div class="caja-card">
+            <div class="caja-item">
+              <div class="caja-icon-pill" style="background:var(--em-bg)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--em)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+              </div>
+              <div>
+                <div class="caja-text-label">Efectivo</div>
+                <div class="caja-text-amount" style="color:var(--em)">$12,400</div>
+              </div>
+            </div>
+            <div class="caja-item">
+              <div class="caja-icon-pill" style="background:var(--in-bg)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--in)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+                </svg>
+              </div>
+              <div>
+                <div class="caja-text-label">Tarjetas y Otros</div>
+                <div class="caja-text-amount" style="color:var(--in)">$44,650</div>
+              </div>
+            </div>
+            <div class="caja-item">
+              <div class="caja-icon-pill" style="background:var(--or-bg)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                  <line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+                </svg>
+              </div>
+              <div>
+                <div class="caja-text-label">Gastos y Retiros</div>
+                <div class="caja-text-amount" style="color:var(--or)">$1,800</div>
+              </div>
+            </div>
+            <div class="caja-sep"></div>
+            <div class="caja-item">
+              <div class="caja-icon-pill" style="background:var(--vi-bg)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--vi)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/>
+                  <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/>
+                  <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>
+                </svg>
+              </div>
+              <div>
+                <div class="caja-text-label">Total Caja</div>
+                <div class="caja-text-amount total" style="color:var(--vi)">$55,250</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /metrics-root -->
+    </div><!-- /main-scroll -->
+
+  </main><!-- /main-area -->
+
+  <!-- ══════════════════════════════════════════
+       STATUS BAR
+  ══════════════════════════════════════════ -->
+  <footer class="statusbar">
+    <div class="sb-left">
+      <div class="sb-item">
+        <div class="sb-dot"></div>
+        Conectado
+      </div>
+      <div class="sb-item">
+        <span class="material-icons-round mi">schedule</span>
+        Turno Matutino · 08:00 – 16:00
+      </div>
+      <div class="sb-item">
+        <span class="material-icons-round mi">person</span>
+        J. Rodríguez
+      </div>
+    </div>
+    <div class="sb-right">
+      <div class="sb-item">Hotel Misión GDL</div>
+      <div class="sb-item">v2.4.1</div>
+      <div class="sb-item" id="sb-clock">Jue 21 May 2026 · 14:32</div>
+    </div>
+  </footer>
+
+</div><!-- /shell -->
+
+<script>
+function setActive(el) {
+  document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// Reloj en vivo
+function updateClock() {
+  const now = new Date();
+  const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const d = dias[now.getDay()];
+  const dd = String(now.getDate()).padStart(2,'0');
+  const mm = meses[now.getMonth()];
+  const yyyy = now.getFullYear();
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mi = String(now.getMinutes()).padStart(2,'0');
+  const el = document.getElementById('sb-clock');
+  if(el) el.textContent = `${d} ${dd} ${mm} ${yyyy} · ${hh}:${mi}`;
+}
+updateClock();
+setInterval(updateClock, 30000);
+</script>
+</body>
+</html>

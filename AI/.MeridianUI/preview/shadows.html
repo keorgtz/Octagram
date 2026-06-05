@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;background:var(--page-bg);font-family:var(--font);color:var(--gray-dark);padding:24px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .item{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .box{width:100px;height:64px;background:#fff;border-radius:14px}
+  .name{font-size:11px;font-weight:700;color:var(--gray-dark);text-transform:uppercase;letter-spacing:.06em}
+  .hex{font-family:var(--font-mono);font-size:10px;color:var(--gray-muted);text-align:center;max-width:170px;line-height:1.4}
+  .dp0{box-shadow:none;border:1px dashed var(--gray-line)}
+  .dp1{box-shadow:0 1px 4px rgba(0,0,0,.08),0 0 0 .5px rgba(0,0,0,.06)}
+  .dp2{box-shadow:0 2px 6px rgba(0,0,0,.15),0 1px 3px rgba(0,0,0,.12)}
+  .dp3{box-shadow:0 4px 16px rgba(0,0,0,.16)}
+</style></head><body>
+  <div class="grid">
+    <div class="item"><div class="box dp0"></div><div class="name">Dp0</div><div class="hex">Sin sombra — elementos sobre la página</div></div>
+    <div class="item"><div class="box dp1"></div><div class="name">Dp1 · default</div><div class="hex">0 1px 4px / .08 — tarjetas estándar</div></div>
+    <div class="item"><div class="box dp2"></div><div class="name">Dp2</div><div class="hex">0 2px 6px / .15 — barra búsqueda, dropdowns</div></div>
+    <div class="item"><div class="box dp3"></div><div class="name">Dp3</div><div class="hex">0 4px 16px / .16 — modales, tooltips</div></div>
+  </div>
+</body></html>

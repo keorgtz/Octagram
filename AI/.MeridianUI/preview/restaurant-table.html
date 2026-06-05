@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;background:var(--page-bg);font-family:var(--font);color:var(--gray-dark);padding:22px;display:flex;justify-content:center}
+  .rack{display:flex;gap:42px;align-items:center;background:linear-gradient(180deg,#FAFBFC 0%,#F4F6FA 100%);padding:32px 36px;border-radius:14px;box-shadow:var(--shadow)}
+  .cell{position:relative;width:96px;height:96px}
+  .cell.rect{width:160px;height:80px}
+  .chair{position:absolute;width:16px;height:16px;border-radius:50%;transition:background .12s}
+  .surface{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid;box-shadow:var(--shadow);z-index:1;gap:2px}
+  .surface.round{border-radius:50%}
+  .surface.rect{border-radius:12px}
+  .id{font-weight:800;font-size:22px;line-height:1;font-variant-numeric:tabular-nums}
+  .meta{font-size:10px;font-weight:600;display:flex;align-items:center;gap:3px;opacity:.9}
+  .ms{font-family:'Material Symbols Rounded';font-size:11px;font-feature-settings:'liga';line-height:1}
+  .ms.fill{font-variation-settings:'FILL' 1,'wght' 500}
+  .label{margin-top:10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gray-muted);text-align:center}
+  .stack{display:flex;flex-direction:column;align-items:center}
+
+  /* States */
+  .occ .surface{background:#EEF2FF;border-color:#6366F1;color:#4338CA}
+  .occ .chair{background:#A5B4FC}
+  .res .surface{background:#FEF3C7;border-color:#F59E0B;color:#92400E}
+  .res .chair{background:#FBBF24}
+  .av  .surface{background:#FFFFFF;border-color:#D1D5DB;color:#6B7280}
+  .av  .chair{background:#E5E7EB}
+  .att .surface{background:#FFEDD5;border-color:#F97316;color:#9A3412}
+  .att .chair{background:#FB923C}
+  .cle .surface{background:#EDE9FE;border-color:#8B5CF6;color:#6D28D9}
+  .cle .chair{background:#C4B5FD}
+</style></head><body>
+  <div class="rack">
+
+    <div class="stack">
+      <div class="cell occ">
+        <div class="chair" style="left:50%;top:-8px;transform:translateX(-50%)"></div>
+        <div class="chair" style="left:50%;bottom:-8px;transform:translateX(-50%)"></div>
+        <div class="chair" style="top:50%;left:-8px;transform:translateY(-50%)"></div>
+        <div class="chair" style="top:50%;right:-8px;transform:translateY(-50%)"></div>
+        <div class="surface round">
+          <span class="id">01</span>
+          <span class="meta"><span class="ms">group</span>3<span style="opacity:.4;margin:0 1px">·</span><span class="ms">schedule</span>42m</span>
+        </div>
+      </div>
+      <div class="label">Ocupada · indigo</div>
+    </div>
+
+    <div class="stack">
+      <div class="cell av">
+        <div class="chair" style="left:50%;top:-8px;transform:translateX(-50%)"></div>
+        <div class="chair" style="left:50%;bottom:-8px;transform:translateX(-50%)"></div>
+        <div class="chair" style="top:50%;left:-8px;transform:translateY(-50%)"></div>
+        <div class="chair" style="top:50%;right:-8px;transform:translateY(-50%)"></div>
+        <div class="surface round"><span class="id">02</span></div>
+      </div>
+      <div class="label">Libre · gris</div>
+    </div>
+
+    <div class="stack">
+      <div class="cell res">
+        <div class="chair" style="left:50%;top:-8px;transform:translateX(-50%)"></div>
+        <div class="chair" style="left:50%;bottom:-8px;transform:translateX(-50%)"></div>
+        <div class="chair" style="top:50%;left:-8px;transform:translateY(-50%)"></div>
+        <div class="chair" style="top:50%;right:-8px;transform:translateY(-50%)"></div>
+        <div class="surface round">
+          <span class="id">03</span>
+          <span style="font-size:10px;font-weight:600;line-height:1.2;text-align:center">Soto<br/>14:30</span>
+        </div>
+      </div>
+      <div class="label">Reservada · amber</div>
+    </div>
+
+    <div class="stack">
+      <div class="cell rect att">
+        <div class="chair" style="left:25%;top:-8px;transform:translateX(-50%)"></div>
+        <div class="chair" style="left:50%;top:-8px;transform:translateX(-50%)"></div>
+        <div class="chair" style="left:75%;top:-8px;transform:translateX(-50%)"></div>
+        <div class="chair" style="left:25%;bottom:-8px;transform:translateX(-50%)"></div>
+        <div class="chair" style="left:50%;bottom:-8px;transform:translateX(-50%)"></div>
+        <div class="chair" style="left:75%;bottom:-8px;transform:translateX(-50%)"></div>
+        <div class="surface rect">
+          <span class="id">06</span>
+          <span class="ms fill" style="font-size:14px;color:#9A3412">priority_high</span>
+        </div>
+      </div>
+      <div class="label">Atención · orange</div>
+    </div>
+
+    <div class="stack">
+      <div class="cell cle">
+        <div class="chair" style="left:50%;top:-8px;transform:translateX(-50%)"></div>
+        <div class="chair" style="left:50%;bottom:-8px;transform:translateX(-50%)"></div>
+        <div class="chair" style="top:50%;left:-8px;transform:translateY(-50%)"></div>
+        <div class="chair" style="top:50%;right:-8px;transform:translateY(-50%)"></div>
+        <div class="surface round">
+          <span class="id">08</span>
+          <span class="ms" style="font-size:14px;color:#6D28D9">mop</span>
+        </div>
+      </div>
+      <div class="label">Limpiando · violet</div>
+    </div>
+
+  </div>
+</body></html>

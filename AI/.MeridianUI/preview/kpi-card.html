@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;background:var(--page-bg);font-family:var(--font);color:var(--gray-dark);padding:16px}
+  .kpi{background:#fff;border-radius:20px;box-shadow:var(--shadow);overflow:hidden;position:relative;width:380px}
+  .accent{height:4px;border-radius:20px 20px 0 0;background:#10B981}
+  .body{padding:12px 18px 16px}
+  .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+  .label{font-size:11px;font-weight:600;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.06em}
+  .ico{font-family:'Material Symbols Rounded';font-size:22px;color:#10B981}
+  .numrow{display:flex;align-items:flex-end;gap:10px;margin:4px 0 0}
+  .num{font-size:42px;font-weight:700;line-height:1;color:#10B981}
+  .badge{border-radius:10px;padding:3px 9px;font-size:13px;font-weight:700;background:#DCFCE7;color:#10B981;margin-bottom:3px}
+  .seg{display:flex;height:10px;border-radius:6px;overflow:hidden;margin:12px 0 10px;gap:1px}
+  .seg span:first-child{border-radius:5px 0 0 5px}
+  .seg span:last-child{border-radius:0 5px 5px 0}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:4px}
+  .li{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--gray-muted)}
+  .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+</style></head><body>
+  <div class="kpi">
+    <div class="accent"></div>
+    <div class="body">
+      <div class="head">
+        <span class="label">LLEGADAS</span>
+        <span class="ico">flight_land</span>
+      </div>
+      <div class="numrow">
+        <span class="num">17</span>
+      </div>
+      <div class="seg">
+        <span style="flex:6;background:#10B981"></span>
+        <span style="flex:8;background:#34D399"></span>
+        <span style="flex:3;background:#6EE7B7"></span>
+      </div>
+      <div class="legend">
+        <div class="li"><span class="dot" style="background:#10B981"></span>Directos 6</div>
+        <div class="li"><span class="dot" style="background:#34D399"></span>Reserva 8</div>
+        <div class="li"><span class="dot" style="background:#6EE7B7"></span>Probables 3</div>
+      </div>
+    </div>
+  </div>
+</body></html>

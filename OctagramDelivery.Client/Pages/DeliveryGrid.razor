@@ -1,0 +1,164 @@
+@page "/repartos"
+@using OctagramDelivery.Shared.Models
+@inject HttpClient Http
+
+<PageTitle>Mis Repartos</PageTitle>
+
+<h1>Hoja de Ruta - @DateTime.Today.ToString("dd/MM/yyyy")</h1>
+
+@if (deliveryDay == null)
+{
+    <p><em>Cargando jornada...</em></p>
+}
+else
+{
+    <div class="mb-3">
+        <button class="btn btn-primary" @onclick="AddRound">➕ Agregar Vuelta</button>
+        <span class="ms-3 fw-bold">Total Efectivo a Rendir: $@GetGrandTotal()</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th rowspan="2">Cliente</th>
+                    @foreach (var round in deliveryDay.Rounds.OrderBy(r => r.RoundNumber))
+                    {
+                        <th colspan="3" class="text-center">Vuelta @round.RoundNumber</th>
+                    }
+                    <th rowspan="2">Efectivo?</th>
+                </tr>
+                <tr>
+                    @foreach (var round in deliveryDay.Rounds.OrderBy(r => r.RoundNumber))
+                    {
+                        <th>Entregado</th>
+                        <th>Devuelto</th>
+                        <th>Subtotal</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var customerId in GetAllCustomerIds())
+                {
+                    <tr>
+                        <td><strong>Cliente #@customerId</strong></td>
+                        @foreach (var round in deliveryDay.Rounds.OrderBy(r => r.RoundNumber))
+                        {
+                            var detail = GetDetail(round.Id, customerId);
+                            <td>
+                                <input type="number" class="form-control form-control-sm" @bind="detail.QuantityDelivered" @bind:event="oninput" style="width: 80px;" />
+                            </td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm text-danger" @bind="detail.QuantityReturned" @bind:event="oninput" style="width: 80px;" />
+                            </td>
+                            <td class="text-end fw-bold">
+                                $@(((detail.QuantityDelivered - detail.QuantityReturned) * detail.PriceAtDelivery).ToString("0.00"))
+                            </td>
+                        }
+                        <td class="text-center">
+                            <input type="checkbox" class="form-check-input" @bind="GetFirstDetail(customerId).IsCashPayment" title="¿Pagó en efectivo?" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot class="table-light fw-bold">
+                <tr>
+                    <td>TOTALES</td>
+                    @foreach (var round in deliveryDay.Rounds.OrderBy(r => r.RoundNumber))
+                    {
+                        <td colspan="2"></td>
+                        <td class="text-end">$@GetRoundTotal(round.Id)</td>
+                    }
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+}
+
+@code {
+    private DeliveryDay? deliveryDay;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // TODO: Cargar datos reales de la API. 
+        // Mock rápido para demostración.
+        deliveryDay = new DeliveryDay
+        {
+            Id = 1,
+            Date = DateTime.Today,
+            Rounds = new List<DeliveryRound>
+            {
+                new DeliveryRound { Id = 1, RoundNumber = 1, Details = CreateMockDetails(1) }
+            }
+        };
+    }
+
+    private void AddRound()
+    {
+        var nextRoundId = deliveryDay!.Rounds.Count + 1;
+        deliveryDay.Rounds.Add(new DeliveryRound 
+        { 
+            Id = nextRoundId, 
+            RoundNumber = nextRoundId,
+            Details = CreateMockDetails(nextRoundId)
+        });
+    }
+
+    private List<DeliveryDetail> CreateMockDetails(int roundId)
+    {
+        return new List<DeliveryDetail>
+        {
+            new DeliveryDetail { DeliveryRoundId = roundId, CustomerId = 101, PriceAtDelivery = 50, IsCashPayment = true },
+            new DeliveryDetail { DeliveryRoundId = roundId, CustomerId = 102, PriceAtDelivery = 75, IsCashPayment = true }
+        };
+    }
+
+    private IEnumerable<int> GetAllCustomerIds()
+    {
+        return deliveryDay!.Rounds.SelectMany(r => r.Details).Select(d => d.CustomerId).Distinct();
+    }
+
+    private DeliveryDetail GetDetail(int roundId, int customerId)
+    {
+        var round = deliveryDay!.Rounds.First(r => r.Id == roundId);
+        var detail = round.Details.FirstOrDefault(d => d.CustomerId == customerId);
+        if (detail == null)
+        {
+            detail = new DeliveryDetail { DeliveryRoundId = roundId, CustomerId = customerId, PriceAtDelivery = 0 };
+            round.Details.Add(detail);
+        }
+        return detail;
+    }
+
+    private DeliveryDetail GetFirstDetail(int customerId)
+    {
+        return deliveryDay!.Rounds.First().Details.First(d => d.CustomerId == customerId);
+    }
+
+    private decimal GetRoundTotal(int roundId)
+    {
+        var round = deliveryDay!.Rounds.First(r => r.Id == roundId);
+        return round.Details.Sum(d => (d.QuantityDelivered - d.QuantityReturned) * d.PriceAtDelivery);
+    }
+
+    private decimal GetGrandTotal()
+    {
+        if (deliveryDay == null) return 0;
+        
+        decimal total = 0;
+        foreach (var round in deliveryDay.Rounds)
+        {
+            foreach (var detail in round.Details)
+            {
+                // Si el primer detail del cliente dice que es cash, sumamos
+                var isCash = GetFirstDetail(detail.CustomerId).IsCashPayment;
+                if (isCash)
+                {
+                    total += (detail.QuantityDelivered - detail.QuantityReturned) * detail.PriceAtDelivery;
+                }
+            }
+        }
+        return total;
+    }
+}

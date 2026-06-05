@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "keorsoft-local",
+  "description": "Plugins locales de Keorsoft — MeridianUI design system y herramientas internas.",
+  "owner": {
+    "name": "Keorsoft",
+    "email": "kevin00ortizgtz@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "meridianui-design",
+      "description": "MeridianUI — Keorsoft design system for HTML/CSS, Blazor Web, WPF/XAML and .NET MAUI. Provides tokens, components and guidelines for SHEndevour and all Keorsoft products.",
+      "source": "..",
+      "category": "development",
+      "author": {
+        "name": "Keorsoft",
+        "email": "kevin00ortizgtz@gmail.com"
+      }
+    }
+  ]
+}

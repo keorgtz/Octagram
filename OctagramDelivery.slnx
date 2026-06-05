@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="OctagramDelivery.Api/OctagramDelivery.Api.csproj" />
+  <Project Path="OctagramDelivery.Client/OctagramDelivery.Client.csproj" />
+  <Project Path="OctagramDelivery.Shared/OctagramDelivery.Shared.csproj" />
+</Solution>

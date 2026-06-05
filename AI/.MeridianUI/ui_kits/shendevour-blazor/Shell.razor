@@ -1,0 +1,108 @@
+@* MeridianUI · Shell — Layout principal de la aplicación.
+   Incluye Titlebar + Sidebar + Main content area + Statusbar.
+
+   Requiere colors_and_type.css y el CSS de estilos de shell.
+   Para el CSS completo del shell, ver ui_kits/shendevour-web/styles.css.
+*@
+
+<div class="shell meridian-base">
+
+    <!-- Titlebar -->
+    <header class="titlebar">
+        <div class="titlebar-left">
+            <img src="@LogoSrc" alt="@AppName" class="titlebar-logo" />
+            @if (!string.IsNullOrEmpty(BreadcrumbHotel))
+            {
+                <nav class="titlebar-breadcrumb">
+                    <span class="t-body-sm" style="color: var(--gray-muted);">@BreadcrumbHotel</span>
+                    <span style="color: var(--gray-muted); margin: 0 4px;">›</span>
+                    <span class="t-body-sm">@BreadcrumbModule</span>
+                </nav>
+            }
+        </div>
+        <div class="titlebar-right">
+            @if (TitlebarRight != null) { @TitlebarRight }
+            <!-- Avatar de usuario -->
+            <div class="titlebar-avatar"
+                 style="background: linear-gradient(135deg, var(--vi), var(--in)); color: #fff;
+                        width: 32px; height: 32px; border-radius: 50%;
+                        display: flex; align-items: center; justify-content: center;
+                        font-size: var(--fs-12); font-weight: var(--fw-semi);">
+                @UserInitials
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <nav class="sidebar-nav">
+            @if (NavItems != null)
+            {
+                @foreach (var group in NavItems)
+                {
+                    <div class="sidebar-group">
+                        <span class="sidebar-group-label t-meta">@group.Label</span>
+                        @foreach (var item in group.Items)
+                        {
+                            <a class="sidebar-item @(item.IsActive ? "active" : "")"
+                               href="@item.Href">
+                                <MIcon Name="@item.Icon"
+                                       Fill="@item.IsActive"
+                                       Size="18" />
+                                <span class="t-body-sm">@item.Label</span>
+                            </a>
+                        }
+                    </div>
+                }
+            }
+        </nav>
+    </aside>
+
+    <!-- Contenido principal -->
+    <main class="main">
+        @ChildContent
+    </main>
+
+    <!-- Statusbar -->
+    <footer class="statusbar">
+        <div class="statusbar-left">
+            <span class="t-meta" style="color: var(--gray-muted);">
+                ● @ConnectionStatus · Turno: @TurnoName · @UserName
+            </span>
+        </div>
+        <div class="statusbar-right">
+            <span class="t-meta" style="color: var(--gray-muted);">
+                v@AppVersion
+            </span>
+        </div>
+    </footer>
+</div>
+
+@code {
+    [Parameter] public string AppName { get; set; } = "SHEndevour";
+    [Parameter] public string LogoSrc { get; set; } = "";
+    [Parameter] public string BreadcrumbHotel { get; set; } = "";
+    [Parameter] public string BreadcrumbModule { get; set; } = "";
+    [Parameter] public string UserName { get; set; } = "";
+    [Parameter] public string UserInitials { get; set; } = "U";
+    [Parameter] public string TurnoName { get; set; } = "";
+    [Parameter] public string ConnectionStatus { get; set; } = "Conectado";
+    [Parameter] public string AppVersion { get; set; } = "";
+    [Parameter] public List<NavGroup>? NavItems { get; set; }
+    [Parameter] public RenderFragment? TitlebarRight { get; set; }
+    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+
+    public class NavGroup
+    {
+        public string Label { get; set; } = "";
+        public List<NavItem> Items { get; set; } = new();
+    }
+
+    public class NavItem
+    {
+        public string Label { get; set; } = "";
+        public string Icon { get; set; } = "";
+        public string Href { get; set; } = "#";
+        public bool IsActive { get; set; } = false;
+    }
+}

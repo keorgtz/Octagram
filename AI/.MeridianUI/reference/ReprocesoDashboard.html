@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Reproceso – SHEndevour</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<style>
+/* ── RESET & BASE ─────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#f1f1f1;font-family:'Roboto',sans-serif;color:#212121;font-size:14px}
+
+/* ── MATERIAL PALETTE ────────────────────────────────── */
+:root{
+  --primary-dark:#1565C0;
+  --primary-mid:#1976D2;
+  --primary-light:#BBDEFB;
+  --surface:#ffffff;
+  --bg:#f1f1f1;
+  --divider:#e0e0e0;
+  --body:#212121;
+  --body-light:#757575;
+  --toolbar-bg:#f5f5f5;
+
+  --cargo:#2196F3;
+  --abono:#4CAF50;
+  --dscto:#FF9800;
+  --devol:#F44336;
+
+  --shadow1:0 1px 3px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.14);
+  --shadow2:0 2px 6px rgba(0,0,0,.15),0 1px 3px rgba(0,0,0,.12);
+}
+
+/* ── LAYOUT ──────────────────────────────────────────── */
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.main-scroll{flex:1;overflow-y:auto;padding:0 12px;padding-bottom:8px}
+
+/* ── HEADER (ROW 0) ──────────────────────────────────── */
+.header{
+  background:#1565C0;
+  padding:10px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.header-left{display:flex;align-items:center;gap:12px}
+.header-icon{color:#fff;font-size:28px;display:flex;align-items:center}
+.header-title{color:#000;font-family:'Montserrat',sans-serif;font-size:20px;font-weight:700;letter-spacing:.03em}
+.header-sub{color:#323232;font-size:12px;margin-top:2px}
+.spinner{
+  width:26px;height:26px;
+  border:3px solid rgba(255,255,255,.3);
+  border-top-color:dodgerblue;
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+  display:none;
+}
+.spinner.active{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── CARD BASE ───────────────────────────────────────── */
+.card{
+  background:var(--surface);
+  border-radius:10px;
+  box-shadow:var(--shadow1);
+}
+
+/* ── ROW 1: BUSQUEDA ─────────────────────────────────── */
+.search-bar{
+  margin:8px 0 6px;
+  padding:12px 16px;
+  display:flex;align-items:center;gap:0;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.search-icon{color:var(--primary-mid);font-size:22px;margin-right:10px}
+.date-field{
+  display:flex;flex-direction:column;gap:2px;position:relative;
+}
+.date-field label{font-size:10px;color:var(--primary-mid);font-weight:500;letter-spacing:.04em;position:absolute;top:-8px;left:12px;background:#fff;padding:0 3px}
+.date-input{
+  border:1.5px solid var(--primary-mid);
+  border-radius:4px;padding:8px 12px;
+  font-family:'Roboto',sans-serif;font-size:13px;
+  color:var(--body);outline:none;
+  min-width:160px;
+  background:#fff;
+}
+.sep{width:1px;background:var(--divider);height:36px;margin:0 12px}
+.status-msg{flex:1;font-size:12px;font-style:italic;color:var(--body-light);min-width:120px}
+.sel-btns{display:flex;gap:6px}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  border-radius:4px;padding:0 16px;height:36px;
+  font-family:'Roboto',sans-serif;font-size:13px;font-weight:500;
+  cursor:pointer;border:none;transition:background .15s,box-shadow .15s;
+  letter-spacing:.03em;white-space:nowrap;
+}
+.btn-outlined{background:transparent;border:1.5px solid var(--primary-mid);color:var(--primary-mid)}
+.btn-outlined:hover{background:rgba(25,118,210,.06)}
+.btn-raised{
+  background:var(--primary-mid);color:#fff;
+  box-shadow:var(--shadow1);
+  height:40px;padding:0 20px;font-size:14px;font-weight:600;
+}
+.btn-raised:hover{background:#1565C0;box-shadow:var(--shadow2)}
+.btn-raised:disabled{background:#bdbdbd;color:#fff;cursor:not-allowed;box-shadow:none}
+.btn .mi{font-size:18px}
+
+/* ── ROW 2: BARRA ORDEN ──────────────────────────────── */
+.sort-bar{
+  margin:0 0 6px;
+  padding:7px 10px;
+  display:flex;align-items:center;gap:0;
+}
+.sort-label{font-size:11px;color:var(--body-light);display:flex;align-items:center;gap:6px;margin-right:10px}
+.sort-label .mi{font-size:16px}
+.sort-btn{
+  display:inline-flex;align-items:center;gap:3px;
+  background:transparent;border:none;
+  color:var(--primary-mid);font-family:'Roboto',sans-serif;font-size:11px;font-weight:500;
+  padding:0 10px;height:30px;cursor:pointer;border-radius:4px;
+  transition:background .12s;
+}
+.sort-btn:hover{background:rgba(25,118,210,.08)}
+.sort-btn .mi{font-size:14px;color:var(--body-light)}
+.sort-btn.active .mi{color:var(--primary-mid)}
+
+/* ── ROW 3: KPI CARDS ────────────────────────────────── */
+.kpi-row{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:8px;
+  margin-bottom:8px;
+}
+.kpi-card{padding:14px;border-radius:8px;background:#fff;box-shadow:var(--shadow1)}
+.kpi-head{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.kpi-head .mi{font-size:16px}
+.kpi-lbl{font-size:9px;font-weight:700;color:var(--body-light);letter-spacing:.08em}
+.kpi-val{font-size:28px;font-weight:700;line-height:1;margin-top:4px;font-family:'Montserrat',sans-serif}
+.c-primary{color:var(--primary-mid)}
+.c-purple{color:#9C27B0}
+.c-green{color:#4CAF50}
+.c-amber{color:#FF9800}
+.c-dark{color:#323232}
+
+/* ── ROW 4: LISTA ────────────────────────────────────── */
+.notas-list{display:flex;flex-direction:column;gap:0}
+
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px 0;color:var(--body-light);
+}
+.empty-state .mi{font-size:56px;margin-bottom:12px;opacity:.4}
+.empty-state p{font-size:16px;margin-bottom:4px}
+.empty-state span{font-size:12px;opacity:.7}
+
+/* ── NOTA CARD ───────────────────────────────────────── */
+.nota-card{
+  background:#fff;border-radius:8px;box-shadow:var(--shadow1);
+  margin-bottom:8px;overflow:hidden;
+  transition:box-shadow .15s;
+}
+.nota-card:hover{box-shadow:var(--shadow2)}
+
+.nota-header{
+  display:grid;
+  grid-template-columns: 32px 80px 150px 1fr 130px 135px 70px;
+  align-items:center;gap:0;
+  padding:10px 12px;
+}
+/* col widths mirror XAML: Auto 70 140 * 120 120 Auto */
+
+.nota-cb{width:18px;height:18px;accent-color:var(--primary-mid);cursor:pointer}
+.nota-cb:disabled{cursor:not-allowed;opacity:.5}
+
+.nota-field{display:flex;flex-direction:column}
+.nota-field-lbl{font-size:9px;font-weight:700;color:var(--body-light);letter-spacing:.08em}
+.nota-field-val{font-size:13px;font-weight:700;color:var(--body)}
+.nota-field-val.folio{font-size:14px;font-weight:700;color:var(--body)}
+.nota-field-val.origen{font-size:11px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nota-field-val.cliente{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nota-field-val.total{font-size:15px;font-weight:700;color:var(--primary-mid);text-align:right}
+.nota-field-val.total-lbl{font-size:9px;font-weight:700;color:var(--body-light);text-align:right;letter-spacing:.08em}
+
+/* Chips forma pago + facturada */
+.chips-col{display:flex;flex-direction:column;gap:3px;align-items:flex-start;padding:0 8px}
+.chip{
+  display:inline-flex;align-items:center;gap:4px;
+  border-radius:12px;padding:3px 10px;
+  font-size:10px;font-weight:600;white-space:nowrap;
+}
+.chip .mi{font-size:12px}
+.chip-pago-01{background:rgba(76,175,80,.15);color:#388E3C}   /* efectivo */
+.chip-pago-04{background:rgba(33,150,243,.15);color:#1565C0}  /* tarj cred */
+.chip-pago-28{background:rgba(156,39,176,.15);color:#7B1FA2}  /* tarj deb */
+.chip-pago-03{background:rgba(255,152,0,.15);color:#E65100}   /* transf */
+.chip-pago-99{background:rgba(158,158,158,.15);color:#616161} /* s/d */
+.chip-facturada{background:rgba(76,175,80,.15);color:#388E3C}
+
+/* Expand button */
+.expand-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:3px;
+  background:transparent;border:none;cursor:pointer;
+  border-radius:50%;width:40px;height:40px;
+  transition:background .12s;
+  color:var(--body-light);font-size:11px;font-weight:700;
+}
+.expand-btn:hover{background:rgba(0,0,0,.06)}
+.expand-btn .mi{font-size:22px;transition:transform .2s,color .2s}
+.expand-btn.open .mi{transform:rotate(180deg);color:var(--primary-mid)}
+.expand-btn .mov-count{font-size:11px;font-weight:700}
+
+/* ── DETALLE ─────────────────────────────────────────── */
+.nota-detail{
+  display:none;
+  background:#e9e9e9;
+  border-top:1px solid var(--divider);
+  padding:10px 16px 14px;
+  animation:slideIn .18s ease;
+}
+.nota-detail.open{display:block}
+@keyframes slideIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+.detail-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.detail-title{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700;color:var(--body-light);letter-spacing:.08em}
+.detail-title .mi{font-size:16px}
+.detail-totals{display:flex;gap:8px}
+.detail-total-chip{
+  display:flex;align-items:center;gap:4px;
+  border-radius:4px;padding:3px 8px;font-size:11px;font-weight:600;
+}
+.dtc-cargo{background:rgba(33,150,243,.15);color:var(--cargo)}
+.dtc-abono{background:rgba(76,175,80,.15);color:var(--abono)}
+
+/* Movimiento row */
+.mov-list{display:flex;flex-direction:column;gap:5px}
+.mov-row{
+  display:grid;
+  grid-template-columns:90px 1fr 130px 110px;
+  align-items:center;gap:8px;
+  background:#fff;border:1px solid var(--divider);
+  border-radius:4px;padding:7px 8px;
+}
+.mov-badge{
+  display:inline-flex;align-items:center;
+  border-radius:3px;padding:2px 6px;
+  font-size:10px;font-weight:700;white-space:nowrap;
+}
+.mb-cargo{background:rgba(33,150,243,.08);color:var(--cargo)}
+.mb-abono{background:rgba(76,175,80,.08);color:var(--abono)}
+.mb-dscto{background:rgba(255,152,0,.08);color:var(--dscto)}
+.mb-devol{background:rgba(244,67,54,.08);color:var(--devol)}
+
+.mov-concepto{display:flex;flex-direction:column}
+.mov-acc-desc{font-size:12px;color:var(--body)}
+.mov-group{font-size:10px;color:var(--body-light)}
+.mov-ref{font-size:11px;color:var(--body-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mov-monto{font-size:13px;font-weight:700;text-align:right}
+
+/* ── FOOTER (ROW 5) ──────────────────────────────────── */
+.footer{
+  background:var(--toolbar-bg);
+  border-top:1px solid var(--divider);
+  padding:10px 12px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+  gap:12px;
+}
+.footer-kpis{display:flex;gap:8px}
+.fkpi{
+  border-radius:8px;padding:8px 12px;
+  display:flex;flex-direction:column;gap:2px;
+  border:1px solid;
+}
+.fkpi-green{background:#E8F5E9;border-color:#A5D6A7}
+.fkpi-amber{background:#FFF3E0;border-color:#FFCC80}
+.fkpi-blue {background:#E3F2FD;border-color:#90CAF9}
+.fkpi-head{display:flex;align-items:center;gap:5px;font-size:8px;font-weight:700;letter-spacing:.08em}
+.fkpi-head .mi{font-size:14px}
+.fkpi-green .fkpi-head{color:#388E3C}
+.fkpi-amber .fkpi-head{color:#E65100}
+.fkpi-blue  .fkpi-head{color:#1565C0}
+.fkpi-val{font-size:16px;font-weight:700;margin-top:2px}
+.fkpi-green .fkpi-val{color:#2E7D32}
+.fkpi-amber .fkpi-val{color:#BF360C}
+.fkpi-blue  .fkpi-val{color:#0D47A1}
+
+.footer-right{display:flex;align-items:center;gap:12px}
+.result-panel{
+  display:none;align-items:center;gap:8px;
+  background:#E8F5E9;border:1px solid #A5D6A7;
+  border-radius:8px;padding:8px 12px;
+}
+.result-panel.show{display:flex}
+.result-panel .mi{color:#388E3C;font-size:18px}
+.result-panel span{font-size:12px;color:#2E7D32}
+
+.btn-reprocesar{
+  background:var(--primary-mid);color:#fff;
+  box-shadow:var(--shadow1);
+  border-radius:8px;padding:0 24px;height:44px;
+  font-family:'Roboto',sans-serif;font-size:14px;font-weight:700;
+  display:inline-flex;align-items:center;gap:10px;
+  border:none;cursor:pointer;
+  transition:background .15s,box-shadow .15s;letter-spacing:.04em;
+}
+.btn-reprocesar:hover{background:#1565C0;box-shadow:var(--shadow2)}
+.btn-reprocesar:disabled{background:#bdbdbd;cursor:not-allowed;box-shadow:none}
+.btn-reprocesar .mi{font-size:20px}
+.btn-reprocesar-inner{display:flex;flex-direction:column;align-items:flex-start}
+.btn-reprocesar-inner small{font-size:10px;opacity:.85;font-weight:400}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ══ ROW 0: HEADER ══════════════════════════════════ -->
+  <div class="header">
+    <div class="header-left">
+      <span class="header-icon"><span class="material-icons-round">refresh</span></span>
+      <div>
+        <div class="header-title">REPROCESO</div>
+        <div class="header-sub">Clasificación de notas para facturación</div>
+      </div>
+    </div>
+    <div id="spinner" class="spinner"></div>
+  </div>
+
+  <!-- ══ SCROLL AREA ════════════════════════════════════ -->
+  <div class="main-scroll">
+
+    <!-- ── ROW 1: BÚSQUEDA ─────────────────────────── -->
+    <div class="card search-bar" style="margin-top:8px">
+      <span class="material-icons-round search-icon">calendar_today</span>
+
+      <div class="date-field">
+        <label>Fecha de búsqueda</label>
+        <input type="date" class="date-input" id="fechaBusqueda" value="2025-03-31"/>
+      </div>
+
+      <div class="sep"></div>
+
+      <span class="status-msg" id="statusMsg">12 notas encontradas para el 31/03/2025</span>
+
+      <div class="sel-btns">
+        <button class="btn btn-outlined" onclick="selAll(true)">
+          <span class="material-icons-round mi">check_box_outline_blank</span> Todas
+        </button>
+        <button class="btn btn-outlined" onclick="selAll(false)">
+          <span class="material-icons-round mi">indeterminate_check_box</span> Ninguna
+        </button>
+      </div>
+
+      <button class="btn btn-raised" id="btnBuscar" onclick="buscar()">
+        <span class="material-icons-round mi">search</span> Buscar
+      </button>
+    </div>
+
+    <!-- ── ROW 2: BARRA DE ORDENAMIENTO ───────────────── -->
+    <div class="card sort-bar">
+      <span class="sort-label">
+        <span class="material-icons-round">sort</span> Ordenar por:
+      </span>
+      <button class="sort-btn" onclick="ordenar('num')">
+        # Nota <span class="material-icons-round" id="si-num">unfold_more</span>
+      </button>
+      <button class="sort-btn" onclick="ordenar('cliente')">
+        Cliente <span class="material-icons-round" id="si-cliente">unfold_more</span>
+      </button>
+      <button class="sort-btn" onclick="ordenar('pago')">
+        Forma de pago <span class="material-icons-round" id="si-pago">unfold_more</span>
+      </button>
+      <button class="sort-btn" onclick="ordenar('total')">
+        Total <span class="material-icons-round" id="si-total">unfold_more</span>
+      </button>
+      <button class="sort-btn" onclick="ordenar('facturada')">
+        Facturadas <span class="material-icons-round" id="si-facturada">unfold_more</span>
+      </button>
+      <button class="sort-btn" onclick="ordenar('origen')">
+        Origen <span class="material-icons-round" id="si-origen">unfold_more</span>
+      </button>
+    </div>
+
+    <!-- ── ROW 3: KPI CARDS ───────────────────────────── -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-head">
+          <span class="material-icons-round mi c-primary" style="font-size:16px">description</span>
+          <span class="kpi-lbl">TOTAL NOTAS</span>
+        </div>
+        <div class="kpi-val c-primary" id="kpiTotal">12</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-head">
+          <span class="material-icons-round mi c-purple" style="font-size:16px">check_box</span>
+          <span class="kpi-lbl">SELECCIONADAS</span>
+        </div>
+        <div class="kpi-val c-purple" id="kpiSel">7</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-head">
+          <span class="material-icons-round mi c-green" style="font-size:16px">check_circle</span>
+          <span class="kpi-lbl">FACTURADAS</span>
+        </div>
+        <div class="kpi-val c-green" id="kpiFacturadas">4</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-head">
+          <span class="material-icons-round mi c-amber" style="font-size:16px">schedule</span>
+          <span class="kpi-lbl">SIN FACTURA</span>
+        </div>
+        <div class="kpi-val c-amber" id="kpiSinFact">8</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-head">
+          <span class="material-icons-round mi c-dark" style="font-size:16px">attach_money</span>
+          <span class="kpi-lbl c-dark">TOTAL GENERAL</span>
+        </div>
+        <div class="kpi-val c-dark" id="kpiTotal$" style="font-size:20px">$48,230.00</div>
+      </div>
+    </div>
+
+    <!-- ── ROW 4: LISTA DE NOTAS ──────────────────────── -->
+    <div class="notas-list" id="notasList"></div>
+
+  </div><!-- /main-scroll -->
+
+  <!-- ══ ROW 5: FOOTER ══════════════════════════════════ -->
+  <div class="footer">
+    <div class="footer-kpis">
+      <!-- A REPROCESAR (fiscales seleccionadas no facturadas) -->
+      <div class="fkpi fkpi-green">
+        <div class="fkpi-head">
+          <span class="material-icons-round">payments</span> A REPROCESAR
+        </div>
+        <div class="fkpi-val" id="ftReprocesar">$24,380.00</div>
+      </div>
+      <!-- VENTAS AL PUBLICO (no seleccionadas, no facturadas) -->
+      <div class="fkpi fkpi-amber">
+        <div class="fkpi-head">
+          <span class="material-icons-round">person</span> VENTAS AL PÚBLICO
+        </div>
+        <div class="fkpi-val" id="ftVentas">$4,550.00</div>
+      </div>
+      <!-- YA FACTURADAS -->
+      <div class="fkpi fkpi-blue">
+        <div class="fkpi-head">
+          <span class="material-icons-round">task</span> YA FACTURADAS
+        </div>
+        <div class="fkpi-val" id="ftFacturadas">$19,300.00</div>
+      </div>
+    </div>
+
+    <div class="footer-right">
+      <div class="result-panel" id="resultPanel">
+        <span class="material-icons-round">check_circle_outline</span>
+        <span id="resultMsg">Reproceso completado</span>
+      </div>
+      <button class="btn-reprocesar" id="btnReprocesar" onclick="reprocesar()">
+        <span class="material-icons-round">refresh</span>
+        <div class="btn-reprocesar-inner">
+          <span>REPROCESAR NOTAS</span>
+          <small id="btnSub">7 seleccionada(s)</small>
+        </div>
+      </button>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   DATA — espejo de SaleNoteWrapper + Movimientos
+   AccountType: Cargo | Abono | Descuento | Devolucion
+   FormaPagoClave: 01 efectivo | 04 t.cred | 28 t.deb | 03 transf | 99 s/d
+   ═══════════════════════════════════════════════════════ */
+const NOTAS = [
+  {
+    id:1, num:31, origen:'Registro #142 - Hab. 301', cliente:'Rest. El Rincón S.A.',
+    totalNeta:3200, facturada:false, esEfectivo:false, seleccionada:true,
+    formaPagoClave:'04', formaPagoLabel:'Tarjeta Crédito',
+    movs:[
+      {tipo:'Cargo',    desc:'Alimentos y Bebidas',  grupo:'F&B',          ref:'MOV-2210', monto:2800},
+      {tipo:'Abono',    desc:'Anticipo de habitación',grupo:'Reservas',     ref:'MOV-2211', monto:400},
+      {tipo:'Descuento',desc:'Descuento corporativo', grupo:'Descuentos',   ref:'MOV-2212', monto:200},
+    ]
+  },
+  {
+    id:2, num:32, origen:'Reserva RES-0091',         cliente:'Hotel Marqués de Guadalajara',
+    totalNeta:5800, facturada:false, esEfectivo:false, seleccionada:true,
+    formaPagoClave:'03', formaPagoLabel:'Transferencia',
+    movs:[
+      {tipo:'Cargo',    desc:'Noche Estándar x2',    grupo:'Habitaciones',  ref:'MOV-2220', monto:4500},
+      {tipo:'Cargo',    desc:'Room Service',          grupo:'F&B',          ref:'MOV-2221', monto:1800},
+      {tipo:'Abono',    desc:'Saldo a favor previo',  grupo:'Abonos',       ref:'MOV-2222', monto:500},
+    ]
+  },
+  {
+    id:3, num:33, origen:'Venta Directa',            cliente:'[Público General]',
+    totalNeta:980, facturada:true, esEfectivo:false, seleccionada:false,
+    formaPagoClave:'04', formaPagoLabel:'Tarjeta Crédito',
+    movs:[
+      {tipo:'Cargo',    desc:'Orden Tacos x12',      grupo:'Alimentos',    ref:'MOV-2230', monto:780},
+      {tipo:'Cargo',    desc:'Bebidas',               grupo:'Bebidas',      ref:'MOV-2231', monto:200},
+    ]
+  },
+  {
+    id:4, num:34, origen:'Cta Maestra CM-004',       cliente:'Spa Nirvana Wellness',
+    totalNeta:4200, facturada:false, esEfectivo:false, seleccionada:true,
+    formaPagoClave:'28', formaPagoLabel:'Tarjeta Débito',
+    movs:[
+      {tipo:'Cargo',    desc:'Masaje Relajante 90min',grupo:'Spa',          ref:'MOV-2240', monto:2400},
+      {tipo:'Cargo',    desc:'Facial Premium',         grupo:'Spa',          ref:'MOV-2241', monto:1800},
+    ]
+  },
+  {
+    id:5, num:35, origen:'Venta Directa',            cliente:'[Efectivo mostrador]',
+    totalNeta:460, facturada:false, esEfectivo:true, seleccionada:false,
+    formaPagoClave:'01', formaPagoLabel:'Efectivo',
+    movs:[
+      {tipo:'Cargo',    desc:'Caja Rápida – consumo', grupo:'Ventas',       ref:'MOV-2250', monto:460},
+    ]
+  },
+  {
+    id:6, num:36, origen:'Registro #167 - Hab. 512', cliente:'Boutique Zafiro S. de R.L.',
+    totalNeta:6100, facturada:false, esEfectivo:false, seleccionada:true,
+    formaPagoClave:'04', formaPagoLabel:'Tarjeta Crédito',
+    movs:[
+      {tipo:'Cargo',    desc:'Vestido de Gala Couture',grupo:'Boutique',    ref:'MOV-2260', monto:4800},
+      {tipo:'Abono',    desc:'Crédito previo',          grupo:'Abonos',      ref:'MOV-2261', monto:700},
+      {tipo:'Cargo',    desc:'Accesorios',              grupo:'Boutique',    ref:'MOV-2262', monto:2000},
+    ]
+  },
+  {
+    id:7, num:37, origen:'Venta Directa',            cliente:'[Efectivo mostrador]',
+    totalNeta:310, facturada:false, esEfectivo:true, seleccionada:false,
+    formaPagoClave:'01', formaPagoLabel:'Efectivo',
+    movs:[
+      {tipo:'Cargo',    desc:'Consumo mostrador',      grupo:'Ventas',      ref:'MOV-2270', monto:310},
+    ]
+  },
+  {
+    id:8, num:38, origen:'Reserva RES-0104',         cliente:'Café & Brunch Moderno',
+    totalNeta:1240, facturada:true, esEfectivo:false, seleccionada:false,
+    formaPagoClave:'28', formaPagoLabel:'Tarjeta Débito',
+    movs:[
+      {tipo:'Cargo',    desc:'Brunch Ejecutivo x4',   grupo:'Alimentos',   ref:'MOV-2280', monto:960},
+      {tipo:'Cargo',    desc:'Bebidas Frías',          grupo:'Bebidas',     ref:'MOV-2281', monto:280},
+    ]
+  },
+  {
+    id:9, num:39, origen:'Registro #201 - Hab. 118', cliente:'Gym PowerFit GDL',
+    totalNeta:2100, facturada:false, esEfectivo:false, seleccionada:true,
+    formaPagoClave:'03', formaPagoLabel:'Transferencia',
+    movs:[
+      {tipo:'Cargo',    desc:'Mensualidad Premium',   grupo:'Membresías',  ref:'MOV-2290', monto:1400},
+      {tipo:'Cargo',    desc:'Clases Personalizadas', grupo:'Servicios',   ref:'MOV-2291', monto:700},
+    ]
+  },
+  {
+    id:10,num:40, origen:'Venta Directa',            cliente:'Librería Siglo XXI',
+    totalNeta:880, facturada:true, esEfectivo:false, seleccionada:false,
+    formaPagoClave:'04', formaPagoLabel:'Tarjeta Crédito',
+    movs:[
+      {tipo:'Cargo',    desc:'Libros Técnicos x6',   grupo:'Librería',    ref:'MOV-2300', monto:880},
+    ]
+  },
+  {
+    id:11,num:41, origen:'Cta Maestra CM-011',       cliente:'Joyería La Cruz Dorada',
+    totalNeta:8900, facturada:false, esEfectivo:false, seleccionada:true,
+    formaPagoClave:'03', formaPagoLabel:'Transferencia',
+    movs:[
+      {tipo:'Cargo',    desc:'Anillo Platino 18k',    grupo:'Joyería',     ref:'MOV-2310', monto:7200},
+      {tipo:'Abono',    desc:'Anticipo previo',        grupo:'Abonos',      ref:'MOV-2311', monto:1500},
+      {tipo:'Cargo',    desc:'Grabado personalizado',  grupo:'Servicios',   ref:'MOV-2312', monto:1200},
+      {tipo:'Descuento',desc:'Descuento VIP 5%',       grupo:'Descuentos',  ref:'MOV-2313', monto:500},
+      {tipo:'Devolucion',desc:'Devolución arreglo',    grupo:'Devoluciones',ref:'MOV-2314', monto:100},
+    ]
+  },
+  {
+    id:12,num:42, origen:'Venta Directa',            cliente:'Clínica Salud+ Integral',
+    totalNeta:1500, facturada:true, esEfectivo:false, seleccionada:false,
+    formaPagoClave:'99', formaPagoLabel:'Por definir',
+    movs:[
+      {tipo:'Cargo',    desc:'Consulta General',      grupo:'Médicos',     ref:'MOV-2320', monto:900},
+      {tipo:'Cargo',    desc:'Estudios Básicos',       grupo:'Laboratorio', ref:'MOV-2321', monto:600},
+    ]
+  },
+];
+
+/* ── helpers ── */
+const mxn = v => v.toLocaleString('es-MX',{style:'currency',currency:'MXN'});
+const PAGO_CLASS = {'01':'chip-pago-01','04':'chip-pago-04','28':'chip-pago-28','03':'chip-pago-03','99':'chip-pago-99'};
+const PAGO_ICON  = {'01':'payments','04':'credit_card','28':'credit_card','03':'swap_horiz','99':'help_outline'};
+const TIPO_CLASS = {Cargo:'mb-cargo',Abono:'mb-abono',Descuento:'mb-dscto',Devolucion:'mb-devol'};
+const TIPO_COL   = {Cargo:'var(--cargo)',Abono:'var(--abono)',Descuento:'var(--dscto)',Devolucion:'var(--devol)'};
+
+/* sort state */
+let sortKey = null, sortAsc = true;
+
+/* ── RENDER ───────────────────────────────────────────── */
+function render() {
+  const list = document.getElementById('notasList');
+  let notas = [...NOTAS];
+
+  if (sortKey) {
+    notas.sort((a,b) => {
+      let va,vb;
+      if (sortKey==='num')       { va=a.num;            vb=b.num; }
+      else if (sortKey==='cliente'){ va=a.cliente;       vb=b.cliente; }
+      else if (sortKey==='pago') { va=a.formaPagoLabel; vb=b.formaPagoLabel; }
+      else if (sortKey==='total'){ va=a.totalNeta;      vb=b.totalNeta; }
+      else if (sortKey==='facturada'){ va=a.facturada?1:0; vb=b.facturada?1:0; }
+      else if (sortKey==='origen'){ va=a.origen;        vb=b.origen; }
+      const r = typeof va==='string' ? va.localeCompare(vb,'es') : va-vb;
+      return sortAsc ? r : -r;
+    });
+  }
+
+  if (notas.length===0) {
+    list.innerHTML = `<div class="empty-state">
+      <span class="material-icons-round">manage_search</span>
+      <p>No hay notas cargadas</p>
+      <span>Selecciona una fecha y presiona Buscar para comenzar.</span>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = notas.map(n => notaHTML(n)).join('');
+  actualizarKpis();
+}
+
+function notaHTML(n) {
+  const pagoCls = PAGO_CLASS[n.formaPagoClave]||'chip-pago-99';
+  const pagoIco = PAGO_ICON[n.formaPagoClave]||'help_outline';
+  const chipFact = n.facturada
+    ? `<div class="chip chip-facturada">
+         <span class="material-icons-round">check_circle</span> Facturada
+       </div>` : '';
+
+  const totCargos = n.movs.filter(m=>m.tipo==='Cargo').reduce((a,b)=>a+b.monto,0);
+  const totAbonos = n.movs.filter(m=>m.tipo==='Abono'||m.tipo==='Descuento'||m.tipo==='Devolucion').reduce((a,b)=>a+b.monto,0);
+
+  const movRows = n.movs.map(m=>`
+    <div class="mov-row">
+      <span class="mov-badge ${TIPO_CLASS[m.tipo]}">${m.tipo}</span>
+      <div class="mov-concepto">
+        <span class="mov-acc-desc">${m.desc}</span>
+        <span class="mov-group">${m.grupo}</span>
+      </div>
+      <span class="mov-ref">${m.ref}</span>
+      <span class="mov-monto" style="color:${TIPO_COL[m.tipo]}">${mxn(m.monto)}</span>
+    </div>`).join('');
+
+  return `
+  <div class="nota-card" id="nc-${n.id}">
+    <div class="nota-header">
+      <input type="checkbox" class="nota-cb"
+        ${n.seleccionada?'checked':''}
+        ${n.facturada?'disabled':''}
+        onchange="toggle(${n.id},this.checked)"/>
+
+      <div class="nota-field">
+        <span class="nota-field-lbl">NOTA</span>
+        <span class="nota-field-val folio">${n.num}</span>
+      </div>
+
+      <div class="nota-field" style="max-width:148px">
+        <span class="nota-field-lbl">ORIGEN</span>
+        <span class="nota-field-val origen" title="${n.origen}">${n.origen}</span>
+      </div>
+
+      <div class="nota-field" style="min-width:0">
+        <span class="nota-field-lbl">CLIENTE</span>
+        <span class="nota-field-val cliente" title="${n.cliente}">${n.cliente}</span>
+      </div>
+
+      <div class="nota-field" style="text-align:right;padding-right:12px">
+        <span class="nota-field-val total-lbl">TOTAL NETO</span>
+        <span class="nota-field-val total">${mxn(n.totalNeta)}</span>
+      </div>
+
+      <div class="chips-col">
+        <div class="chip ${pagoCls}">
+          <span class="material-icons-round" style="font-size:12px">${pagoIco}</span>
+          ${n.formaPagoLabel}
+        </div>
+        ${chipFact}
+      </div>
+
+      <button class="expand-btn" id="eb-${n.id}" onclick="expandir(${n.id})">
+        <span class="mov-count">${n.movs.length}</span>
+        <span class="material-icons-round">expand_more</span>
+      </button>
+    </div>
+
+    <div class="nota-detail" id="det-${n.id}">
+      <div class="detail-head">
+        <div class="detail-title">
+          <span class="material-icons-round">swap_vert</span> MOVIMIENTOS
+        </div>
+        <div class="detail-totals">
+          <div class="detail-total-chip dtc-cargo">Cargos: <b>${mxn(totCargos)}</b></div>
+          <div class="detail-total-chip dtc-abono">Abonos: <b>${mxn(totAbonos)}</b></div>
+        </div>
+      </div>
+      <div class="mov-list">${movRows}</div>
+    </div>
+  </div>`;
+}
+
+/* ── ACTIONS ──────────────────────────────────────────── */
+function toggle(id, val) {
+  NOTAS.find(n=>n.id===id).seleccionada = val;
+  actualizarKpis();
+}
+
+function expandir(id) {
+  document.getElementById('det-'+id).classList.toggle('open');
+  document.getElementById('eb-'+id).classList.toggle('open');
+}
+
+function selAll(val) {
+  NOTAS.forEach(n=>{ if(!n.facturada) n.seleccionada=val; });
+  render();
+}
+
+function ordenar(key) {
+  const icons = ['num','cliente','pago','total','facturada','origen'];
+  if (sortKey===key) sortAsc=!sortAsc; else { sortKey=key; sortAsc=true; }
+  icons.forEach(k=>{
+    const el = document.getElementById('si-'+k);
+    if(!el) return;
+    el.textContent = k===key ? (sortAsc?'arrow_upward':'arrow_downward') : 'unfold_more';
+    el.parentElement.classList.toggle('active', k===key);
+  });
+  render();
+}
+
+function actualizarKpis() {
+  const total    = NOTAS.length;
+  const sel      = NOTAS.filter(n=>n.seleccionada);
+  const fact     = NOTAS.filter(n=>n.facturada);
+  const noFact   = NOTAS.filter(n=>!n.facturada);
+  const totalGen = NOTAS.reduce((a,b)=>a+b.totalNeta,0);
+
+  // footer KPIs
+  const aRep    = sel.filter(n=>!n.facturada).reduce((a,b)=>a+b.totalNeta,0);
+  const ventasPub = NOTAS.filter(n=>!n.seleccionada&&!n.facturada).reduce((a,b)=>a+b.totalNeta,0);
+  const yaFact  = fact.reduce((a,b)=>a+b.totalNeta,0);
+
+  document.getElementById('kpiTotal').textContent     = total;
+  document.getElementById('kpiSel').textContent       = sel.length;
+  document.getElementById('kpiFacturadas').textContent= fact.length;
+  document.getElementById('kpiSinFact').textContent   = noFact.length;
+  document.getElementById('kpiTotal$').textContent    = mxn(totalGen);
+
+  document.getElementById('ftReprocesar').textContent = mxn(aRep);
+  document.getElementById('ftVentas').textContent     = mxn(ventasPub);
+  document.getElementById('ftFacturadas').textContent = mxn(yaFact);
+
+  document.getElementById('btnSub').textContent       = sel.length + ' seleccionada(s)';
+  document.getElementById('btnReprocesar').disabled   = sel.length===0;
+}
+
+function buscar() {
+  const sp  = document.getElementById('spinner');
+  const msg = document.getElementById('statusMsg');
+  const btn = document.getElementById('btnBuscar');
+  sp.classList.add('active'); btn.disabled=true;
+  msg.textContent = 'Buscando notas...';
+  document.getElementById('resultPanel').classList.remove('show');
+  setTimeout(()=>{
+    sp.classList.remove('active'); btn.disabled=false;
+    const d = document.getElementById('fechaBusqueda').value;
+    const [y,m,dd] = d.split('-');
+    msg.textContent = `${NOTAS.length} notas encontradas para el ${dd}/${m}/${y}`;
+    render();
+  }, 900);
+}
+
+function reprocesar() {
+  const sp  = document.getElementById('spinner');
+  const btn = document.getElementById('btnReprocesar');
+  sp.classList.add('active'); btn.disabled=true;
+  setTimeout(()=>{
+    sp.classList.remove('active');
+    const sel    = NOTAS.filter(n=>n.seleccionada);
+    const fiscal = sel.filter(n=>!n.esEfectivo&&!n.facturada).length;
+    const ns     = sel.filter(n=>n.esEfectivo).length;
+    const panel  = document.getElementById('resultPanel');
+    document.getElementById('resultMsg').textContent =
+      `Reproceso completado. ${fiscal} fiscal(es) renumerada(s), ${ns} marcada(s) NS.`;
+    panel.classList.add('show');
+    actualizarKpis();
+    btn.disabled = NOTAS.filter(n=>n.seleccionada).length===0;
+  }, 1300);
+}
+
+/* init */
+render();
+</script>
+</body>
+</html>

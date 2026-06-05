@@ -1,0 +1,22 @@
+@* MeridianUI · MIcon — Material Symbols Rounded wrapper
+   Requiere la fuente Material Symbols Rounded cargada en el <head>:
+   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet"/>
+*@
+
+<span class="material-symbols-rounded @(Fill ? "fill" : "")"
+      style="font-size: @(Size)px; @(string.IsNullOrEmpty(Color) ? "" : $"color: {Color};") line-height: 1; user-select: none;"
+      aria-hidden="true">@Name</span>
+
+@code {
+    /// <summary>Nombre del ícono en Material Symbols (e.g. "dashboard", "restaurant")</summary>
+    [Parameter, EditorRequired] public string Name { get; set; } = "";
+
+    /// <summary>Tamaño en px. Default 24.</summary>
+    [Parameter] public int Size { get; set; } = 24;
+
+    /// <summary>Si true, usa la variante filled (estado activo).</summary>
+    [Parameter] public bool Fill { get; set; } = false;
+
+    /// <summary>Color CSS. Si vacío, hereda del padre.</summary>
+    [Parameter] public string Color { get; set; } = "";
+}

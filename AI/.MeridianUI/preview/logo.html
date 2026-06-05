@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;background:#fff;font-family:var(--font);color:var(--gray-dark);padding:20px}
+  h3{font-family:var(--font);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-muted);margin:0 0 12px}
+  .row{display:flex;align-items:center;gap:28px;flex-wrap:wrap;margin-bottom:16px}
+  .block{display:flex;align-items:center;gap:12px}
+  .icon{border-radius:14px;overflow:hidden;flex-shrink:0;box-shadow:var(--shadow)}
+  .icon.s64{width:64px;height:64px}
+  .icon.s48{width:48px;height:48px;border-radius:12px}
+  .icon.s32{width:32px;height:32px;border-radius:8px}
+  .icon img{width:100%;height:100%;object-fit:cover;display:block}
+  .wm{font-family:var(--font-brand);font-weight:700;color:var(--gray-dark);letter-spacing:-.005em}
+  .wm b{color:var(--kr-blue);font-weight:700}
+  .wm.lg{font-size:28px} .wm{font-size:20px} .wm.sm{font-size:15px}
+  .key{font-family:var(--font-mono);font-size:10px;color:var(--gray-muted);margin-top:6px}
+  .col{display:flex;flex-direction:column;gap:2px}
+  hr{border:none;border-top:1px dashed var(--gray-line);margin:8px 0 18px}
+  .meta{font-size:11px;color:var(--gray-muted);margin-top:6px;line-height:1.5;max-width:640px}
+  .meta b{color:var(--gray-dark)}
+  .flag{background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:8px 12px;font-size:11.5px;color:#92400E;margin-top:10px}
+</style></head><body>
+
+<h3>Keorsoft · marca corporativa</h3>
+<div class="row">
+  <div class="block">
+    <div class="icon s64"><img src="assets/keorsoft-logo.png" alt="Keorsoft" /></div>
+    <div class="col"><span class="wm lg"><b>Keor</b>soft</span><span class="key">@64 · radius 14 · master</span></div>
+  </div>
+  <div class="block">
+    <div class="icon s48"><img src="assets/keorsoft-logo.png" alt="" /></div>
+    <div class="col"><span class="wm"><b>Keor</b>soft</span><span class="key">@48 · radius 12</span></div>
+  </div>
+  <div class="block">
+    <div class="icon s32"><img src="assets/keorsoft-logo.png" alt="" /></div>
+    <div class="col"><span class="wm sm"><b>Keor</b>soft</span><span class="key">@32 · radius 8 · titlebar</span></div>
+  </div>
+</div>
+
+<hr/>
+
+<h3>SHEndevour · producto</h3>
+<div class="row">
+  <div class="block">
+    <div class="icon s48"><img src="assets/keorsoft-logo.png" alt="" /></div>
+    <div class="col"><span class="wm">SH<b>Endevour</b></span><span class="key">Hotel Management System</span></div>
+  </div>
+</div>
+
+<div class="meta">
+  <b>Tipografía de marca:</b> sólo los wordmarks (<i>Keorsoft</i>, <i>SHEndevour</i>, etc) usan <b>Coco Gothic</b>. El resto del producto usa Inter / Segoe UI — Coco Gothic nunca aparece en UI corriente.<br/>
+  <b>Construcción de logo:</b> mark “ó” sobre fondo de ondas en azul Keorsoft (#0E98F8 · firma) con variaciones (#51B1FB · #C3D9F0). El mark vive como PNG/SVG, nunca redibujado a mano.
+</div>
+
+<div class="flag">
+  ⚠ <b>Coco Gothic es comercial</b> (Type Depot). No se sirve por CDN. Donde aparezca un wordmark en HTML, debe entregarse como <code>&lt;img&gt;</code> PNG/SVG. Esta página renderiza con fallback Inter — el preview es indicativo, no final.
+</div>
+</body></html>

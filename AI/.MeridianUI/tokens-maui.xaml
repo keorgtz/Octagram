@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!--
+        Keorsoft · MeridianUI · Design Tokens for .NET MAUI
+        Versión 1.1 — Fuente: colors_and_type.css
+
+        Uso en MauiProgram.cs:
+            .ConfigureFonts(fonts =>
+            {
+                fonts.AddFont("Inter-Regular.ttf",  "InterRegular");
+                fonts.AddFont("Inter-Medium.ttf",   "InterMedium");
+                fonts.AddFont("Inter-SemiBold.ttf", "InterSemiBold");
+                fonts.AddFont("Inter-Bold.ttf",     "InterBold");
+            })
+
+        Uso en App.xaml:
+            <Application.Resources>
+                <ResourceDictionary>
+                    <ResourceDictionary.MergedDictionaries>
+                        <ResourceDictionary Source="Resources/Styles/MeridianTokens.xaml"/>
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
+            </Application.Resources>
+
+        Convención: misma que tokens-wpf.xaml sin el sufijo "Brush" (MAUI usa Color).
+    -->
+
+    <!-- ══════════════════════════════════════════════════════════════
+         1 · COLORES SEMÁNTICOS — 5 niveles
+         ══════════════════════════════════════════════════════════════ -->
+
+    <!-- Emerald — OK / Ingreso / Éxito / Llegadas -->
+    <Color x:Key="Em">#10B981</Color>
+    <Color x:Key="EmMd">#34D399</Color>
+    <Color x:Key="EmLt">#6EE7B7</Color>
+    <Color x:Key="EmPl">#DCFCE7</Color>
+    <Color x:Key="EmBg">#F0FDF4</Color>
+
+    <!-- Amber — Alerta / Pendiente / Salidas -->
+    <Color x:Key="Am">#F59E0B</Color>
+    <Color x:Key="AmMd">#FBB95A</Color>
+    <Color x:Key="AmLt">#FDE68A</Color>
+    <Color x:Key="AmPl">#FEF3C7</Color>
+    <Color x:Key="AmBg">#FFFBEB</Color>
+
+    <!-- Indigo — Neutro / Referencia / Ocupación -->
+    <Color x:Key="In">#6366F1</Color>
+    <Color x:Key="InMd">#A5B4FC</Color>
+    <Color x:Key="InLt">#C7D2FE</Color>
+    <Color x:Key="InPl">#E0E7FF</Color>
+    <Color x:Key="InBg">#EEF2FF</Color>
+
+    <!-- Violet — Total / Resumen / Forecast -->
+    <Color x:Key="Vi">#8B5CF6</Color>
+    <Color x:Key="ViMd">#C4B5FD</Color>
+    <Color x:Key="ViLt">#DDD6FE</Color>
+    <Color x:Key="ViPl">#EDE9FE</Color>
+    <Color x:Key="ViBg">#F5F3FF</Color>
+
+    <!-- Orange — Gasto / Advertencia -->
+    <Color x:Key="Or">#F97316</Color>
+    <Color x:Key="OrMd">#FB923C</Color>
+    <Color x:Key="OrLt">#FED7AA</Color>
+    <Color x:Key="OrPl">#FFEDD5</Color>
+    <Color x:Key="OrBg">#FFF7ED</Color>
+
+    <!-- Keorsoft Brand Blues -->
+    <Color x:Key="KrBlue">#0E98F8</Color>
+    <Color x:Key="KrBlueMid">#51B1FB</Color>
+    <Color x:Key="KrBluePale">#C3D9F0</Color>
+    <Color x:Key="KrBlueDark">#0B5FA8</Color>
+    <Color x:Key="KrInk">#1C1E26</Color>
+
+    <!-- Material legacy — CFDI -->
+    <Color x:Key="Cargo">#2196F3</Color>
+    <Color x:Key="Abono">#4CAF50</Color>
+    <Color x:Key="Dscto">#FF9800</Color>
+    <Color x:Key="Devol">#F44336</Color>
+
+    <!-- Formas de pago SAT -->
+    <Color x:Key="PayEfec">#4CAF50</Color>
+    <Color x:Key="PayTcred">#2196F3</Color>
+    <Color x:Key="PayTdeb">#9C27B0</Color>
+    <Color x:Key="PayTrans">#FF9800</Color>
+    <Color x:Key="PayNone">#9E9E9E</Color>
+
+    <!-- Primary -->
+    <Color x:Key="Primary">#1976D2</Color>
+    <Color x:Key="PrimaryDark">#1565C0</Color>
+    <Color x:Key="PrimaryLight">#BBDEFB</Color>
+
+    <!-- Neutros -->
+    <Color x:Key="GrayDark">#1C1E26</Color>
+    <Color x:Key="Gray700">#374151</Color>
+    <Color x:Key="GrayMuted">#6B7280</Color>
+    <Color x:Key="GrayLine">#E5E7EB</Color>
+    <Color x:Key="GrayFoot">#F9FAFB</Color>
+    <Color x:Key="PageBg">#F2F3F7</Color>
+    <Color x:Key="White">#FFFFFF</Color>
+
+    <!-- App Shell -->
+    <Color x:Key="SidebarBg">#FFFFFF</Color>
+    <Color x:Key="SidebarActiveBg">#EEF2FF</Color>
+    <Color x:Key="SidebarActiveFg">#6366F1</Color>
+    <Color x:Key="SidebarHoverBg">#F0F4FF</Color>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         2 · TIPOGRAFÍA — FontSizes como Double
+         ══════════════════════════════════════════════════════════════ -->
+    <x:Double x:Key="Fs9">9</x:Double>
+    <x:Double x:Key="Fs10">10</x:Double>
+    <x:Double x:Key="Fs11">11</x:Double>
+    <x:Double x:Key="Fs12">12</x:Double>
+    <x:Double x:Key="Fs13">13</x:Double>
+    <x:Double x:Key="Fs14">14</x:Double>
+    <x:Double x:Key="Fs16">16</x:Double>
+    <x:Double x:Key="Fs18">18</x:Double>
+    <x:Double x:Key="Fs22">22</x:Double>
+    <x:Double x:Key="Fs28">28</x:Double>
+    <x:Double x:Key="Fs42">42</x:Double>
+
+    <!-- Font names (registrados en MauiProgram.cs) -->
+    <x:String x:Key="FontMain">InterRegular</x:String>
+    <x:String x:Key="FontMedium">InterMedium</x:String>
+    <x:String x:Key="FontSemiBold">InterSemiBold</x:String>
+    <x:String x:Key="FontBold">InterBold</x:String>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         3 · ESPACIADO — Base 4 px
+         ══════════════════════════════════════════════════════════════ -->
+    <x:Double x:Key="S1">4</x:Double>
+    <x:Double x:Key="S2">8</x:Double>
+    <x:Double x:Key="S3">12</x:Double>
+    <x:Double x:Key="S4">16</x:Double>
+    <x:Double x:Key="S5">20</x:Double>
+    <x:Double x:Key="S6">24</x:Double>
+    <x:Double x:Key="S7">32</x:Double>
+    <x:Double x:Key="S8">40</x:Double>
+
+    <Thickness x:Key="PaddingCard">16</Thickness>
+    <Thickness x:Key="PaddingKpiCard">18,14,18,14</Thickness>
+    <Thickness x:Key="PaddingButton">16,8,16,8</Thickness>
+    <Thickness x:Key="PaddingChip">8,4,8,4</Thickness>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         4 · RADIOS
+         ══════════════════════════════════════════════════════════════ -->
+    <x:Double x:Key="RadiusSm">6</x:Double>
+    <x:Double x:Key="RadiusMd">10</x:Double>
+    <x:Double x:Key="RadiusLg">14</x:Double>
+    <x:Double x:Key="RadiusXl">20</x:Double>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         5 · ESTILOS SEMÁNTICOS — Label
+         ══════════════════════════════════════════════════════════════ -->
+
+    <Style x:Key="HPageTitle" TargetType="Label">
+        <Setter Property="FontFamily"   Value="{StaticResource FontSemiBold}"/>
+        <Setter Property="FontSize"     Value="{StaticResource Fs22}"/>
+        <Setter Property="TextColor"    Value="{StaticResource GrayDark}"/>
+    </Style>
+
+    <Style x:Key="HSectionTitle" TargetType="Label">
+        <Setter Property="FontFamily"   Value="{StaticResource FontBold}"/>
+        <Setter Property="FontSize"     Value="{StaticResource Fs18}"/>
+        <Setter Property="TextColor"    Value="{StaticResource GrayDark}"/>
+    </Style>
+
+    <Style x:Key="TKpiValue" TargetType="Label">
+        <Setter Property="FontFamily"   Value="{StaticResource FontBold}"/>
+        <Setter Property="FontSize"     Value="{StaticResource Fs42}"/>
+        <Setter Property="TextColor"    Value="{StaticResource GrayDark}"/>
+    </Style>
+
+    <Style x:Key="TKpiValueMd" TargetType="Label">
+        <Setter Property="FontFamily"   Value="{StaticResource FontBold}"/>
+        <Setter Property="FontSize"     Value="{StaticResource Fs28}"/>
+        <Setter Property="TextColor"    Value="{StaticResource GrayDark}"/>
+    </Style>
+
+    <!-- TLabel: UPPERCASE via TextTransform + letter-spacing via CharacterSpacing -->
+    <Style x:Key="TLabel" TargetType="Label">
+        <Setter Property="FontFamily"       Value="{StaticResource FontSemiBold}"/>
+        <Setter Property="FontSize"         Value="{StaticResource Fs11}"/>
+        <Setter Property="TextColor"        Value="{StaticResource GrayMuted}"/>
+        <Setter Property="TextTransform"    Value="Uppercase"/>
+        <Setter Property="CharacterSpacing" Value="60"/>
+    </Style>
+
+    <Style x:Key="TMeta" TargetType="Label">
+        <Setter Property="FontFamily"       Value="{StaticResource FontBold}"/>
+        <Setter Property="FontSize"         Value="{StaticResource Fs9}"/>
+        <Setter Property="TextColor"        Value="{StaticResource GrayMuted}"/>
+        <Setter Property="TextTransform"    Value="Uppercase"/>
+        <Setter Property="CharacterSpacing" Value="80"/>
+    </Style>
+
+    <Style x:Key="TBody" TargetType="Label">
+        <Setter Property="FontFamily"   Value="{StaticResource FontMain}"/>
+        <Setter Property="FontSize"     Value="{StaticResource Fs13}"/>
+        <Setter Property="TextColor"    Value="{StaticResource Gray700}"/>
+    </Style>
+
+    <Style x:Key="TBodySm" TargetType="Label">
+        <Setter Property="FontFamily"   Value="{StaticResource FontMain}"/>
+        <Setter Property="FontSize"     Value="{StaticResource Fs12}"/>
+        <Setter Property="TextColor"    Value="{StaticResource Gray700}"/>
+    </Style>
+
+    <Style x:Key="TAmount" TargetType="Label">
+        <Setter Property="FontFamily"   Value="{StaticResource FontSemiBold}"/>
+        <Setter Property="FontSize"     Value="{StaticResource Fs13}"/>
+        <Setter Property="TextColor"    Value="{StaticResource GrayDark}"/>
+    </Style>
+
+    <!-- Estilo base de página -->
+    <Style x:Key="MeridianPage" TargetType="ContentPage">
+        <Setter Property="BackgroundColor" Value="{StaticResource PageBg}"/>
+    </Style>
+
+    <!-- Frame / Border como card -->
+    <Style x:Key="CardBase" TargetType="Border">
+        <Setter Property="BackgroundColor"  Value="{StaticResource White}"/>
+        <Setter Property="StrokeShape"      Value="RoundRectangle 14"/>
+        <Setter Property="Stroke"           Value="Transparent"/>
+        <Setter Property="StrokeThickness"  Value="0"/>
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="{StaticResource GrayDark}" Offset="0,2" Radius="4" Opacity="0.08"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="KpiCard" TargetType="Border">
+        <Setter Property="BackgroundColor"  Value="{StaticResource White}"/>
+        <Setter Property="StrokeShape"      Value="RoundRectangle 20"/>
+        <Setter Property="Stroke"           Value="Transparent"/>
+        <Setter Property="StrokeThickness"  Value="0"/>
+        <Setter Property="Padding"          Value="{StaticResource PaddingKpiCard}"/>
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="{StaticResource GrayDark}" Offset="0,2" Radius="4" Opacity="0.08"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

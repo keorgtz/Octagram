@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;background:#fff;font-family:var(--font);color:var(--gray-dark);padding:20px}
+  .grid{display:grid;grid-template-columns:repeat(3,auto) 1fr;gap:14px 18px;align-items:center}
+  .lbl{font-size:10px;color:var(--gray-muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+  .btn{display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;font-family:var(--font);transition:all .15s;letter-spacing:.02em}
+  .btn .mi{font-family:'Material Symbols Rounded';font-size:16px}
+  .raised{background:#1976D2;color:#fff;padding:0 18px;height:40px;border-radius:10px;box-shadow:var(--shadow);font-size:13px;font-weight:600}
+  .raised:hover{background:#1565C0;box-shadow:var(--shadow-2)}
+  .outlined{background:transparent;border:1.5px solid #1976D2;color:#1976D2;padding:0 16px;height:36px;border-radius:10px;font-size:13px;font-weight:600}
+  .outlined:hover{background:rgba(25,118,210,.06)}
+  .flat{background:transparent;color:#1976D2;padding:0 14px;height:32px;border-radius:8px;font-size:12px;font-weight:600}
+  .flat:hover{background:rgba(25,118,210,.08)}
+  .danger{background:#F44336;color:#fff;padding:0 18px;height:40px;border-radius:10px;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .danger:hover{background:#D32F2F}
+  .disabled{background:#BDBDBD;color:#fff;padding:0 18px;height:40px;border-radius:10px;font-size:13px;font-weight:600;cursor:not-allowed}
+  .icon-btn{background:transparent;color:var(--gray-muted);width:32px;height:32px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center}
+  .icon-btn:hover{background:#F9FAFB;color:var(--gray-dark)}
+  .icon-btn .mi{font-size:18px}
+</style></head><body>
+  <div class="grid">
+    <span class="lbl">Raised</span>
+    <button class="btn raised"><span class="mi">search</span>Buscar</button>
+    <button class="btn danger"><span class="mi">refresh</span>REPROCESAR</button>
+    <span style="font-family:var(--font-mono);font-size:10px;color:var(--gray-muted)">primary · h 40 · radius 10</span>
+
+    <span class="lbl">Outlined</span>
+    <button class="btn outlined"><span class="mi">done_all</span>Seleccionar todas</button>
+    <button class="btn outlined">Cancelar</button>
+    <span style="font-family:var(--font-mono);font-size:10px;color:var(--gray-muted)">border 1.5 · h 36</span>
+
+    <span class="lbl">Flat / text</span>
+    <button class="btn flat"><span class="mi">sort</span># Nota</button>
+    <button class="btn flat">Ver detalle</button>
+    <span style="font-family:var(--font-mono);font-size:10px;color:var(--gray-muted)">para acciones de baja jerarquía</span>
+
+    <span class="lbl">Disabled</span>
+    <button class="btn disabled">Buscar</button>
+    <button class="btn icon-btn"><span class="mi">help_outline</span></button>
+    <span style="font-family:var(--font-mono);font-size:10px;color:var(--gray-muted)">bg #BDBDBD · cursor not-allowed</span>
+  </div>
+</body></html>

@@ -1,0 +1,129 @@
+@* MeridianUI · KpiCard — Tarjeta KPI con accent bar, valor, badge % y barra segmentada
+   Importar colors_and_type.css antes de usar este componente.
+*@
+
+<div class="meridian-kpi-card" style="--accent: @AccentColor;">
+    <!-- Accent bar superior -->
+    <div class="meridian-kpi-accent"></div>
+
+    <!-- Label UPPERCASE -->
+    <span class="t-label">@Label</span>
+
+    <!-- Valor principal -->
+    <div class="meridian-kpi-value" style="color: @ValueColor;">
+        @Value
+    </div>
+
+    <!-- Badge variación -->
+    @if (!string.IsNullOrEmpty(BadgePct))
+    {
+        <span class="meridian-kpi-badge"
+              style="color: @BadgeColor; background: @BadgeBg;">@BadgePct</span>
+    }
+
+    <!-- Barra segmentada -->
+    @if (ShowBar)
+    {
+        <div class="meridian-kpi-bar" style="margin-top: 8px;">
+            <div class="meridian-kpi-bar-fill"
+                 style="width: @(SegmentFill * 100)%; background: @SegmentColor;"></div>
+            <div class="meridian-kpi-bar-rest"
+                 style="flex: 1; background: @SegmentBgColor;"></div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Legend1))
+        {
+            <div class="meridian-kpi-legend" style="margin-top: 6px;">
+                <span class="meridian-kpi-legend-dot" style="background: @SegmentColor;"></span>
+                <span class="t-body-sm">@Legend1</span>
+                @if (!string.IsNullOrEmpty(Legend2))
+                {
+                    <span class="meridian-kpi-legend-dot"
+                          style="background: @SegmentBgColor; margin-left: 8px;"></span>
+                    <span class="t-body-sm">@Legend2</span>
+                }
+            </div>
+        }
+    }
+</div>
+
+<style>
+    .meridian-kpi-card {
+        background: #fff;
+        border-radius: var(--r-xl, 20px);
+        padding: 18px 18px 14px;
+        box-shadow: var(--shadow, 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06));
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        position: relative;
+        overflow: hidden;
+    }
+    .meridian-kpi-accent {
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: var(--accent, var(--em, #10B981));
+        border-radius: 20px 20px 0 0;
+    }
+    .meridian-kpi-value {
+        font-size: var(--fs-42, 42px);
+        font-weight: var(--fw-bold, 700);
+        line-height: 1;
+        margin-top: 4px;
+    }
+    .meridian-kpi-badge {
+        display: inline-flex;
+        align-items: center;
+        font-size: var(--fs-12, 12px);
+        font-weight: var(--fw-semi, 600);
+        padding: 2px 6px;
+        border-radius: var(--r-sm, 6px);
+        width: fit-content;
+    }
+    .meridian-kpi-bar {
+        display: flex;
+        height: 6px;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    .meridian-kpi-bar-fill { border-radius: 3px 0 0 3px; }
+    .meridian-kpi-bar-rest { border-radius: 0 3px 3px 0; }
+    .meridian-kpi-legend {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .meridian-kpi-legend-dot {
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+</style>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter, EditorRequired] public string Value { get; set; } = "";
+
+    /// <summary>Color del valor (CSS variable o hex). Default: var(--gray-dark)</summary>
+    [Parameter] public string ValueColor { get; set; } = "var(--gray-dark, #1C1E26)";
+
+    /// <summary>Color del accent bar superior. Default: var(--em)</summary>
+    [Parameter] public string AccentColor { get; set; } = "var(--em, #10B981)";
+
+    /// <summary>Texto del badge de variación, ej. "+12%". Vacío para ocultar.</summary>
+    [Parameter] public string BadgePct { get; set; } = "";
+    [Parameter] public string BadgeColor { get; set; } = "var(--em, #10B981)";
+    [Parameter] public string BadgeBg { get; set; } = "var(--em-pl, #DCFCE7)";
+
+    /// <summary>Mostrar barra segmentada. Default true si SegmentFill > 0.</summary>
+    [Parameter] public bool ShowBar { get; set; } = true;
+
+    /// <summary>Fracción 0.0–1.0 del segmento relleno.</summary>
+    [Parameter] public double SegmentFill { get; set; } = 0;
+    [Parameter] public string SegmentColor { get; set; } = "var(--em, #10B981)";
+    [Parameter] public string SegmentBgColor { get; set; } = "var(--em-lt, #6EE7B7)";
+
+    [Parameter] public string Legend1 { get; set; } = "";
+    [Parameter] public string Legend2 { get; set; } = "";
+}

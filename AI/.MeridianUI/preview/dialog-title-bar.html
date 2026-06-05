@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;background:var(--page-bg);font-family:var(--font);color:var(--gray-dark);padding:20px;display:flex;flex-direction:column;gap:14px}
+  .ms{font-family:'Material Symbols Rounded';font-feature-settings:'liga';line-height:1}
+  .ms.fill{font-variation-settings:'FILL' 1,'wght' 500}
+  .label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gray-muted)}
+
+  .tb{
+    display:flex;align-items:center;gap:14px;padding:14px 18px;
+    background:#fff;border-radius:14px;box-shadow:var(--shadow);position:relative;
+  }
+  .tb::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 4px 4px 0}
+  .tb.indigo::before{background:var(--in)}
+  .tb.emerald::before{background:#10B981}
+  .tb.indigo .tb-ico{background:var(--in-bg)}
+  .tb.indigo .tb-ico .ms{color:var(--in)}
+  .tb.emerald{background:linear-gradient(135deg,#10B981 0%,#059669 100%);color:#fff}
+  .tb.emerald::before{display:none}
+  .tb.emerald .tb-ico{background:rgba(255,255,255,.18)}
+  .tb.emerald .tb-ico .ms{color:#fff}
+  .tb.emerald .eyebrow{color:rgba(255,255,255,.78)}
+  .tb.emerald .folio{color:#fff}
+  .tb.emerald .pill{background:rgba(255,255,255,.18);color:#fff}
+  .tb.emerald .info-lbl{color:rgba(255,255,255,.7)}
+  .tb.emerald .info-val{color:#fff}
+  .tb.emerald .x{background:rgba(255,255,255,.12);color:#fff}
+
+  .tb-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-left:6px}
+  .tb-ico .ms{font-size:20px}
+  .tb-titles{flex:1;display:flex;align-items:center;gap:14px;min-width:0}
+  .tb-main{display:flex;flex-direction:column;gap:1px}
+  .eyebrow{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-muted)}
+  .folio{font-size:18px;font-weight:700;color:var(--gray-dark);letter-spacing:-.005em;display:flex;align-items:center;gap:8px;margin-top:2px}
+  .folio .num{font-variant-numeric:tabular-nums}
+  .pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.02em}
+  .pill .ms{font-size:13px}
+  .pill.amber{background:#FEF3C7;color:#92400E}
+  .pill.emerald{background:#DCFCE7;color:#065F46}
+  .sep{width:1px;background:var(--gray-line);height:36px}
+  .tb.emerald .sep{background:rgba(255,255,255,.25)}
+  .info{display:flex;gap:18px}
+  .info-item{display:flex;flex-direction:column;gap:1px}
+  .info-lbl{font-size:9px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.08em}
+  .info-val{font-size:13px;font-weight:700;color:var(--gray-dark)}
+  .x{border:none;background:transparent;cursor:pointer;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--gray-muted)}
+  .x:hover{background:var(--gray-foot)}
+  .x .ms{font-size:22px}
+</style></head><body>
+
+<span class="label">Variante A · light + accent indigo (estado de cuenta, comanda)</span>
+<div class="tb indigo">
+  <div class="tb-ico"><span class="ms fill">receipt_long</span></div>
+  <div class="tb-titles">
+    <div class="tb-main">
+      <div class="eyebrow">Estado de cuenta</div>
+      <div class="folio">Folio <span class="num">#A-04218</span><span class="pill amber"><span class="ms fill">schedule</span>Abierto 1h 24m</span></div>
+    </div>
+    <div class="sep"></div>
+    <div class="info">
+      <div class="info-item"><div class="info-lbl">Mesa</div><div class="info-val">06 · Salón principal</div></div>
+      <div class="info-item"><div class="info-lbl">Cajero</div><div class="info-val">J. Rodríguez</div></div>
+    </div>
+  </div>
+  <button class="x"><span class="ms">close</span></button>
+</div>
+
+<span class="label">Variante B · emerald POS (cobro, acciones críticas)</span>
+<div class="tb emerald">
+  <div class="tb-ico"><span class="ms fill">payments</span></div>
+  <div class="tb-titles">
+    <div class="tb-main">
+      <div class="eyebrow">Cobro rápido · POS</div>
+      <div class="folio">Folio <span class="num">#A-04218</span><span class="pill"><span class="ms fill">receipt_long</span>Estado de cuenta</span></div>
+    </div>
+    <div class="sep"></div>
+    <div class="info">
+      <div class="info-item"><div class="info-lbl">Mesa</div><div class="info-val">06 · Familia Pérez</div></div>
+      <div class="info-item"><div class="info-lbl">Cajero</div><div class="info-val">J. Rodríguez</div></div>
+    </div>
+  </div>
+  <button class="x"><span class="ms">close</span></button>
+</div>
+
+</body></html>

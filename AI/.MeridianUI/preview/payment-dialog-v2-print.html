@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--gray-dark)}
+  .stage{
+    width:100%;min-height:880px;
+    background:
+      radial-gradient(1200px 600px at 80% 10%, rgba(16,185,129,.14), transparent 70%),
+      radial-gradient(900px 500px at 10% 90%, rgba(139,92,246,.10), transparent 70%),
+      var(--page-bg);
+    padding:24px;
+    display:flex;justify-content:center;
+  }
+  .scrim{position:absolute;inset:0;background:rgba(28,30,38,.42);backdrop-filter:blur(4px)}
+  .wrap{position:relative;width:100%;max-width:1100px;display:flex;justify-content:center}
+
+  .dlg{
+    width:100%;background:#fff;border-radius:20px;
+    box-shadow:0 24px 60px rgba(28,30,38,.22), 0 4px 16px rgba(0,0,0,.10);
+    overflow:hidden;display:flex;flex-direction:column;
+  }
+  .ms{font-family:'Material Symbols Rounded';font-feature-settings:'liga';line-height:1}
+  .ms.fill{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+
+  /* ===== TITLE BAR — fondo oscuro POS ===== */
+  .tb{
+    display:flex;align-items:center;gap:14px;
+    padding:14px 18px;
+    background:linear-gradient(135deg,#10B981 0%,#059669 100%);
+    color:#fff;position:relative;
+  }
+  .tb-ico{
+    width:42px;height:42px;border-radius:12px;
+    background:rgba(255,255,255,.18);backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .tb-ico .ms{color:#fff;font-size:22px}
+  .tb-titles{flex:1;min-width:0}
+  .tb-eyebrow{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.78)}
+  .tb-folio{font-size:18px;font-weight:800;letter-spacing:-.005em;display:flex;align-items:center;gap:8px;margin-top:2px}
+  .tb-folio .num{font-variant-numeric:tabular-nums}
+  .tb-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.18);color:#fff;font-size:10.5px;font-weight:700;letter-spacing:.02em;backdrop-filter:blur(6px)}
+  .tb-pill .ms{font-size:13px}
+  .tb-info{display:flex;gap:18px;margin-right:14px}
+  .tb-info-item{display:flex;flex-direction:column;gap:1px}
+  .tb-info-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.08em}
+  .tb-info-val{font-size:13px;font-weight:700;color:#fff}
+  .tb-x{
+    border:none;background:rgba(255,255,255,.12);cursor:pointer;
+    width:36px;height:36px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;transition:background .15s;
+  }
+  .tb-x:hover{background:rgba(255,255,255,.22)}
+  .tb-x .ms{font-size:22px}
+
+  /* ===== HERO AMOUNT DISPLAY ===== */
+  .hero{
+    background:linear-gradient(180deg,#FAFBFC 0%,#fff 100%);
+    border-bottom:1px solid var(--gray-line);
+    padding:18px 24px;
+    display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:24px;
+  }
+  .hero-left{display:flex;flex-direction:column;gap:3px}
+  .hero-lbl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-muted)}
+  .hero-total{font-size:18px;font-weight:700;color:var(--gray-dark);font-variant-numeric:tabular-nums;letter-spacing:-.005em}
+  .hero-meta{font-size:11px;color:var(--gray-muted)}
+  .hero-center{
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+  }
+  .hero-amount-lbl{font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-muted);display:flex;align-items:center;gap:6px}
+  .hero-amount{
+    display:flex;align-items:baseline;justify-content:center;gap:6px;
+    font-variant-numeric:tabular-nums;
+  }
+  .hero-amount .currency{font-size:24px;color:var(--gray-muted);font-weight:700}
+  .hero-amount .v{font-size:56px;font-weight:900;letter-spacing:-.02em;color:#10B981;line-height:1}
+  .hero-amount .v.warn{color:#F97316}
+  .hero-amount .cursor{display:inline-block;width:3px;height:48px;background:#10B981;animation:blink 1s steps(2) infinite;margin-left:2px;border-radius:1px}
+  @keyframes blink{50%{opacity:0}}
+  .hero-method-tag{display:inline-flex;align-items:center;gap:5px;background:var(--in-bg);color:var(--in);padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700}
+  .hero-method-tag .ms{font-size:14px}
+  .hero-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+
+  .progress{display:flex;flex-direction:column;gap:5px;width:200px}
+  .progress-bar{height:10px;border-radius:6px;background:var(--gray-line);overflow:hidden;display:flex}
+  .progress-bar span{transition:flex .3s ease}
+  .progress-bar span:not(:last-child){border-right:2px solid #fff}
+  .progress-foot{display:flex;justify-content:space-between;font-size:10.5px;color:var(--gray-muted);font-variant-numeric:tabular-nums}
+  .progress-foot b{color:#10B981;font-weight:800}
+
+  /* ===== BODY 2 columns ===== */
+  .body{display:grid;grid-template-columns:1fr 1fr;background:#FAFBFC;min-height:480px}
+  .col{display:flex;flex-direction:column;background:#fff;overflow:hidden}
+  .col + .col{border-left:1px solid var(--gray-line)}
+  .col-head{
+    padding:12px 18px 10px;border-bottom:1px solid var(--gray-line);
+    display:flex;align-items:center;gap:8px;flex-shrink:0;
+  }
+  .col-head .ms{font-size:18px;color:var(--in)}
+  .col-head .title{font-size:13px;font-weight:700;color:var(--gray-dark)}
+  .col-head .count{margin-left:auto;background:#1C1E26;color:#fff;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;font-variant-numeric:tabular-nums}
+
+  /* ===== LEFT: METHOD CARDS GRID ===== */
+  .methods-grid{padding:16px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .mcard{
+    background:#fff;border:1.5px solid var(--gray-line);border-radius:14px;
+    padding:14px 12px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;
+    transition:all .15s;position:relative;
+    min-height:108px;
+  }
+  .mcard:hover{border-color:#A5B4FC;background:#F8FAFF;transform:translateY(-1px)}
+  .mcard.active{border-color:transparent;background:linear-gradient(180deg,#EEF2FF 0%,#F5F3FF 100%);box-shadow:0 6px 14px rgba(99,102,241,.18),0 0 0 2px var(--in)}
+  .mcard.active::after{
+    content:""; position:absolute; top:8px; right:8px;
+    width:18px;height:18px;border-radius:50%;background:var(--in);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .mcard.active::before{
+    content:"\\e5ca"; font-family:'Material Symbols Rounded';
+    position:absolute; top:9px; right:9px;
+    color:#fff;font-size:16px;z-index:1;font-variation-settings:'FILL' 1,'wght' 700;
+  }
+  .mcard .micon{
+    width:42px;height:42px;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    transition:all .12s;
+  }
+  .mcard .micon .ms{font-size:24px;font-variation-settings:'FILL' 1,'wght' 500}
+  .mcard.efec .micon{background:#DCFCE7}.mcard.efec .micon .ms{color:#10B981}
+  .mcard.tcred .micon{background:#E0E7FF}.mcard.tcred .micon .ms{color:#1565C0}
+  .mcard.tdeb .micon{background:#EDE9FE}.mcard.tdeb .micon .ms{color:#7B1FA2}
+  .mcard.trans .micon{background:#FEF3C7}.mcard.trans .micon .ms{color:#E65100}
+  .mcard.vale .micon{background:#FFEDD5}.mcard.vale .micon .ms{color:#F97316}
+  .mcard.usd .micon{background:#E5E7EB}.mcard.usd .micon .ms{color:#374151}
+  .mcard .mname{font-size:12.5px;font-weight:700;color:var(--gray-dark);line-height:1.15}
+  .mcard .msub{font-size:10px;color:var(--gray-muted);font-variant-numeric:tabular-nums;font-weight:600}
+  .mcard.active .mname{color:var(--in)}
+
+  /* Method-specific small fields */
+  .md-details{padding:0 18px 16px}
+  .md-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .md-field{display:flex;flex-direction:column;gap:5px}
+  .md-lbl{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gray-muted)}
+  .md-input{border:1.5px solid var(--gray-line);border-radius:8px;padding:8px 11px;font-family:var(--font);font-size:12.5px;outline:none;background:#fff;color:var(--gray-dark);font-variant-numeric:tabular-nums}
+  .md-input:focus{border-color:var(--in)}
+  .md-input.hl{background:#F0FDF4;color:#10B981;font-weight:800;border-color:#A7F3D0}
+
+  /* ===== RIGHT: KEYPAD ===== */
+  .keypad-wrap{padding:14px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+  .quick-row{display:flex;gap:6px;flex-wrap:wrap}
+  .quick-lbl{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gray-muted);display:flex;align-items:center;gap:6px;margin-bottom:2px}
+  .qbtn{
+    flex:1;min-width:0;
+    background:#fff;border:1.5px solid var(--gray-line);border-radius:10px;
+    padding:8px 6px;cursor:pointer;font-family:var(--font);font-size:12px;font-weight:700;
+    color:var(--gray-dark);font-variant-numeric:tabular-nums;
+    transition:all .12s;
+    display:flex;align-items:center;justify-content:center;gap:4px;
+  }
+  .qbtn:hover{border-color:var(--in);background:#F8FAFF;color:var(--in)}
+  .qbtn.exact{background:#DCFCE7;border-color:#10B981;color:#065F46}
+  .qbtn.exact:hover{background:#10B981;color:#fff}
+
+  .keypad{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;flex:1;min-height:0}
+  .key{
+    background:#fff;border:1.5px solid var(--gray-line);border-radius:12px;
+    font-family:var(--font);font-size:22px;font-weight:800;
+    color:var(--gray-dark);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:4px;
+    transition:all .12s;font-variant-numeric:tabular-nums;
+  }
+  .key:hover{border-color:var(--in);background:#F8FAFF;color:var(--in)}
+  .key:active{transform:scale(.97);background:var(--in-bg)}
+  .key .ms{font-size:22px;font-variation-settings:'FILL' 1,'wght' 500}
+  .key.fn{background:var(--gray-foot);color:var(--gray-muted);font-size:18px}
+  .key.del{background:#FEF2F2;border-color:#FECACA;color:#B91C1C}
+  .key.del:hover{background:#FEE2E2;border-color:#FCA5A5;color:#991B1B}
+  .key.del .ms{color:inherit}
+  .key.add{background:var(--in);border-color:var(--in);color:#fff;font-size:14px;letter-spacing:.04em;text-transform:uppercase}
+  .key.add:hover{background:#4F46E5}
+  .key.add .ms{color:#fff}
+
+  /* ===== APPLIED PAYMENTS STRIP ===== */
+  .applied{padding:12px 18px;background:#fff;border-top:1px solid var(--gray-line)}
+  .applied-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .applied-head .ms{font-size:16px;color:var(--in)}
+  .applied-head .title{font-size:11px;font-weight:700;color:var(--gray-dark);text-transform:uppercase;letter-spacing:.06em}
+  .applied-head .count{background:#1C1E26;color:#fff;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700}
+  .applied-head .right-meta{margin-left:auto;font-size:11px;color:var(--gray-muted)}
+  .applied-head .right-meta b{color:#10B981;font-weight:800}
+
+  .applied-strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+  .applied-strip::-webkit-scrollbar{height:6px}
+  .applied-strip::-webkit-scrollbar-thumb{background:var(--gray-line);border-radius:4px}
+  .pchip{
+    flex:0 0 auto;
+    background:#fff;border:1px solid var(--gray-line);border-radius:10px;
+    padding:8px 10px;display:flex;align-items:center;gap:8px;min-width:170px;
+    transition:all .12s;
+  }
+  .pchip.complete{border-color:#A7F3D0;background:#F0FDF4}
+  .pchip.draft{border-style:dashed;border-color:var(--in);background:#F8FAFF}
+  .pchip-thumb{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .pchip-thumb .ms{font-size:17px;font-variation-settings:'FILL' 1,'wght' 500}
+  .pchip-thumb.efec{background:#DCFCE7}.pchip-thumb.efec .ms{color:#10B981}
+  .pchip-thumb.tcred{background:#E0E7FF}.pchip-thumb.tcred .ms{color:#1565C0}
+  .pchip-info{min-width:0;flex:1}
+  .pchip-name{font-size:11.5px;font-weight:700;color:var(--gray-dark);line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pchip-amt{font-size:13px;font-weight:800;color:var(--gray-dark);font-variant-numeric:tabular-nums;margin-top:1px}
+  .pchip.draft .pchip-amt{color:var(--in)}
+  .pchip-del{border:none;background:transparent;cursor:pointer;width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;color:var(--gray-muted)}
+  .pchip-del:hover{background:#FEE2E2;color:#B91C1C}
+  .pchip-del .ms{font-size:14px}
+
+  /* ===== FOOTER ===== */
+  .foot{
+    padding:14px 20px 18px;border-top:1px solid var(--gray-line);
+    background:linear-gradient(180deg,#FAFBFC 0%,#fff 100%);
+    display:flex;align-items:center;gap:16px;
+  }
+  .foot-summary{display:flex;gap:24px;flex:1}
+  .fs-item{display:flex;flex-direction:column;gap:1px;font-variant-numeric:tabular-nums}
+  .fs-lbl{font-size:9.5px;font-weight:700;color:var(--gray-muted);letter-spacing:.08em;text-transform:uppercase}
+  .fs-val{font-size:18px;font-weight:800;color:var(--gray-dark);line-height:1}
+  .fs-val.warn{color:#F97316}
+  .fs-val.success{color:#10B981}
+
+  .btn-charge{
+    height:54px;padding:0 26px;border:none;cursor:pointer;
+    background:#10B981;color:#fff;border-radius:14px;
+    font-family:var(--font);font-weight:800;font-size:14.5px;letter-spacing:.05em;text-transform:uppercase;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    box-shadow:0 8px 18px rgba(16,185,129,.30), 0 1px 3px rgba(16,185,129,.30);
+    transition:all .15s;min-width:240px;
+  }
+  .btn-charge:hover{background:#059669;box-shadow:0 12px 24px rgba(16,185,129,.34)}
+  .btn-charge .ms{font-size:24px;font-variation-settings:'FILL' 1,'wght' 600}
+  .btn-cancel{
+    height:38px;padding:0 14px;border:1.5px solid var(--gray-line);background:#fff;cursor:pointer;
+    border-radius:10px;color:#B91C1C;
+    font-family:var(--font);font-weight:600;font-size:12px;
+    display:flex;align-items:center;justify-content:center;gap:5px;transition:all .12s;
+  }
+  .btn-cancel:hover{background:#FEE2E2;border-color:#FCA5A5}
+  .btn-cancel .ms{font-size:16px}
+
+  /* ====================================================
+     PRINT — optimizado para PDF (A4 / Letter landscape)
+     ==================================================== */
+  @media print {
+    @page { size: A4 landscape; margin: 6mm; }
+
+    html, body, .stage {
+      background: #fff !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      min-height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    *, *::before, *::after {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      animation: none !important;
+      transition: none !important;
+    }
+
+    .scrim { display: none !important; }
+    .wrap { padding: 0 !important; max-width: none !important; }
+
+    /* Quitar el cursor parpadeante y otras animaciones decorativas */
+    .hero-amount .cursor { display: none !important; }
+
+    /* Cap dialog to one printed page */
+    .dlg {
+      width: 100% !important;
+      max-width: 100% !important;
+      border-radius: 12px !important;
+      box-shadow: 0 0 0 1px rgba(0,0,0,.08) !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+
+    /* Internal sections — keep together where possible */
+    .body, .applied, .foot, .hero, .tb {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    /* El cuerpo del dialog ya no scrollea en print */
+    .body { min-height: 0 !important; }
+    .col-body { overflow: visible !important; }
+
+    /* Reduce sombras dramáticas (impresoras lo arruinan) */
+    .btn-charge { box-shadow: 0 0 0 1px rgba(16,185,129,.4) !important; }
+    .mcard.active { box-shadow: 0 0 0 2px var(--in) !important; }
+
+    /* Asegurar que el title bar verde se imprima en color */
+    .tb {
+      background: linear-gradient(135deg,#10B981 0%,#059669 100%) !important;
+      color: #fff !important;
+    }
+  }
+</style></head><body>
+
+<div class="stage">
+  <div class="scrim"></div>
+  <div class="wrap">
+
+    <div class="dlg" role="dialog" aria-modal="true">
+
+      <!-- ========= TITLE BAR (POS green) ========= -->
+      <div class="tb">
+        <div class="tb-ico"><span class="ms fill">payments</span></div>
+        <div class="tb-titles">
+          <div class="tb-eyebrow">Cobro rápido · POS</div>
+          <div class="tb-folio">Folio <span class="num">#A-04218</span>
+            <span class="tb-pill"><span class="ms fill">receipt_long</span>Estado de cuenta</span>
+          </div>
+        </div>
+        <div class="tb-info">
+          <div class="tb-info-item"><div class="tb-info-lbl">Mesa</div><div class="tb-info-val">06 · Familia Pérez</div></div>
+          <div class="tb-info-item"><div class="tb-info-lbl">Cajero</div><div class="tb-info-val">J. Rodríguez</div></div>
+        </div>
+        <button class="tb-x" title="Cerrar"><span class="ms">close</span></button>
+      </div>
+
+      <!-- ========= HERO AMOUNT ========= -->
+      <div class="hero">
+        <div class="hero-left">
+          <div class="hero-lbl">Total a cobrar</div>
+          <div class="hero-total">$ 1,766.25</div>
+          <div class="hero-meta">en MXN · IVA incluido</div>
+        </div>
+
+        <div class="hero-center">
+          <div class="hero-amount-lbl">
+            Monto a aplicar
+            <span class="hero-method-tag"><span class="ms fill">payments</span>Efectivo</span>
+          </div>
+          <div class="hero-amount">
+            <span class="currency">$</span>
+            <span class="v">566.25</span>
+            <span class="cursor"></span>
+          </div>
+        </div>
+
+        <div class="hero-right">
+          <div class="progress">
+            <div class="progress-bar">
+              <span style="flex:480;background:#10B981"></span>
+              <span style="flex:720;background:#6366F1"></span>
+              <span style="flex:566.25;background:#E5E7EB"></span>
+            </div>
+            <div class="progress-foot">
+              <span><b>67.9%</b></span>
+              <span>$ 1,200 / $ 1,766.25</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========= BODY 2 columns ========= -->
+      <div class="body">
+
+        <!-- ===== LEFT: Method cards grid + details ===== -->
+        <div class="col">
+          <div class="col-head">
+            <span class="ms">style</span>
+            <span class="title">Forma de pago</span>
+          </div>
+
+          <div class="methods-grid">
+            <div class="mcard efec active">
+              <div class="micon"><span class="ms">payments</span></div>
+              <div class="mname">Efectivo</div>
+              <div class="msub">MXN</div>
+            </div>
+            <div class="mcard tcred">
+              <div class="micon"><span class="ms">credit_card</span></div>
+              <div class="mname">T. Crédito</div>
+              <div class="msub">Visa · MC · AmEx</div>
+            </div>
+            <div class="mcard tdeb">
+              <div class="micon"><span class="ms">credit_card</span></div>
+              <div class="mname">T. Débito</div>
+              <div class="msub">Visa · MC</div>
+            </div>
+            <div class="mcard trans">
+              <div class="micon"><span class="ms">swap_horiz</span></div>
+              <div class="mname">Transferencia</div>
+              <div class="msub">SPEI</div>
+            </div>
+            <div class="mcard vale">
+              <div class="micon"><span class="ms">card_giftcard</span></div>
+              <div class="mname">Vale</div>
+              <div class="msub">despensa · gas</div>
+            </div>
+            <div class="mcard usd">
+              <div class="micon"><span class="ms">currency_exchange</span></div>
+              <div class="mname">USD</div>
+              <div class="msub">tipo 17.84</div>
+            </div>
+          </div>
+
+          <div class="md-details">
+            <div class="md-grid">
+              <div class="md-field">
+                <div class="md-lbl">Entregado por cliente</div>
+                <input class="md-input" value="600.00" />
+              </div>
+              <div class="md-field">
+                <div class="md-lbl">Cambio a devolver</div>
+                <input class="md-input hl" value="33.75" readonly />
+              </div>
+              <div class="md-field" style="grid-column:span 2">
+                <div class="md-lbl">Referencia (opcional)</div>
+                <input class="md-input" placeholder="Sobre #12, denominación específica, etc." />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== RIGHT: Keypad ===== -->
+        <div class="col">
+          <div class="col-head">
+            <span class="ms">dialpad</span>
+            <span class="title">Captura del monto</span>
+          </div>
+
+          <div class="keypad-wrap">
+
+            <div class="quick-lbl"><span class="ms" style="font-size:13px">bolt</span>Atajos rápidos</div>
+            <div class="quick-row">
+              <button class="qbtn exact"><span class="ms">equal</span>Exacto $ 566.25</button>
+              <button class="qbtn">Saldo total</button>
+              <button class="qbtn">½ saldo</button>
+            </div>
+
+            <div class="quick-lbl" style="margin-top:6px"><span class="ms" style="font-size:13px">payments</span>Denominaciones</div>
+            <div class="quick-row">
+              <button class="qbtn">$ 50</button>
+              <button class="qbtn">$ 100</button>
+              <button class="qbtn">$ 200</button>
+              <button class="qbtn">$ 500</button>
+              <button class="qbtn">$ 1,000</button>
+            </div>
+
+            <div class="keypad">
+              <button class="key">7</button>
+              <button class="key">8</button>
+              <button class="key">9</button>
+              <button class="key del"><span class="ms">backspace</span></button>
+              <button class="key">4</button>
+              <button class="key">5</button>
+              <button class="key">6</button>
+              <button class="key fn">C</button>
+              <button class="key">1</button>
+              <button class="key">2</button>
+              <button class="key">3</button>
+              <button class="key fn">.</button>
+              <button class="key">0</button>
+              <button class="key fn">00</button>
+              <button class="key add" style="grid-column:span 2"><span class="ms">add_circle</span>Aplicar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========= APPLIED PAYMENTS STRIP ========= -->
+      <div class="applied">
+        <div class="applied-head">
+          <span class="ms">style</span>
+          <span class="title">Pagos aplicados</span>
+          <span class="count">2</span>
+          <span class="right-meta">cubierto <b>$ 1,200.00</b> de $ 1,766.25</span>
+        </div>
+        <div class="applied-strip">
+          <div class="pchip complete">
+            <div class="pchip-thumb efec"><span class="ms">payments</span></div>
+            <div class="pchip-info">
+              <div class="pchip-name">Efectivo</div>
+              <div class="pchip-amt">$ 480.00</div>
+            </div>
+            <button class="pchip-del" title="Quitar"><span class="ms">close</span></button>
+          </div>
+          <div class="pchip complete">
+            <div class="pchip-thumb tcred"><span class="ms">credit_card</span></div>
+            <div class="pchip-info">
+              <div class="pchip-name">Visa ••••4421</div>
+              <div class="pchip-amt">$ 720.00</div>
+            </div>
+            <button class="pchip-del" title="Quitar"><span class="ms">close</span></button>
+          </div>
+          <div class="pchip draft">
+            <div class="pchip-thumb efec"><span class="ms">payments</span></div>
+            <div class="pchip-info">
+              <div class="pchip-name" style="color:var(--in)">Efectivo · capturando</div>
+              <div class="pchip-amt">$ 566.25</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========= FOOTER ========= -->
+      <div class="foot">
+        <div class="foot-summary">
+          <div class="fs-item"><div class="fs-lbl">Aplicado</div><div class="fs-val success">$ 1,200.00</div></div>
+          <div class="fs-item"><div class="fs-lbl">Saldo pendiente</div><div class="fs-val warn">$ 566.25</div></div>
+          <div class="fs-item"><div class="fs-lbl">Cambio</div><div class="fs-val success">$ 33.75</div></div>
+          <div class="fs-item"><div class="fs-lbl">Listo p/ cobrar</div><div class="fs-val">$ 1,766.25</div></div>
+        </div>
+        <button class="btn-cancel"><span class="ms">cancel</span>Cancelar</button>
+        <button class="btn-charge"><span class="ms">verified</span>Cobrar y cerrar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    function ready() {
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => setTimeout(() => window.print(), 500));
+      } else {
+        setTimeout(() => window.print(), 800);
+      }
+    }
+    if (document.readyState === 'complete') ready();
+    else window.addEventListener('load', ready);
+  })();
+</script>
+</body></html>

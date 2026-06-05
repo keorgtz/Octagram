@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;background:#fff;font-family:var(--font);color:var(--gray-dark);padding:18px}
+  .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+  .st{background:#fff;border:1px solid var(--gray-line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+  .dot{width:14px;height:14px;border-radius:50%;border:2px solid}
+  .name{font-size:11px;font-weight:700;color:var(--gray-dark);text-transform:uppercase;letter-spacing:.05em}
+  .desc{font-size:11px;color:var(--gray-muted);line-height:1.4}
+  .hex{font-family:var(--font-mono);font-size:9.5px;color:var(--gray-muted)}
+  .meta{font-size:11px;color:var(--gray-muted);margin-top:14px;line-height:1.5}
+  .meta b{color:var(--gray-dark)}
+</style></head><body>
+  <div class="grid">
+    <div class="st">
+      <div class="dot" style="background:#FFFFFF;border-color:#D1D5DB"></div>
+      <div class="name" style="color:#6B7280">Libre</div>
+      <div class="desc">Mesa disponible para asignar.</div>
+      <div class="hex">#FFFFFF · #D1D5DB</div>
+    </div>
+    <div class="st">
+      <div class="dot" style="background:#EEF2FF;border-color:#6366F1"></div>
+      <div class="name" style="color:#4338CA">Ocupada</div>
+      <div class="desc">En servicio. Muestra comensales y tiempo transcurrido.</div>
+      <div class="hex">#EEF2FF · #6366F1</div>
+    </div>
+    <div class="st">
+      <div class="dot" style="background:#FEF3C7;border-color:#F59E0B"></div>
+      <div class="name" style="color:#92400E">Reservada</div>
+      <div class="desc">Reservación pendiente con nombre y hora.</div>
+      <div class="hex">#FEF3C7 · #F59E0B</div>
+    </div>
+    <div class="st">
+      <div class="dot" style="background:#FFEDD5;border-color:#F97316"></div>
+      <div class="name" style="color:#9A3412">Atención</div>
+      <div class="desc">El mesero o cliente requiere acción urgente.</div>
+      <div class="hex">#FFEDD5 · #F97316</div>
+    </div>
+    <div class="st">
+      <div class="dot" style="background:#EDE9FE;border-color:#8B5CF6"></div>
+      <div class="name" style="color:#6D28D9">Limpiando</div>
+      <div class="desc">Cuenta cerrada; mesa en preparación para la próxima.</div>
+      <div class="hex">#EDE9FE · #8B5CF6</div>
+    </div>
+  </div>
+  <div class="meta">
+    Cada estado usa el patrón <b>pale-bg + strong-border + strong-fg</b> con la misma familia semántica. La leyenda vive como header del rack en la vista <i>Restaurante</i>.
+  </div>
+</body></html>

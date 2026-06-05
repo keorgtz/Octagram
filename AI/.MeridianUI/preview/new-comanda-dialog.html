@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--gray-dark)}
+  .stage{
+    width:100%;min-height:820px;
+    background:
+      radial-gradient(1200px 600px at 20% 20%, rgba(99,102,241,.12), transparent 70%),
+      radial-gradient(900px 500px at 80% 90%, rgba(139,92,246,.10), transparent 70%),
+      var(--page-bg);
+    padding:24px 24px;
+    display:flex;justify-content:center;
+  }
+  .scrim{position:absolute;inset:0;background:rgba(28,30,38,.42);backdrop-filter:blur(4px)}
+  .wrap{position:relative;width:100%;max-width:1200px;display:flex;justify-content:center}
+
+  /* ===== DIALOG ===== */
+  .dlg{
+    width:100%;background:#fff;border-radius:18px;
+    box-shadow:0 24px 60px rgba(28,30,38,.20), 0 4px 16px rgba(0,0,0,.10);
+    overflow:hidden;display:flex;flex-direction:column;
+  }
+  .ms{font-family:'Material Symbols Rounded';font-feature-settings:'liga';line-height:1}
+  .ms.fill{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+
+  /* ===== TITLE BAR ===== */
+  .tb{
+    display:flex;align-items:center;gap:14px;
+    padding:14px 18px;
+    background:#fff;
+    border-bottom:1px solid var(--gray-line);
+    position:relative;
+  }
+  .tb::before{
+    content:""; position:absolute; left:0; top:14px; bottom:14px; width:4px;
+    background:var(--in); border-radius:0 4px 4px 0;
+  }
+  .tb-ico{
+    width:38px;height:38px;border-radius:10px;
+    background:var(--in-bg);display:flex;align-items:center;justify-content:center;
+    margin-left:6px;
+  }
+  .tb-titles{flex:1;min-width:0;display:flex;align-items:center;gap:14px}
+  .tb-main{display:flex;flex-direction:column;gap:1px}
+  .tb-eyebrow{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-muted)}
+  .tb-folio{font-size:18px;font-weight:700;color:var(--gray-dark);letter-spacing:-.005em;display:flex;align-items:center;gap:8px;margin-top:1px}
+  .tb-folio .num{font-variant-numeric:tabular-nums}
+  .tb-pill{
+    display:inline-flex;align-items:center;gap:4px;
+    padding:2px 8px;border-radius:999px;
+    background:#DCFCE7;color:#065F46;font-size:10.5px;font-weight:700;letter-spacing:.02em;
+  }
+  .tb-pill .ms{font-size:13px}
+  .tb-sep{width:1px;background:var(--gray-line);height:36px}
+  .tb-info{display:flex;gap:18px}
+  .tb-info-item{display:flex;flex-direction:column;gap:1px}
+  .tb-info-lbl{font-size:9px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.08em}
+  .tb-info-val{font-size:13px;font-weight:700;color:var(--gray-dark);font-variant-numeric:tabular-nums}
+  .tb-x{
+    border:none;background:transparent;cursor:pointer;
+    width:36px;height:36px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--gray-muted);transition:background .15s,color .15s;
+  }
+  .tb-x:hover{background:var(--gray-foot);color:var(--gray-dark)}
+  .tb-x .ms{font-size:22px}
+
+  /* ===== BODY (3 columns) ===== */
+  .body{
+    display:grid;grid-template-columns:300px 1fr 340px;
+    background:#FAFBFC;
+    height:720px;
+  }
+  .col{
+    display:flex;flex-direction:column;
+    background:#fff;
+    overflow:hidden;
+  }
+  .col + .col{border-left:1px solid var(--gray-line)}
+  .col-head{
+    padding:12px 14px 10px;
+    border-bottom:1px solid var(--gray-line);
+    background:#fff;
+    flex-shrink:0;
+  }
+  .col-eyebrow{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-muted)}
+  .col-title{font-size:14px;font-weight:700;color:var(--gray-dark);margin-top:2px;display:flex;align-items:center;gap:6px}
+  .col-body{flex:1;overflow-y:auto;min-height:0}
+  .col-body::-webkit-scrollbar{width:6px}
+  .col-body::-webkit-scrollbar-thumb{background:var(--gray-line);border-radius:4px}
+
+  /* ===== COLUMN 1: MENÚ ===== */
+  .menu-search{position:relative;margin-top:10px}
+  .menu-search input{
+    width:100%;border:1.5px solid var(--gray-line);border-radius:8px;
+    padding:7px 10px 7px 32px;font-family:var(--font);font-size:12.5px;outline:none;background:#fff;
+  }
+  .menu-search input:focus{border-color:var(--in)}
+  .menu-search .ms{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--gray-muted);font-size:16px}
+
+  .menu-list{padding:8px 8px 16px}
+  details.cat{margin-bottom:2px}
+  details.cat > summary{
+    list-style:none;cursor:pointer;
+    display:flex;align-items:center;gap:8px;
+    padding:7px 10px;border-radius:8px;
+    font-size:12px;font-weight:700;color:var(--gray-dark);
+    transition:background .12s;
+  }
+  details.cat > summary::-webkit-details-marker{display:none}
+  details.cat > summary:hover{background:var(--gray-foot)}
+  details.cat > summary .ms.chev{font-size:18px;color:var(--gray-muted);transition:transform .18s ease}
+  details.cat[open] > summary .ms.chev{transform:rotate(90deg);color:var(--in)}
+  details.cat > summary .ms.icon{font-size:16px;color:var(--in)}
+  details.cat .cat-count{margin-left:auto;font-size:10px;color:var(--gray-muted);font-weight:600;font-variant-numeric:tabular-nums}
+
+  details.subcat{margin-left:12px;margin-bottom:1px}
+  details.subcat > summary{
+    list-style:none;cursor:pointer;
+    display:flex;align-items:center;gap:8px;
+    padding:5px 8px;border-radius:6px;
+    font-size:11.5px;font-weight:600;color:var(--gray-700);
+  }
+  details.subcat > summary::-webkit-details-marker{display:none}
+  details.subcat > summary:hover{background:var(--gray-foot)}
+  details.subcat > summary .ms{font-size:16px;color:var(--gray-muted);transition:transform .18s ease}
+  details.subcat[open] > summary .ms{transform:rotate(90deg);color:var(--in)}
+
+  .dishes{display:flex;flex-direction:column;gap:5px;padding:4px 0 6px 14px}
+  .dish-card{
+    display:flex;align-items:center;gap:9px;
+    background:#fff;border:1px solid var(--gray-line);border-radius:8px;
+    padding:7px 9px;cursor:pointer;
+    transition:all .12s;
+  }
+  .dish-card:hover{border-color:#A5B4FC;background:#F8FAFF}
+  .dish-card.selected{background:var(--in-bg);border-color:var(--in);box-shadow:0 1px 3px rgba(99,102,241,.12)}
+  .dish-thumb{
+    width:32px;height:32px;border-radius:7px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--gray-foot);
+  }
+  .dish-thumb .ms{font-size:18px;color:var(--gray-700);font-variation-settings:'FILL' 1,'wght' 500}
+  .dish-info{flex:1;min-width:0}
+  .dish-name{font-size:12px;font-weight:600;color:var(--gray-dark);line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dish-price{font-size:10.5px;color:var(--gray-muted);margin-top:2px;font-variant-numeric:tabular-nums}
+  .dish-card.selected .dish-thumb{background:#fff}
+  .dish-card.selected .dish-thumb .ms{color:var(--in)}
+
+  /* ===== COLUMN 2: PERSONALIZAR ===== */
+  .cust{padding:14px 18px 18px;display:flex;flex-direction:column;gap:14px}
+  .sel-hero{
+    background:linear-gradient(135deg,#EEF2FF 0%,#F5F3FF 100%);
+    border:1px solid #C7D2FE;border-radius:12px;
+    padding:14px 16px;display:flex;align-items:center;gap:14px;
+  }
+  .sel-thumb{
+    width:54px;height:54px;border-radius:12px;background:#fff;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    box-shadow:var(--shadow);
+  }
+  .sel-thumb .ms{font-size:28px;color:var(--in);font-variation-settings:'FILL' 1,'wght' 500}
+  .sel-text{flex:1;min-width:0}
+  .sel-cat{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#4338CA}
+  .sel-name{font-size:17px;font-weight:700;color:var(--gray-dark);line-height:1.2;margin-top:1px}
+  .sel-desc{font-size:11.5px;color:var(--gray-muted);margin-top:3px;line-height:1.35}
+  .sel-price{font-size:22px;font-weight:800;color:var(--in);font-variant-numeric:tabular-nums}
+
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field-lbl{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gray-muted);display:flex;align-items:center;gap:4px}
+  .field-lbl .req{color:#B91C1C}
+  .field-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+  /* Quantity stepper */
+  .qty-stepper{display:inline-flex;align-items:center;background:#fff;border:1.5px solid var(--gray-line);border-radius:10px;height:38px;width:140px;overflow:hidden}
+  .qty-stepper button{
+    border:none;background:transparent;width:38px;height:100%;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;color:var(--in);
+    transition:background .12s;
+  }
+  .qty-stepper button:hover{background:var(--in-bg)}
+  .qty-stepper .ms{font-size:20px}
+  .qty-stepper input{
+    flex:1;border:none;outline:none;text-align:center;
+    font-family:var(--font);font-size:15px;font-weight:700;color:var(--gray-dark);
+    font-variant-numeric:tabular-nums;background:transparent;
+    border-left:1px solid var(--gray-line);border-right:1px solid var(--gray-line);
+    height:100%;
+  }
+
+  /* Segmented radio */
+  .seg{display:flex;flex-wrap:wrap;gap:6px}
+  .seg label{
+    cursor:pointer;
+    padding:6px 12px;border-radius:8px;
+    border:1.5px solid var(--gray-line);
+    font-size:12px;font-weight:600;color:var(--gray-700);
+    transition:all .12s;background:#fff;
+    user-select:none;
+  }
+  .seg label:hover{border-color:#A5B4FC;background:#F8FAFF}
+  .seg input{display:none}
+  .seg input:checked + label{
+    background:var(--in-bg);border-color:var(--in);color:var(--in);
+    box-shadow:0 1px 3px rgba(99,102,241,.12);
+  }
+
+  /* Checkbox extras */
+  .extras{display:flex;flex-direction:column;gap:4px}
+  .extra{
+    display:flex;align-items:center;gap:10px;
+    padding:8px 10px;border-radius:8px;
+    background:#fff;border:1px solid var(--gray-line);
+    cursor:pointer;transition:all .12s;
+  }
+  .extra:hover{background:#F8FAFF;border-color:#C7D2FE}
+  .extra input{display:none}
+  .cb{width:18px;height:18px;border-radius:5px;border:1.8px solid var(--gray-line);background:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .12s}
+  .extra input:checked + .cb{background:var(--in);border-color:var(--in)}
+  .extra input:checked + .cb::after{content:"";width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+  .extra-name{flex:1;font-size:12.5px;color:var(--gray-dark);font-weight:500}
+  .extra-price{font-size:12px;color:var(--em);font-weight:700;font-variant-numeric:tabular-nums}
+  .extra-price.free{color:var(--gray-muted);font-weight:600}
+  .extra input:checked ~ .extra-name{font-weight:600;color:var(--gray-dark)}
+
+  /* Price edit */
+  .price-edit{
+    display:flex;align-items:center;gap:10px;
+    background:#fff;border:1.5px solid var(--gray-line);border-radius:10px;
+    padding:8px 12px;height:42px;width:160px;
+  }
+  .price-edit:focus-within{border-color:var(--in)}
+  .price-edit .currency{font-size:13px;color:var(--gray-muted);font-weight:700}
+  .price-edit input{
+    border:none;outline:none;flex:1;width:0;min-width:0;
+    font-family:var(--font);font-size:16px;font-weight:700;color:var(--gray-dark);
+    font-variant-numeric:tabular-nums;background:transparent;
+  }
+  .price-edit .ms{font-size:16px;color:var(--gray-muted)}
+
+  /* Notes */
+  .notes{
+    width:100%;border:1.5px solid var(--gray-line);border-radius:10px;
+    padding:9px 12px;font-family:var(--font);font-size:12.5px;outline:none;background:#fff;
+    resize:vertical;min-height:60px;color:var(--gray-dark);
+  }
+  .notes:focus{border-color:var(--in)}
+  .notes::placeholder{color:#9CA3AF}
+
+  /* Add to comanda */
+  .cust-foot{
+    margin-top:auto;
+    padding:12px 18px;
+    border-top:1px solid var(--gray-line);
+    background:linear-gradient(180deg,#FAFBFC 0%,#fff 100%);
+    display:flex;align-items:center;gap:10px;
+  }
+  .running-total{display:flex;flex-direction:column;flex:1}
+  .rt-lbl{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gray-muted)}
+  .rt-val{font-size:18px;font-weight:800;color:var(--gray-dark);font-variant-numeric:tabular-nums;line-height:1}
+  .btn-add{
+    display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;
+    background:var(--in);color:#fff;padding:0 18px;height:42px;border-radius:10px;
+    font-family:var(--font);font-size:13px;font-weight:700;letter-spacing:.02em;
+    box-shadow:0 4px 10px rgba(99,102,241,.25);transition:background .15s,box-shadow .15s;
+  }
+  .btn-add:hover{background:#4F46E5;box-shadow:0 8px 18px rgba(99,102,241,.30)}
+  .btn-add .ms{font-size:18px;font-variation-settings:'FILL' 1,'wght' 500}
+
+  /* ===== COLUMN 3: COMANDA ===== */
+  .com-head{padding:12px 14px 10px;border-bottom:1px solid var(--gray-line)}
+  .com-folio{display:flex;align-items:baseline;gap:8px}
+  .com-folio .num{font-size:15px;font-weight:800;color:var(--gray-dark);font-variant-numeric:tabular-nums}
+  .com-folio .meta{font-size:11px;color:var(--gray-muted);display:flex;align-items:center;gap:4px}
+  .com-folio .meta .ms{font-size:13px}
+  .com-count{margin-top:4px;display:flex;align-items:center;gap:6px}
+  .com-count .chip{background:#1C1E26;color:#fff;border-radius:999px;padding:2px 8px;font-size:10px;font-weight:700;font-variant-numeric:tabular-nums}
+
+  .com-items{padding:8px 12px;display:flex;flex-direction:column;gap:6px}
+  .com-card{
+    background:#fff;border:1px solid var(--gray-line);border-radius:10px;
+    padding:8px 10px;display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:10px;
+    transition:all .12s;
+  }
+  .com-card:hover{border-color:#A5B4FC}
+  .com-thumb{
+    width:34px;height:34px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--in-bg);
+  }
+  .com-thumb .ms{font-size:18px;color:var(--in);font-variation-settings:'FILL' 1,'wght' 500}
+  .com-info{min-width:0}
+  .com-name{font-size:12.5px;font-weight:600;color:var(--gray-dark);line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .com-meta{font-size:10.5px;color:var(--gray-muted);margin-top:2px;display:flex;align-items:center;gap:5px}
+  .com-meta .qpill{background:#1C1E26;color:#fff;padding:1px 6px;border-radius:5px;font-weight:700;font-size:9.5px;font-variant-numeric:tabular-nums}
+  .com-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+  .com-amt{font-size:13px;font-weight:700;color:var(--gray-dark);font-variant-numeric:tabular-nums;line-height:1}
+  .com-actions{display:flex;gap:2px}
+  .com-actions button{
+    border:none;background:transparent;cursor:pointer;
+    width:22px;height:22px;border-radius:5px;
+    display:flex;align-items:center;justify-content:center;color:var(--gray-muted);
+    transition:all .12s;
+  }
+  .com-actions button:hover{background:var(--gray-foot);color:var(--gray-dark)}
+  .com-actions .danger:hover{background:#FEE2E2;color:#B91C1C}
+  .com-actions .ms{font-size:14px}
+
+  /* Empty state */
+  .com-empty{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    padding:30px 16px;color:var(--gray-muted);text-align:center;
+  }
+  .com-empty .ms{font-size:36px;color:var(--gray-line)}
+  .com-empty p{font-size:12px;font-weight:600;color:var(--gray-dark)}
+  .com-empty span{font-size:11px}
+
+  /* Totals + buttons */
+  .com-foot{
+    margin-top:auto;
+    padding:12px 14px 14px;
+    border-top:1px solid var(--gray-line);
+    background:linear-gradient(180deg,#FAFBFC 0%,#fff 100%);
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .totals{display:flex;flex-direction:column;gap:3px}
+  .tot-row{display:flex;align-items:baseline;justify-content:space-between;font-variant-numeric:tabular-nums}
+  .tot-row .l{font-size:11px;color:var(--gray-muted)}
+  .tot-row .v{font-size:13px;font-weight:600;color:var(--gray-dark)}
+  .tot-row.total{border-top:1px dashed var(--gray-line);padding-top:6px;margin-top:2px}
+  .tot-row.total .l{color:var(--gray-dark);font-weight:700;font-size:12px}
+  .tot-row.total .v{font-size:18px;font-weight:800;color:var(--gray-dark)}
+
+  .com-btns{display:flex;flex-direction:column;gap:6px}
+  .btn-save{
+    width:100%;height:46px;border:none;cursor:pointer;
+    background:#10B981;color:#fff;
+    border-radius:10px;font-family:var(--font);font-weight:800;font-size:13.5px;letter-spacing:.05em;text-transform:uppercase;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    box-shadow:0 6px 14px rgba(16,185,129,.28), 0 1px 3px rgba(16,185,129,.30);
+    transition:all .15s;
+  }
+  .btn-save:hover{background:#059669;box-shadow:0 10px 20px rgba(16,185,129,.30)}
+  .btn-save .ms{font-size:20px;font-variation-settings:'FILL' 1,'wght' 600}
+
+  .btn-cancel{
+    width:100%;height:36px;border:1.5px solid var(--gray-line);background:#fff;cursor:pointer;
+    border-radius:10px;color:#B91C1C;
+    font-family:var(--font);font-weight:600;font-size:12px;
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    transition:all .12s;
+  }
+  .btn-cancel:hover{background:#FEE2E2;border-color:#FCA5A5}
+  .btn-cancel .ms{font-size:16px}
+</style></head><body>
+
+<div class="stage">
+  <div class="scrim"></div>
+  <div class="wrap">
+
+    <div class="dlg" role="dialog" aria-modal="true">
+
+      <!-- ========= TITLE BAR ========= -->
+      <div class="tb">
+        <div class="tb-ico"><span class="ms fill" style="color:var(--in);font-size:20px">add_circle</span></div>
+        <div class="tb-titles">
+          <div class="tb-main">
+            <div class="tb-eyebrow">Nueva comanda</div>
+            <div class="tb-folio">Folio <span class="num">#C-1823</span>
+              <span class="tb-pill"><span class="ms fill">fiber_new</span>Borrador</span>
+            </div>
+          </div>
+          <div class="tb-sep"></div>
+          <div class="tb-info">
+            <div class="tb-info-item"><div class="tb-info-lbl">Mesa</div><div class="tb-info-val">06 · Salón principal</div></div>
+            <div class="tb-info-item"><div class="tb-info-lbl">Cliente</div><div class="tb-info-val">Familia Pérez · 6 pers.</div></div>
+            <div class="tb-info-item"><div class="tb-info-lbl">Mesero</div><div class="tb-info-val">María R.</div></div>
+            <div class="tb-info-item"><div class="tb-info-lbl">Apertura</div><div class="tb-info-val">14:42</div></div>
+          </div>
+        </div>
+        <button class="tb-x" title="Cerrar"><span class="ms">close</span></button>
+      </div>
+
+      <!-- ========= BODY ========= -->
+      <div class="body">
+
+        <!-- ============= COLUMN 1: MENÚ ============= -->
+        <div class="col">
+          <div class="col-head">
+            <div class="col-eyebrow">Catálogo</div>
+            <div class="col-title"><span class="ms" style="color:var(--in);font-size:16px">menu_book</span>Menú</div>
+            <div class="menu-search">
+              <span class="ms">search</span>
+              <input placeholder="Buscar platillo, código…" />
+            </div>
+          </div>
+          <div class="col-body">
+            <div class="menu-list">
+
+              <!-- Entradas -->
+              <details class="cat">
+                <summary>
+                  <span class="ms chev">chevron_right</span>
+                  <span class="ms icon">restaurant</span>
+                  Entradas
+                  <span class="cat-count">8</span>
+                </summary>
+                <details class="subcat" open>
+                  <summary><span class="ms">chevron_right</span>Ensaladas</summary>
+                  <div class="dishes">
+                    <div class="dish-card">
+                      <div class="dish-thumb"><span class="ms">eco</span></div>
+                      <div class="dish-info"><div class="dish-name">Ensalada César</div><div class="dish-price">$ 160.00</div></div>
+                    </div>
+                    <div class="dish-card">
+                      <div class="dish-thumb"><span class="ms">eco</span></div>
+                      <div class="dish-info"><div class="dish-name">Caprese de la casa</div><div class="dish-price">$ 175.00</div></div>
+                    </div>
+                  </div>
+                </details>
+                <details class="subcat">
+                  <summary><span class="ms">chevron_right</span>Sopas</summary>
+                </details>
+                <details class="subcat">
+                  <summary><span class="ms">chevron_right</span>Tablas para compartir</summary>
+                </details>
+              </details>
+
+              <!-- Platos fuertes -->
+              <details class="cat" open>
+                <summary>
+                  <span class="ms chev">chevron_right</span>
+                  <span class="ms icon">dinner_dining</span>
+                  Platos fuertes
+                  <span class="cat-count">14</span>
+                </summary>
+                <details class="subcat" open>
+                  <summary><span class="ms">chevron_right</span>Carnes</summary>
+                  <div class="dishes">
+                    <div class="dish-card selected">
+                      <div class="dish-thumb"><span class="ms">dinner_dining</span></div>
+                      <div class="dish-info"><div class="dish-name">Filete a la plancha</div><div class="dish-price">$ 380.00</div></div>
+                    </div>
+                    <div class="dish-card">
+                      <div class="dish-thumb"><span class="ms">kebab_dining</span></div>
+                      <div class="dish-info"><div class="dish-name">Arrachera marinada</div><div class="dish-price">$ 340.00</div></div>
+                    </div>
+                    <div class="dish-card">
+                      <div class="dish-thumb"><span class="ms">outdoor_grill</span></div>
+                      <div class="dish-info"><div class="dish-name">Costilla BBQ</div><div class="dish-price">$ 420.00</div></div>
+                    </div>
+                  </div>
+                </details>
+                <details class="subcat">
+                  <summary><span class="ms">chevron_right</span>Pastas</summary>
+                </details>
+                <details class="subcat">
+                  <summary><span class="ms">chevron_right</span>Pescados y mariscos</summary>
+                </details>
+                <details class="subcat">
+                  <summary><span class="ms">chevron_right</span>Hamburguesas</summary>
+                </details>
+              </details>
+
+              <!-- Postres -->
+              <details class="cat">
+                <summary>
+                  <span class="ms chev">chevron_right</span>
+                  <span class="ms icon">cake</span>
+                  Postres
+                  <span class="cat-count">6</span>
+                </summary>
+              </details>
+
+              <!-- Bebidas -->
+              <details class="cat">
+                <summary>
+                  <span class="ms chev">chevron_right</span>
+                  <span class="ms icon">local_bar</span>
+                  Bebidas
+                  <span class="cat-count">22</span>
+                </summary>
+              </details>
+
+              <!-- Vinos -->
+              <details class="cat">
+                <summary>
+                  <span class="ms chev">chevron_right</span>
+                  <span class="ms icon">wine_bar</span>
+                  Cava
+                  <span class="cat-count">18</span>
+                </summary>
+              </details>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- ============= COLUMN 2: PERSONALIZAR ============= -->
+        <div class="col">
+          <div class="col-head">
+            <div class="col-eyebrow">Selección activa</div>
+            <div class="col-title"><span class="ms" style="color:var(--in);font-size:16px">tune</span>Personalizar platillo</div>
+          </div>
+          <div class="col-body">
+            <div class="cust">
+
+              <!-- Selected hero -->
+              <div class="sel-hero">
+                <div class="sel-thumb"><span class="ms">dinner_dining</span></div>
+                <div class="sel-text">
+                  <div class="sel-cat">Platos fuertes · Carnes</div>
+                  <div class="sel-name">Filete a la plancha</div>
+                  <div class="sel-desc">300 g de res angus, mantequilla de hierbas, guarnición a elegir.</div>
+                </div>
+                <div class="sel-price">$ 380<span style="font-size:14px;font-weight:700">.00</span></div>
+              </div>
+
+              <!-- Quantity -->
+              <div class="field-grid-2">
+                <div class="field">
+                  <div class="field-lbl">Cantidad</div>
+                  <div class="qty-stepper">
+                    <button title="Disminuir"><span class="ms">remove</span></button>
+                    <input type="text" value="2" />
+                    <button title="Aumentar"><span class="ms">add</span></button>
+                  </div>
+                </div>
+                <div class="field">
+                  <div class="field-lbl">Precio unitario <span style="opacity:.7">(editable)</span></div>
+                  <div class="price-edit">
+                    <span class="currency">$</span>
+                    <input type="text" value="380.00" />
+                    <span class="ms">edit</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Término -->
+              <div class="field">
+                <div class="field-lbl">Término de la carne <span class="req">*</span></div>
+                <div class="seg">
+                  <input type="radio" name="term" id="t1"><label for="t1">Rojo</label>
+                  <input type="radio" name="term" id="t2"><label for="t2">Medio rojo</label>
+                  <input type="radio" name="term" id="t3" checked><label for="t3">Medio</label>
+                  <input type="radio" name="term" id="t4"><label for="t4">Tres cuartos</label>
+                  <input type="radio" name="term" id="t5"><label for="t5">Bien cocido</label>
+                </div>
+              </div>
+
+              <!-- Acompañamiento -->
+              <div class="field">
+                <div class="field-lbl">Acompañamiento</div>
+                <div class="seg">
+                  <input type="radio" name="side" id="s1" checked><label for="s1">Papas a la francesa</label>
+                  <input type="radio" name="side" id="s2"><label for="s2">Papa al horno</label>
+                  <input type="radio" name="side" id="s3"><label for="s3">Ensalada mixta</label>
+                  <input type="radio" name="side" id="s4"><label for="s4">Verduras al grill</label>
+                  <input type="radio" name="side" id="s5"><label for="s5">Arroz blanco</label>
+                </div>
+              </div>
+
+              <!-- Extras -->
+              <div class="field">
+                <div class="field-lbl">Extras y modificadores</div>
+                <div class="extras">
+                  <label class="extra">
+                    <input type="checkbox" checked /><span class="cb"></span>
+                    <span class="extra-name">Mantequilla de hierbas extra</span>
+                    <span class="extra-price">+ $ 30.00</span>
+                  </label>
+                  <label class="extra">
+                    <input type="checkbox" /><span class="cb"></span>
+                    <span class="extra-name">Salsa chimichurri</span>
+                    <span class="extra-price">+ $ 25.00</span>
+                  </label>
+                  <label class="extra">
+                    <input type="checkbox" /><span class="cb"></span>
+                    <span class="extra-name">Queso azul</span>
+                    <span class="extra-price">+ $ 40.00</span>
+                  </label>
+                  <label class="extra">
+                    <input type="checkbox" checked /><span class="cb"></span>
+                    <span class="extra-name">Sin cebolla</span>
+                    <span class="extra-price free">sin costo</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Notas -->
+              <div class="field">
+                <div class="field-lbl"><span class="ms" style="font-size:14px;color:var(--gray-muted)">edit_note</span>Notas para cocina</div>
+                <textarea class="notes" placeholder="Ej. alergias, instrucciones especiales…">Cliente alérgico al ajo. Cortar el filete en 3 porciones a la mitad del servicio.</textarea>
+              </div>
+
+            </div>
+          </div>
+          <div class="cust-foot">
+            <div class="running-total">
+              <span class="rt-lbl">Subtotal del platillo</span>
+              <span class="rt-val">$ 820.00</span>
+            </div>
+            <button class="btn-add"><span class="ms">add_shopping_cart</span>Agregar a la comanda</button>
+          </div>
+        </div>
+
+        <!-- ============= COLUMN 3: COMANDA ============= -->
+        <div class="col">
+          <div class="col-head">
+            <div class="col-eyebrow">Comanda en curso</div>
+            <div class="col-title"><span class="ms" style="color:var(--in);font-size:16px">receipt</span>Resumen</div>
+            <div style="margin-top:6px">
+              <div class="com-folio">
+                <span class="num">#C-1823</span>
+                <span class="meta"><span class="ms">schedule</span>14:42</span>
+              </div>
+              <div class="com-count">
+                <span class="chip">3 items</span>
+                <span style="font-size:10.5px;color:var(--gray-muted)">·  enviado a cocina: <strong style="color:var(--gray-dark);font-weight:600">aún no</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-body">
+            <div class="com-items">
+
+              <div class="com-card">
+                <div class="com-thumb"><span class="ms">eco</span></div>
+                <div class="com-info">
+                  <div class="com-name">Ensalada César</div>
+                  <div class="com-meta"><span class="qpill">×2</span>$ 160.00 c/u · sin crutones</div>
+                </div>
+                <div class="com-right">
+                  <div class="com-amt">$ 320.00</div>
+                  <div class="com-actions">
+                    <button title="Editar"><span class="ms">edit</span></button>
+                    <button class="danger" title="Quitar"><span class="ms">delete</span></button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="com-card">
+                <div class="com-thumb"><span class="ms">soup_kitchen</span></div>
+                <div class="com-info">
+                  <div class="com-name">Sopa de tortilla</div>
+                  <div class="com-meta"><span class="qpill">×3</span>$ 95.00 c/u</div>
+                </div>
+                <div class="com-right">
+                  <div class="com-amt">$ 285.00</div>
+                  <div class="com-actions">
+                    <button title="Editar"><span class="ms">edit</span></button>
+                    <button class="danger" title="Quitar"><span class="ms">delete</span></button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="com-card">
+                <div class="com-thumb"><span class="ms">ramen_dining</span></div>
+                <div class="com-info">
+                  <div class="com-name">Pasta Alfredo con pollo</div>
+                  <div class="com-meta"><span class="qpill">×1</span>$ 285.00 c/u · extra queso</div>
+                </div>
+                <div class="com-right">
+                  <div class="com-amt">$ 315.00</div>
+                  <div class="com-actions">
+                    <button title="Editar"><span class="ms">edit</span></button>
+                    <button class="danger" title="Quitar"><span class="ms">delete</span></button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="com-foot">
+            <div class="totals">
+              <div class="tot-row"><span class="l">Items (3)</span><span class="v">$ 920.00</span></div>
+              <div class="tot-row"><span class="l">Modificadores</span><span class="v">$ 0.00</span></div>
+              <div class="tot-row total"><span class="l">Total comanda</span><span class="v">$ 920.00</span></div>
+            </div>
+            <div class="com-btns">
+              <button class="btn-save"><span class="ms">restaurant</span>Guardar y enviar a cocina</button>
+              <button class="btn-cancel"><span class="ms">cancel</span>Cancelar comanda</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+</body></html>

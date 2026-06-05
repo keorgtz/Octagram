@@ -1,0 +1,302 @@
+/* ════════════════════════════════════════════════════════════════════
+   Keorsoft · MeridianUI · Design Tokens
+   Versión 1.0 · Fuente: SHEndevour Design Spec
+   ════════════════════════════════════════════════════════════════════
+
+   MeridianUI es el lenguaje visual de Keorsoft: una fusión entre
+   Fluent Design, Material Expressive y MaterialDesignInXaml, con un
+   acento personal en densidad controlada, color semántico (5 niveles)
+   y elevación sutil.
+
+   Importar desde HTML:
+     <link rel="stylesheet" href="colors_and_type.css">
+*/
+
+/* — Webfonts — Inter para TODO el producto.
+   Coco Gothic ES SOLO para wordmarks de marca (Keorsoft, SHEndevour, etc).
+   Coco Gothic es comercial (Type Depot) y NO se sirve por CDN; entrégala
+   como asset estático (PNG/SVG) cuando aparezca en un layout. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* Material Symbols Rounded — iconografía oficial Keorsoft (Google Fonts).
+   Soporta ejes variables: opsz, wght, FILL, GRAD. Default = wght 400, FILL 0. */
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block');
+
+/* Alias para código legacy que usa `material-icons-round` */
+.material-icons-round,
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded' !important;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.material-symbols-rounded.fill,
+.material-icons-round.fill {
+  font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}
+
+:root {
+  /* ════════════════════════════════════════════════════════════════
+     1 · COLOR — Sistema semántico de 5 niveles
+     Cada color tiene 5 variantes: strong → mid → light → pale → bg
+     ════════════════════════════════════════════════════════════════ */
+
+  /* Emerald — OK / Ingreso / Éxito / Llegadas */
+  --em:        #10B981;
+  --em-md:     #34D399;
+  --em-lt:     #6EE7B7;
+  --em-pl:     #DCFCE7;
+  --em-bg:     #F0FDF4;
+
+  /* Amber — Alerta / Pendiente / Rentas / Salidas */
+  --am:        #F59E0B;
+  --am-md:     #FBB95A;
+  --am-lt:     #FDE68A;
+  --am-pl:     #FEF3C7;
+  --am-bg:     #FFFBEB;
+
+  /* Indigo — Neutro / Referencia / Cargos / Ocupación */
+  --in:        #6366F1;
+  --in-md:     #A5B4FC;
+  --in-lt:     #C7D2FE;
+  --in-pl:     #E0E7FF;
+  --in-bg:     #EEF2FF;
+
+  /* Violet — Total / Resumen / Abonos / Forecast */
+  --vi:        #8B5CF6;
+  --vi-md:     #C4B5FD;
+  --vi-lt:     #DDD6FE;
+  --vi-pl:     #EDE9FE;
+  --vi-bg:     #F5F3FF;
+
+  /* Orange — Gasto / Salida / Advertencia */
+  --or:        #F97316;
+  --or-md:     #FB923C;
+  --or-lt:     #FED7AA;
+  --or-pl:     #FFEDD5;
+  --or-bg:     #FFF7ED;
+
+  /* Pink — acento secundario (bloqueadas) */
+  --pk:        #EC4899;
+
+  /* ── KEORSOFT BRAND BLUES — corporativo ──
+     Sólo para chrome de marca (logos, splash, hero brand) — NO para data UI.
+     Para UI semántica seguir usando la paleta MeridianUI de arriba. */
+  --kr-blue:        #0E98F8;   /* azul firma  */
+  --kr-blue-mid:    #51B1FB;   /* mid  */
+  --kr-blue-pale:   #C3D9F0;   /* onda pale  */
+  --kr-blue-dark:   #0B5FA8;   /* deep accessible (no en logo) */
+  --kr-ink:         #1C1E26;   /* coincide con --gray-dark */
+
+  /* ── Colores Material legacy (módulos CFDI / WPF) ── */
+  --cargo:     #2196F3;
+  --abono:     #4CAF50;
+  --dscto:     #FF9800;
+  --devol:     #F44336;
+
+  /* Forma de pago (SAT) */
+  --pay-efec:  #4CAF50;
+  --pay-tcred: #2196F3;
+  --pay-tdeb:  #9C27B0;
+  --pay-trans: #FF9800;
+  --pay-none:  #9E9E9E;
+
+  /* ── Primario de acción (CTA / botones de página) ── */
+  --primary:        #1976D2;
+  --primary-dark:   #1565C0;
+  --primary-light:  #BBDEFB;
+
+  /* ── Neutros ── */
+  --gray-dark:   #1C1E26;  /* Texto principal */
+  --gray-700:    #374151;  /* Texto secundario / tablas */
+  --gray-muted:  #6B7280;  /* Labels, metadatos */
+  --gray-line:   #E5E7EB;  /* Bordes y divisores */
+  --gray-foot:   #F9FAFB;  /* Fondos de footer / tabla */
+  --page-bg:     #F2F3F7;  /* Fondo de página */
+  --white:       #FFFFFF;
+
+  /* ── App shell ── */
+  --sidebar-bg:        #FFFFFF;
+  --sidebar-active-bg: var(--in-bg);   /* Indigo soft — per spec §6.2 */
+  --sidebar-active-fg: var(--in);      /* Indigo strong */
+  --sidebar-hover-bg:  #F0F4FF;        /* Indigo pre-active */
+  --sidebar-active-shadow: 0 1px 3px rgba(99,102,241,.12);
+  --sidebar-border:    #E5E7EB;
+  --titlebar-h:     48px;
+  --statusbar-h:    28px;
+  --sidebar-w:      220px;
+  --sidebar-w-col:  64px;
+
+  /* ════════════════════════════════════════════════════════════════
+     2a · SIDEBAR — geometría heredada del spec MeridianUI v1.0
+     (ítem: padding 8/12, margin 1/8, radius --r-md, active bg --in-bg,
+      hover bg #F0F4FF, active text/icon --in, shadow indigo suave)
+     ════════════════════════════════════════════════════════════════ */
+
+  /* ════════════════════════════════════════════════════════════════
+     2 · TIPOGRAFÍA — Stacks y escala
+     ════════════════════════════════════════════════════════════════ */
+
+  /* Stacks
+     IMPORTANT: --font-brand (Coco Gothic) se reserva ESTRICTAMENTE para
+     el wordmark "Keorsoft" o el nombre de un software de la casa
+     (SHEndevour, etc). Cualquier otro texto usa --font. */
+  --font:         'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-display: 'Inter', 'Segoe UI', sans-serif;
+  --font-brand:   'Coco Gothic', 'Inter', 'Segoe UI', sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, 'Cascadia Mono', Menlo, monospace;
+
+  /* Tamaños base */
+  --fs-9:   9px;
+  --fs-10:  10px;
+  --fs-11:  11px;
+  --fs-12:  12px;
+  --fs-13:  13px;
+  --fs-14:  14px;
+  --fs-16:  16px;
+  --fs-18:  18px;
+  --fs-22:  22px;
+  --fs-28:  28px;
+  --fs-42:  42px;
+
+  /* Pesos */
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semi:     600;
+  --fw-bold:     700;
+  --fw-black:    800;
+
+  /* ════════════════════════════════════════════════════════════════
+     3 · ESPACIADO — Base 4 px
+     ════════════════════════════════════════════════════════════════ */
+  --s1:  4px;
+  --s2:  8px;
+  --s3:  12px;
+  --s4:  16px;
+  --s5:  20px;
+  --s6:  24px;
+  --s7:  32px;
+  --s8:  40px;
+
+  /* ════════════════════════════════════════════════════════════════
+     4 · RADIOS
+     ════════════════════════════════════════════════════════════════ */
+  --r-sm:  6px;   /* Badges, chips pequeños, inputs */
+  --r-md:  10px;  /* Botones, chips de pago */
+  --r-lg:  14px;  /* Tarjetas normales */
+  --r-xl:  20px;  /* KPI cards, footer caja */
+  --r-full: 999px;
+
+  /* ════════════════════════════════════════════════════════════════
+     5 · ELEVACIÓN — sombras MeridianUI
+     ════════════════════════════════════════════════════════════════ */
+  --shadow-0: none;
+  --shadow:   0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06);
+  --shadow-2: 0 2px 6px rgba(0,0,0,.15), 0 1px 3px rgba(0,0,0,.12);
+  --shadow-3: 0 4px 16px rgba(0,0,0,.16);
+
+  /* ════════════════════════════════════════════════════════════════
+     6 · TRANSICIONES
+     ════════════════════════════════════════════════════════════════ */
+  --t-fast:  120ms ease;
+  --t-base:  150ms ease;
+  --t-slow:  200ms ease-in-out;
+  --t-expand: 180ms ease;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   7 · SEMANTIC TEXT TOKENS — clases utilitarias listas para usar
+   ════════════════════════════════════════════════════════════════════ */
+
+.h-page-title {
+  font-family: var(--font);
+  font-size: var(--fs-22);
+  font-weight: var(--fw-semi);
+  color: var(--gray-dark);
+  line-height: 1.2;
+}
+
+.h-section-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-18);
+  font-weight: var(--fw-bold);
+  color: var(--gray-dark);
+  line-height: 1.3;
+  letter-spacing: .01em;
+}
+
+.h-module-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-22);
+  font-weight: var(--fw-bold);
+  color: var(--gray-dark);
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+
+.t-kpi-value {
+  font-family: var(--font);
+  font-size: var(--fs-42);
+  font-weight: var(--fw-bold);
+  line-height: 1;
+}
+
+.t-kpi-value-md {
+  font-family: var(--font-display);
+  font-size: var(--fs-28);
+  font-weight: var(--fw-bold);
+  line-height: 1;
+}
+
+.t-label {
+  font-size: var(--fs-11);
+  font-weight: var(--fw-semi);
+  color: var(--gray-muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.t-meta {
+  font-size: var(--fs-9);
+  font-weight: var(--fw-bold);
+  color: var(--gray-muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.t-body {
+  font-size: var(--fs-13);
+  font-weight: var(--fw-regular);
+  color: var(--gray-700);
+  line-height: 1.45;
+}
+
+.t-body-sm {
+  font-size: var(--fs-12);
+  font-weight: var(--fw-regular);
+  color: var(--gray-700);
+}
+
+.t-amount {
+  font-family: var(--font);
+  font-size: var(--fs-13);
+  font-weight: var(--fw-semi);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Body base reset (opt-in) */
+.meridian-base {
+  font-family: var(--font);
+  color: var(--gray-dark);
+  background: var(--page-bg);
+}

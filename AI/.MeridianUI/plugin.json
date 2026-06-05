@@ -1,0 +1,9 @@
+{
+  "name": "meridianui-design",
+  "description": "MeridianUI — Keorsoft design system. Tokens, components and guidelines for HTML/CSS, Blazor Web, WPF/XAML and .NET MAUI.",
+  "version": "1.1.0",
+  "author": {
+    "name": "Keorsoft",
+    "email": "kevin00ortizgtz@gmail.com"
+  }
+}

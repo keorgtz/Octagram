@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;background:#fff;font-family:var(--font);color:var(--gray-dark);padding:18px}
+  .row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;align-items:start}
+  .lbl{font-size:10px;color:var(--gray-muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:block}
+  .field{position:relative;display:flex;flex-direction:column;gap:0}
+  .field-input{
+    border:1.5px solid var(--gray-line);
+    border-radius:10px;padding:11px 14px;font-family:var(--font);font-size:13px;color:var(--gray-dark);
+    outline:none;background:#fff;transition:border-color .15s;
+  }
+  .field-input::placeholder{color:#9CA3AF}
+  .field-input:focus{border-color:var(--primary)}
+  .field-input.focused{border-color:var(--primary)}
+  .float-label{
+    position:absolute;top:-8px;left:12px;background:#fff;padding:0 6px;
+    font-size:10px;color:var(--primary);font-weight:500;letter-spacing:.04em;
+  }
+  .with-icon{position:relative}
+  .with-icon .mi{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-family:'Material Symbols Rounded';font-size:18px;color:var(--gray-muted)}
+  .with-icon input{padding-left:38px}
+  .checkbox{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--gray-dark);cursor:pointer}
+  .cb-box{width:18px;height:18px;border:2px solid var(--primary);border-radius:4px;display:flex;align-items:center;justify-content:center;background:#fff}
+  .cb-box.checked{background:var(--primary)}
+  .cb-box.checked::after{content:"";width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+</style></head><body>
+  <div class="row">
+    <div>
+      <span class="lbl">DatePicker outlined · focused</span>
+      <div class="field"><span class="float-label">Fecha inicio</span><input class="field-input focused" value="21 / 05 / 2026"/></div>
+    </div>
+    <div>
+      <span class="lbl">Input default</span>
+      <input class="field-input" placeholder="Buscar nota o cliente"/>
+    </div>
+    <div>
+      <span class="lbl">Input con ícono</span>
+      <div class="with-icon"><span class="mi">search</span><input class="field-input" placeholder="Buscar"/></div>
+    </div>
+  </div>
+
+  <div style="margin-top:18px;display:flex;gap:24px;align-items:center;border-top:1px dashed var(--gray-line);padding-top:14px">
+    <label class="checkbox"><span class="cb-box checked"></span><span>Nota seleccionada</span></label>
+    <label class="checkbox"><span class="cb-box"></span><span>Nota deshabilitada</span></label>
+    <label class="checkbox" style="opacity:.5;cursor:not-allowed"><span class="cb-box" style="border-color:#BDBDBD"></span><span>Facturada</span></label>
+  </div>
+</body></html>

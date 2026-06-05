@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: octagram-db
+    restart: unless-stopped
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Your_password123
+    volumes:
+      - sql_data:/var/opt/mssql
+    networks:
+      - proxy
+
+  api:
+    build: 
+      context: .
+      dockerfile: OctagramDelivery.Api/Dockerfile
+    container_name: octagram-api
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=db;Database=OctagramDeliveryDb;User Id=sa;Password=Your_password123;TrustServerCertificate=True
+    networks:
+      - proxy
+
+  client:
+    build: 
+      context: .
+      dockerfile: OctagramDelivery.Client/Dockerfile
+    container_name: octagram-client
+    restart: unless-stopped
+    networks:
+      - proxy
+
+volumes:
+  sql_data:
+
+networks:
+  proxy:
+    external: true

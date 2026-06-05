@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--gray-dark)}
+  .stage{
+    width:100%;min-height:880px;
+    background:
+      radial-gradient(1200px 600px at 20% 20%, rgba(16,185,129,.12), transparent 70%),
+      radial-gradient(900px 500px at 80% 90%, rgba(99,102,241,.10), transparent 70%),
+      var(--page-bg);
+    padding:24px;
+    display:flex;justify-content:center;
+  }
+  .scrim{position:absolute;inset:0;background:rgba(28,30,38,.42);backdrop-filter:blur(4px)}
+  .wrap{position:relative;width:100%;max-width:1100px;display:flex;justify-content:center}
+
+  .dlg{
+    width:100%;background:#fff;border-radius:18px;
+    box-shadow:0 24px 60px rgba(28,30,38,.20), 0 4px 16px rgba(0,0,0,.10);
+    overflow:hidden;display:flex;flex-direction:column;
+  }
+  .ms{font-family:'Material Symbols Rounded';font-feature-settings:'liga';line-height:1}
+  .ms.fill{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+
+  /* ===== TITLE BAR ===== */
+  .tb{
+    display:flex;align-items:center;gap:14px;
+    padding:14px 18px;background:#fff;
+    border-bottom:1px solid var(--gray-line);position:relative;
+  }
+  .tb::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:4px;background:#10B981;border-radius:0 4px 4px 0}
+  .tb-ico{width:38px;height:38px;border-radius:10px;background:#DCFCE7;display:flex;align-items:center;justify-content:center;margin-left:6px}
+  .tb-titles{flex:1;min-width:0}
+  .tb-eyebrow{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-muted)}
+  .tb-folio{font-size:18px;font-weight:700;color:var(--gray-dark);letter-spacing:-.005em;display:flex;align-items:center;gap:8px;margin-top:2px}
+  .tb-folio .num{font-variant-numeric:tabular-nums}
+  .tb-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;background:#FEF3C7;color:#92400E;font-size:10.5px;font-weight:700;letter-spacing:.02em}
+  .tb-pill .ms{font-size:13px}
+  .tb-x{border:none;background:transparent;cursor:pointer;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--gray-muted);transition:background .15s,color .15s}
+  .tb-x:hover{background:var(--gray-foot);color:var(--gray-dark)}
+  .tb-x .ms{font-size:22px}
+
+  /* ===== BODY 2 columns ===== */
+  .body{display:grid;grid-template-columns:1fr 380px;background:#FAFBFC;min-height:720px}
+  .col{display:flex;flex-direction:column;background:#fff;overflow:hidden}
+  .col + .col{border-left:1px solid var(--gray-line)}
+  .col-head{padding:12px 16px 10px;border-bottom:1px solid var(--gray-line);flex-shrink:0}
+  .col-eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-muted)}
+  .col-title{font-size:14px;font-weight:700;color:var(--gray-dark);margin-top:2px;display:flex;align-items:center;gap:6px}
+  .col-body{flex:1;overflow-y:auto;min-height:0}
+  .col-body::-webkit-scrollbar{width:6px}
+  .col-body::-webkit-scrollbar-thumb{background:var(--gray-line);border-radius:4px}
+
+  /* ===== Saldo & total a pagar ===== */
+  .totals-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:14px 16px;background:#fff}
+  .tcard{background:#fff;border:1px solid var(--gray-line);border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:1px}
+  .tcard.hl{background:linear-gradient(180deg,#F0FDF4 0%,#FFFFFF 100%);border-color:#A7F3D0}
+  .tcard.warn{background:linear-gradient(180deg,#FFF7ED 0%,#FFFFFF 100%);border-color:#FED7AA}
+  .tc-lbl{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gray-muted)}
+  .tc-val{font-size:22px;font-weight:800;color:var(--gray-dark);font-variant-numeric:tabular-nums;line-height:1.05;letter-spacing:-.005em}
+  .tcard.hl .tc-val{color:#10B981}
+  .tcard.warn .tc-val{color:#F97316}
+  .tc-foot{font-size:10.5px;color:var(--gray-muted);margin-top:1px}
+
+  /* ===== Method tabs ===== */
+  .methods{padding:0 16px;display:flex;gap:6px;border-bottom:1px solid var(--gray-line);background:#fff;overflow-x:auto}
+  .method{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:9px 14px;border:none;background:transparent;cursor:pointer;
+    font-family:var(--font);font-size:12.5px;font-weight:600;color:var(--gray-muted);
+    border-bottom:2px solid transparent;transition:all .12s;white-space:nowrap;
+  }
+  .method:hover{color:var(--gray-dark)}
+  .method .ms{font-size:18px}
+  .method.active{color:var(--in);border-bottom-color:var(--in)}
+  .method.active .ms{color:var(--in);font-variation-settings:'FILL' 1,'wght' 500}
+
+  /* ===== Numeric pad section ===== */
+  .pad-wrap{padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .amount-block{display:flex;flex-direction:column;gap:8px}
+  .amount-display{
+    background:linear-gradient(180deg,#FAFBFC 0%,#fff 100%);
+    border:1.5px solid var(--gray-line);border-radius:14px;
+    padding:14px 18px;display:flex;flex-direction:column;gap:4px;
+    box-shadow:inset 0 1px 3px rgba(0,0,0,.03);
+  }
+  .amount-display .lbl{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gray-muted);display:flex;align-items:center;gap:6px}
+  .amount-display .method-tag{background:var(--in-bg);color:var(--in);padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
+  .amount-display .method-tag .ms{font-size:13px}
+  .amount-display .v{font-size:38px;font-weight:800;color:var(--gray-dark);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.01em;display:flex;align-items:baseline;gap:6px}
+  .amount-display .v .currency{font-size:18px;color:var(--gray-muted);font-weight:700}
+  .amount-display .v .cursor{display:inline-block;width:2px;height:32px;background:var(--in);animation:blink 1s steps(2) infinite;margin-left:2px}
+  @keyframes blink{50%{opacity:0}}
+  .amount-display .change{font-size:11.5px;color:var(--gray-muted);font-variant-numeric:tabular-nums}
+  .amount-display .change b{color:#10B981;font-weight:800}
+
+  /* Quick buttons (exact + bills) */
+  .quick{display:flex;flex-direction:column;gap:8px}
+  .quick-row-lbl{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gray-muted);display:flex;align-items:center;gap:6px}
+  .quick-row{display:flex;gap:6px;flex-wrap:wrap}
+  .qbtn{
+    display:inline-flex;align-items:center;gap:5px;
+    background:#fff;border:1.5px solid var(--gray-line);border-radius:10px;
+    padding:7px 11px;cursor:pointer;font-family:var(--font);font-size:12.5px;font-weight:700;
+    color:var(--gray-dark);font-variant-numeric:tabular-nums;
+    transition:all .12s;
+  }
+  .qbtn:hover{border-color:var(--in);background:#F8FAFF;color:var(--in)}
+  .qbtn .ms{font-size:14px;color:var(--gray-muted)}
+  .qbtn:hover .ms{color:var(--in)}
+  .qbtn.exact{background:#DCFCE7;border-color:#10B981;color:#065F46}
+  .qbtn.exact:hover{background:#10B981;color:#fff}
+  .qbtn.exact:hover .ms{color:#fff}
+
+  /* Numeric keypad */
+  .keypad-block{display:flex;flex-direction:column;gap:8px}
+  .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .key{
+    background:#fff;border:1.5px solid var(--gray-line);border-radius:10px;
+    height:54px;font-family:var(--font);font-size:18px;font-weight:700;
+    color:var(--gray-dark);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:4px;
+    transition:all .12s;font-variant-numeric:tabular-nums;
+  }
+  .key:hover{border-color:var(--in);background:#F8FAFF;color:var(--in)}
+  .key:active{transform:scale(.97);background:var(--in-bg)}
+  .key .ms{font-size:20px}
+  .key.fn{background:var(--gray-foot);color:var(--gray-muted)}
+  .key.del{color:#B91C1C;background:#FEF2F2;border-color:#FECACA}
+  .key.del:hover{background:#FEE2E2;color:#991B1B;border-color:#FCA5A5}
+  .key.confirm{background:var(--in);border-color:var(--in);color:#fff;font-size:14px;letter-spacing:.04em;text-transform:uppercase}
+  .key.confirm:hover{background:#4F46E5;color:#fff}
+  .key.confirm .ms{color:#fff;font-variation-settings:'FILL' 1,'wght' 500}
+
+  /* Method-specific details panel */
+  .method-details{padding:14px 16px;border-top:1px solid var(--gray-line);background:#fff}
+  .md-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .md-field{display:flex;flex-direction:column;gap:5px}
+  .md-lbl{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gray-muted)}
+  .md-input{border:1.5px solid var(--gray-line);border-radius:8px;padding:8px 11px;font-family:var(--font);font-size:12.5px;outline:none;background:#fff;color:var(--gray-dark);font-variant-numeric:tabular-nums}
+  .md-input:focus{border-color:var(--in)}
+  .md-select{
+    border:1.5px solid var(--gray-line);border-radius:8px;padding:8px 11px;
+    font-family:var(--font);font-size:12.5px;background:#fff;color:var(--gray-dark);
+    display:flex;align-items:center;justify-content:space-between;cursor:pointer;
+  }
+  .md-select .ms{font-size:18px;color:var(--gray-muted)}
+
+  /* Right column: pagos aplicados + footer */
+  .applied-head{padding:12px 16px 8px;border-bottom:1px solid var(--gray-line)}
+  .pay-list{padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+  .pay-card{
+    background:#fff;border:1px solid var(--gray-line);border-radius:10px;
+    padding:9px 11px;display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:10px;
+    transition:all .12s;
+  }
+  .pay-card:hover{border-color:#A5B4FC}
+  .pay-card.complete{border-color:#A7F3D0;background:#F0FDF4}
+  .pay-thumb{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+  .pay-thumb .ms{font-size:18px;font-variation-settings:'FILL' 1,'wght' 500}
+  .pay-thumb.efec{background:#DCFCE7}.pay-thumb.efec .ms{color:#10B981}
+  .pay-thumb.tcred{background:#E0E7FF}.pay-thumb.tcred .ms{color:#1565C0}
+  .pay-thumb.tdeb{background:#EDE9FE}.pay-thumb.tdeb .ms{color:#7B1FA2}
+  .pay-thumb.trans{background:#FEF3C7}.pay-thumb.trans .ms{color:#E65100}
+  .pay-thumb.vale{background:#FFEDD5}.pay-thumb.vale .ms{color:#F97316}
+  .pay-info{min-width:0}
+  .pay-name{font-size:12.5px;font-weight:700;color:var(--gray-dark);line-height:1.15}
+  .pay-meta{font-size:10.5px;color:var(--gray-muted);margin-top:2px;font-family:var(--font-mono)}
+  .pay-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+  .pay-amt{font-size:13.5px;font-weight:800;color:var(--gray-dark);font-variant-numeric:tabular-nums}
+  .pay-actions{display:flex;gap:2px}
+  .pay-actions button{border:none;background:transparent;cursor:pointer;width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;color:var(--gray-muted);transition:all .12s}
+  .pay-actions button:hover{background:var(--gray-foot);color:var(--gray-dark)}
+  .pay-actions .danger:hover{background:#FEE2E2;color:#B91C1C}
+  .pay-actions .ms{font-size:14px}
+
+  .empty-pay{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:30px 16px;color:var(--gray-muted);text-align:center}
+  .empty-pay .ms{font-size:36px;color:var(--gray-line)}
+  .empty-pay p{font-size:12px;font-weight:600;color:var(--gray-dark)}
+  .empty-pay span{font-size:11px}
+
+  /* Progress bar */
+  .progress-wrap{padding:8px 16px 12px}
+  .progress-bar{height:8px;border-radius:6px;background:var(--gray-line);overflow:hidden;display:flex}
+  .progress-bar span{background:#10B981;transition:flex .3s ease}
+  .progress-bar span:not(:last-child){border-right:1px solid #fff}
+  .progress-foot{display:flex;justify-content:space-between;font-size:10.5px;color:var(--gray-muted);margin-top:5px;font-variant-numeric:tabular-nums}
+  .progress-foot b{color:#10B981;font-weight:800}
+
+  /* Final cobrar footer */
+  .com-foot{
+    margin-top:auto;
+    padding:14px 16px 16px;border-top:1px solid var(--gray-line);
+    background:linear-gradient(180deg,#FAFBFC 0%,#fff 100%);
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .summary-row{display:flex;justify-content:space-between;align-items:baseline;font-variant-numeric:tabular-nums}
+  .summary-row .l{font-size:11px;color:var(--gray-muted);font-weight:600}
+  .summary-row .v{font-size:13px;font-weight:700;color:var(--gray-dark)}
+  .summary-row.total{border-top:1px dashed var(--gray-line);padding-top:6px;margin-top:2px}
+  .summary-row.total .l{color:var(--gray-dark);font-weight:700;font-size:12px}
+  .summary-row.total .v{font-size:20px;font-weight:800}
+  .summary-row.change .v{color:#10B981}
+  .summary-row.pending .v{color:#F97316}
+
+  .btn-charge{
+    width:100%;height:52px;border:none;cursor:pointer;
+    background:#10B981;color:#fff;border-radius:12px;
+    font-family:var(--font);font-weight:800;font-size:14.5px;letter-spacing:.05em;text-transform:uppercase;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    box-shadow:0 8px 18px rgba(16,185,129,.28), 0 1px 3px rgba(16,185,129,.30);
+    transition:all .15s;
+  }
+  .btn-charge:hover{background:#059669;box-shadow:0 12px 24px rgba(16,185,129,.30)}
+  .btn-charge .ms{font-size:22px;font-variation-settings:'FILL' 1,'wght' 600}
+  .btn-charge:disabled{background:#BDBDBD;cursor:not-allowed;box-shadow:none}
+
+  .btn-cancel{
+    width:100%;height:36px;border:1.5px solid var(--gray-line);background:#fff;cursor:pointer;
+    border-radius:10px;color:#B91C1C;
+    font-family:var(--font);font-weight:600;font-size:12px;
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    transition:all .12s;
+  }
+  .btn-cancel:hover{background:#FEE2E2;border-color:#FCA5A5}
+  .btn-cancel .ms{font-size:16px}
+</style></head><body>
+
+<div class="stage">
+  <div class="scrim"></div>
+  <div class="wrap">
+
+    <div class="dlg" role="dialog" aria-modal="true">
+
+      <!-- ========= TITLE BAR ========= -->
+      <div class="tb">
+        <div class="tb-ico"><span class="ms fill" style="color:#10B981;font-size:20px">payments</span></div>
+        <div class="tb-titles">
+          <div class="tb-eyebrow">Cobro de cuenta</div>
+          <div class="tb-folio">Folio <span class="num">#A-04218</span>
+            <span class="tb-pill"><span class="ms fill">receipt_long</span>Estado de cuenta</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:18px;margin-right:12px">
+          <div><div style="font-size:9px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.08em">Mesa</div><div style="font-size:13px;font-weight:700;color:var(--gray-dark)">06 · Familia Pérez</div></div>
+          <div><div style="font-size:9px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.08em">Cajero</div><div style="font-size:13px;font-weight:700;color:var(--gray-dark)">J. Rodríguez</div></div>
+        </div>
+        <button class="tb-x" title="Cerrar"><span class="ms">close</span></button>
+      </div>
+
+      <!-- ========= TOTALS ROW ========= -->
+      <div class="totals-row">
+        <div class="tcard"><div class="tc-lbl">Total a cobrar</div><div class="tc-val">$ 1,766.25</div><div class="tc-foot">en MXN · IVA incluido</div></div>
+        <div class="tcard hl"><div class="tc-lbl">Cubierto</div><div class="tc-val">$ 1,200.00</div><div class="tc-foot">2 formas de pago aplicadas</div></div>
+        <div class="tcard warn"><div class="tc-lbl">Saldo pendiente</div><div class="tc-val">$ 566.25</div><div class="tc-foot">faltan por cobrar</div></div>
+      </div>
+
+      <!-- ========= BODY 2 columns ========= -->
+      <div class="body">
+
+        <!-- ====== Col izquierda: teclado + método activo ====== -->
+        <div class="col">
+
+          <!-- Method tabs -->
+          <div class="methods">
+            <button class="method active"><span class="ms">payments</span>Efectivo</button>
+            <button class="method"><span class="ms">credit_card</span>T. Crédito</button>
+            <button class="method"><span class="ms">credit_card</span>T. Débito</button>
+            <button class="method"><span class="ms">swap_horiz</span>Transferencia</button>
+            <button class="method"><span class="ms">card_giftcard</span>Vale</button>
+            <button class="method"><span class="ms">currency_exchange</span>USD</button>
+          </div>
+
+          <div class="col-body">
+            <!-- Pad section -->
+            <div class="pad-wrap">
+
+              <!-- Amount + quick buttons -->
+              <div class="amount-block">
+                <div class="amount-display">
+                  <div class="lbl">Monto a aplicar
+                    <span class="method-tag"><span class="ms fill">payments</span>Efectivo</span>
+                  </div>
+                  <div class="v"><span class="currency">$</span>566.25<span class="cursor"></span></div>
+                  <div class="change">Cambio si se entrega <b>$ 600.00</b> → <b>$ 33.75</b></div>
+                </div>
+
+                <div class="quick">
+                  <div class="quick-row-lbl"><span class="ms" style="font-size:13px">bolt</span>Atajos</div>
+                  <div class="quick-row">
+                    <button class="qbtn exact"><span class="ms">equal</span>Pago exacto · $ 566.25</button>
+                    <button class="qbtn">+ Saldo total</button>
+                    <button class="qbtn">½ saldo</button>
+                  </div>
+                  <div class="quick-row-lbl" style="margin-top:4px"><span class="ms" style="font-size:13px">payments</span>Billetes</div>
+                  <div class="quick-row">
+                    <button class="qbtn">$ 20</button>
+                    <button class="qbtn">$ 50</button>
+                    <button class="qbtn">$ 100</button>
+                    <button class="qbtn">$ 200</button>
+                    <button class="qbtn">$ 500</button>
+                    <button class="qbtn">$ 1,000</button>
+                  </div>
+                  <div class="quick-row-lbl" style="margin-top:4px"><span class="ms" style="font-size:13px">toll</span>Monedas</div>
+                  <div class="quick-row">
+                    <button class="qbtn">$ 0.50</button>
+                    <button class="qbtn">$ 1</button>
+                    <button class="qbtn">$ 2</button>
+                    <button class="qbtn">$ 5</button>
+                    <button class="qbtn">$ 10</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Numeric keypad -->
+              <div class="keypad-block">
+                <div class="quick-row-lbl"><span class="ms" style="font-size:13px">dialpad</span>Teclado numérico</div>
+                <div class="keypad">
+                  <button class="key">7</button>
+                  <button class="key">8</button>
+                  <button class="key">9</button>
+                  <button class="key">4</button>
+                  <button class="key">5</button>
+                  <button class="key">6</button>
+                  <button class="key">1</button>
+                  <button class="key">2</button>
+                  <button class="key">3</button>
+                  <button class="key fn">.</button>
+                  <button class="key">0</button>
+                  <button class="key fn">00</button>
+                  <button class="key del" style="grid-column:span 2"><span class="ms">backspace</span>Borrar</button>
+                  <button class="key confirm"><span class="ms">add</span>Aplicar</button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Method-specific details (changes by tab) — placeholder for Efectivo (no extra fields) -->
+            <div class="method-details">
+              <div class="md-grid">
+                <div class="md-field">
+                  <div class="md-lbl">Entregado por cliente</div>
+                  <input class="md-input" value="600.00" />
+                </div>
+                <div class="md-field">
+                  <div class="md-lbl">Cambio a devolver</div>
+                  <input class="md-input" value="33.75" readonly style="background:#F0FDF4;color:#10B981;font-weight:800" />
+                </div>
+                <div class="md-field" style="grid-column:span 2">
+                  <div class="md-lbl">Referencia (opcional)</div>
+                  <input class="md-input" placeholder="Sobre #12, denominación específica, etc." />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== Col derecha: pagos aplicados + cobrar ====== -->
+        <div class="col">
+          <div class="col-head">
+            <div class="col-eyebrow">Multi-pago</div>
+            <div class="col-title"><span class="ms" style="color:var(--in);font-size:16px">payments</span>Formas de pago aplicadas</div>
+          </div>
+
+          <!-- Progress -->
+          <div class="progress-wrap">
+            <div class="progress-bar">
+              <span style="flex:480"></span>
+              <span style="flex:720;background:#6366F1"></span>
+              <span style="flex:566.25;background:#E5E7EB"></span>
+            </div>
+            <div class="progress-foot">
+              <span><b>67.9%</b> cubierto</span>
+              <span>$ 1,200 / $ 1,766.25</span>
+            </div>
+          </div>
+
+          <div class="col-body">
+            <div class="pay-list">
+
+              <div class="pay-card complete">
+                <div class="pay-thumb efec"><span class="ms">payments</span></div>
+                <div class="pay-info">
+                  <div class="pay-name">Efectivo</div>
+                  <div class="pay-meta">14:54 · cambio $ 20.00</div>
+                </div>
+                <div class="pay-right">
+                  <div class="pay-amt">$ 480.00</div>
+                  <div class="pay-actions">
+                    <button title="Editar"><span class="ms">edit</span></button>
+                    <button class="danger" title="Quitar"><span class="ms">delete</span></button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pay-card complete">
+                <div class="pay-thumb tcred"><span class="ms">credit_card</span></div>
+                <div class="pay-info">
+                  <div class="pay-name">T. Crédito · BBVA Visa</div>
+                  <div class="pay-meta">aprob #41827 · ••••4421</div>
+                </div>
+                <div class="pay-right">
+                  <div class="pay-amt">$ 720.00</div>
+                  <div class="pay-actions">
+                    <button title="Editar"><span class="ms">edit</span></button>
+                    <button class="danger" title="Quitar"><span class="ms">delete</span></button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- En curso (lo que está armándose en el panel izquierdo) -->
+              <div class="pay-card" style="border-style:dashed;border-color:var(--in)">
+                <div class="pay-thumb efec" style="opacity:.85"><span class="ms">payments</span></div>
+                <div class="pay-info">
+                  <div class="pay-name" style="color:var(--in)">Efectivo · capturando</div>
+                  <div class="pay-meta">monto pendiente de aplicar</div>
+                </div>
+                <div class="pay-right">
+                  <div class="pay-amt" style="color:var(--in)">$ 566.25</div>
+                  <div class="pay-actions">
+                    <button title="Aplicar"><span class="ms">check_circle</span></button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="com-foot">
+            <div class="summary-row"><span class="l">Total a cobrar</span><span class="v">$ 1,766.25</span></div>
+            <div class="summary-row"><span class="l">Aplicado</span><span class="v">$ 1,200.00</span></div>
+            <div class="summary-row pending"><span class="l">Saldo pendiente</span><span class="v">$ 566.25</span></div>
+            <div class="summary-row change"><span class="l">Cambio a devolver</span><span class="v">$ 33.75</span></div>
+            <div class="summary-row total"><span class="l">Listo para cobrar</span><span class="v">$ 1,766.25</span></div>
+
+            <button class="btn-charge"><span class="ms">verified</span>Cobrar y cerrar cuenta</button>
+            <button class="btn-cancel"><span class="ms">cancel</span>Cancelar cobro</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+</body></html>
