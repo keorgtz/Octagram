@@ -21,12 +21,32 @@
             </div>
         </div>
 
-        @if (_checkingMigrations)
+        @if (_phase == Phase.Connecting)
         {
-            <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:20px 0;color:var(--gray-muted,#6B7280);font-size:13px;">
-                <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Primary" />
-                Verificando base de datos...
+            <div style="padding:16px 0;">
+                <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:#6B7280;margin-bottom:8px;">
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Primary" />
+                    Conectando con el servidor...
+                </div>
+                <div style="font-size:11px;color:#9CA3AF;word-break:break-all;">
+                    <span class="material-symbols-rounded" style="font-size:13px;vertical-align:middle;">link</span>
+                    @MigSvc.ApiUrl
+                </div>
             </div>
+        }
+        else if (_phase == Phase.ServerDown)
+        {
+            <MudAlert Severity="Severity.Error" Dense="true" Class="mb-3">
+                <strong>No se puede conectar con el servidor</strong><br />
+                <span style="font-size:12px;">@_serverError</span>
+            </MudAlert>
+            <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:10px;margin-bottom:12px;font-size:11px;color:#6B7280;">
+                <div><strong>URL de la API:</strong> @MigSvc.ApiUrl</div>
+            </div>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true"
+                       OnClick="RetryConnection" StartIcon="@Icons.Material.Rounded.Refresh">
+                Reintentar conexión
+            </MudButton>
         }
         else
         {
@@ -91,7 +111,7 @@
     </TitleContent>
     <DialogContent>
         <p style="font-size:13px;color:#6B7280;margin-bottom:12px;">
-            Se detectaron <strong>@_pendingMigs.Count</strong> migración(es) de base de datos sin aplicar:
+            Se detectaron <strong>@_pendingMigs.Count</strong> migración(es) sin aplicar:
         </p>
         <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:10px;margin-bottom:8px;">
             @foreach (var m in _pendingMigs)
@@ -127,12 +147,16 @@
 </MudDialog>
 
 @code {
+    private enum Phase { Connecting, ServerDown, Ready }
+
+    private Phase _phase = Phase.Connecting;
+    private string? _serverError;
+
     private readonly LoginRequest _req = new();
     private string? _error;
     private bool _loading;
     private bool _showPass;
 
-    private bool _checkingMigrations = true;
     private bool _migDialogOpen;
     private List<string> _pendingMigs = [];
     private bool _migApplying;
@@ -147,15 +171,34 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var status = await MigSvc.GetStatusAsync();
-        _checkingMigrations = false;
+        await ConnectAsync();
+    }
 
+    private async Task ConnectAsync()
+    {
+        _phase = Phase.Connecting;
+        _serverError = null;
+        StateHasChanged();
+
+        var health = await MigSvc.CheckHealthAsync();
+        if (!health.Ok)
+        {
+            _phase = Phase.ServerDown;
+            _serverError = health.Error;
+            return;
+        }
+
+        var status = await MigSvc.GetStatusAsync();
         if (status != null && status.Pending.Count > 0)
         {
             _pendingMigs = status.Pending;
             _migDialogOpen = true;
         }
+
+        _phase = Phase.Ready;
     }
+
+    private async Task RetryConnection() => await ConnectAsync();
 
     private void SkipMigrations() => _migDialogOpen = false;
 

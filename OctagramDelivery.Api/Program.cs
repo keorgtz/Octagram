@@ -84,6 +84,9 @@ app.UseCors("AllowClient");
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGet("/api/health", () => Results.Ok(new { status = "ok", time = DateTime.UtcNow }))
+   .AllowAnonymous();
+
 app.MapControllers();
 app.MapHub<JornadaHub>("/hubs/jornada");
 

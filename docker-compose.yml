@@ -10,6 +10,12 @@ services:
       - sql_data:/var/opt/mssql
     networks:
       - proxy
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Your_password123" -Q "SELECT 1" -b -No
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
   api:
     build:
@@ -18,7 +24,8 @@ services:
     container_name: octagram-api
     restart: unless-stopped
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
