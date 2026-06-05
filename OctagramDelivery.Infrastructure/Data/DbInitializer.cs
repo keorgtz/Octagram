@@ -15,7 +15,7 @@ public static class DbInitializer
         var admin = new AppUser
         {
             Username = "admin",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin"),
             FullName = "Administrador",
             Rol = UserRole.Admin,
             IsActive = true

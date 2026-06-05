@@ -22,5 +22,6 @@ builder.Services.AddScoped<JwtAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(p => p.GetRequiredService<JwtAuthStateProvider>());
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<ApiService>();
+builder.Services.AddScoped<MigrationService>();
 
 await builder.Build().RunAsync();

@@ -53,6 +53,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
                 "https://octagram-app.endevour.mx",
+                "http://localhost:5194",
+                "https://localhost:7218",
                 "http://localhost:5240",
                 "https://localhost:7142",
                 "http://localhost:5000",
