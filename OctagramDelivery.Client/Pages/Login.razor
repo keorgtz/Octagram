@@ -1,12 +1,14 @@
 @page "/login"
 @layout EmptyLayout
 @inject AuthService AuthSvc
+@inject MigrationService MigSvc
 @inject NavigationManager Nav
 
 <PageTitle>Iniciar sesión · OctagramDelivery</PageTitle>
 
 <MudThemeProvider />
 <MudPopoverProvider />
+<MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Small" />
 <MudSnackbarProvider />
 
 <div class="empty-layout">
@@ -19,49 +21,59 @@
             </div>
         </div>
 
-        <EditForm Model="_req" OnValidSubmit="DoLogin">
-            <MudTextField @bind-Value="_req.Username"
-                          Label="Usuario"
-                          Variant="Variant.Outlined"
-                          Adornment="Adornment.Start"
-                          AdornmentIcon="@Icons.Material.Rounded.Person"
-                          Disabled="_loading"
-                          FullWidth="true"
-                          Class="mb-3" />
+        @if (_checkingMigrations)
+        {
+            <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:20px 0;color:var(--gray-muted,#6B7280);font-size:13px;">
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Primary" />
+                Verificando base de datos...
+            </div>
+        }
+        else
+        {
+            <EditForm Model="_req" OnValidSubmit="DoLogin">
+                <MudTextField @bind-Value="_req.Username"
+                              Label="Usuario"
+                              Variant="Variant.Outlined"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Rounded.Person"
+                              Disabled="_loading"
+                              FullWidth="true"
+                              Class="mb-3" />
 
-            <MudTextField @bind-Value="_req.Password"
-                          Label="Contraseña"
-                          Variant="Variant.Outlined"
-                          InputType="@(_showPass ? InputType.Text : InputType.Password)"
-                          Adornment="Adornment.End"
-                          AdornmentIcon="@(_showPass ? Icons.Material.Rounded.VisibilityOff : Icons.Material.Rounded.Visibility)"
-                          OnAdornmentClick="() => _showPass = !_showPass"
-                          Disabled="_loading"
-                          FullWidth="true"
-                          Class="mb-4" />
+                <MudTextField @bind-Value="_req.Password"
+                              Label="Contraseña"
+                              Variant="Variant.Outlined"
+                              InputType="@(_showPass ? InputType.Text : InputType.Password)"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@(_showPass ? Icons.Material.Rounded.VisibilityOff : Icons.Material.Rounded.Visibility)"
+                              OnAdornmentClick="() => _showPass = !_showPass"
+                              Disabled="_loading"
+                              FullWidth="true"
+                              Class="mb-4" />
 
-            @if (_error != null)
-            {
-                <MudAlert Severity="Severity.Error" Class="mb-3" Dense="true">@_error</MudAlert>
-            }
-
-            <MudButton ButtonType="ButtonType.Submit"
-                       Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       FullWidth="true"
-                       Size="Size.Large"
-                       Disabled="_loading"
-                       Style="height:44px;font-weight:600;font-size:15px;border-radius:10px;">
-                @if (_loading)
+                @if (_error != null)
                 {
-                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" />
+                    <MudAlert Severity="Severity.Error" Class="mb-3" Dense="true">@_error</MudAlert>
                 }
-                else
-                {
-                    <span>Entrar</span>
-                }
-            </MudButton>
-        </EditForm>
+
+                <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           FullWidth="true"
+                           Size="Size.Large"
+                           Disabled="_loading"
+                           Style="height:44px;font-weight:600;font-size:15px;border-radius:10px;">
+                    @if (_loading)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" />
+                    }
+                    else
+                    {
+                        <span>Entrar</span>
+                    }
+                </MudButton>
+            </EditForm>
+        }
 
         <div style="text-align:center;margin-top:20px;font-size:11px;color:var(--gray-muted,#6B7280);">
             OctagramDelivery · KeorSoft © 2026
@@ -69,11 +81,96 @@
     </div>
 </div>
 
+<!-- Diálogo de migraciones pendientes -->
+<MudDialog @bind-Visible="_migDialogOpen" Options="_migOptions">
+    <TitleContent>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <span class="material-symbols-rounded" style="color:#F59E0B;font-size:22px;">warning</span>
+            <span style="font-weight:600;">Migraciones Pendientes</span>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <p style="font-size:13px;color:#6B7280;margin-bottom:12px;">
+            Se detectaron <strong>@_pendingMigs.Count</strong> migración(es) de base de datos sin aplicar:
+        </p>
+        <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:10px;margin-bottom:8px;">
+            @foreach (var m in _pendingMigs)
+            {
+                <div style="display:flex;align-items:center;gap:8px;padding:3px 0;font-size:12px;font-family:monospace;color:#374151;">
+                    <span class="material-symbols-rounded" style="font-size:15px;color:#9CA3AF;">arrow_right</span>
+                    @m
+                </div>
+            }
+        </div>
+        @if (_migApplying)
+        {
+            <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px;color:#6366F1;">
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Primary" />
+                Aplicando migraciones...
+            </div>
+        }
+        @if (_migError != null)
+        {
+            <MudAlert Severity="Severity.Error" Dense="true" Class="mt-2">@_migError</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" Color="Color.Default"
+                   Disabled="_migApplying" OnClick="SkipMigrations">
+            Continuar sin aplicar
+        </MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                   Disabled="_migApplying" OnClick="ApplyMigrations">
+            Aplicar migraciones
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
 @code {
     private readonly LoginRequest _req = new();
     private string? _error;
     private bool _loading;
     private bool _showPass;
+
+    private bool _checkingMigrations = true;
+    private bool _migDialogOpen;
+    private List<string> _pendingMigs = [];
+    private bool _migApplying;
+    private string? _migError;
+
+    private readonly DialogOptions _migOptions = new()
+    {
+        CloseOnEscapeKey = false,
+        BackdropClick = false,
+        CloseButton = false
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var status = await MigSvc.GetStatusAsync();
+        _checkingMigrations = false;
+
+        if (status != null && status.Pending.Count > 0)
+        {
+            _pendingMigs = status.Pending;
+            _migDialogOpen = true;
+        }
+    }
+
+    private void SkipMigrations() => _migDialogOpen = false;
+
+    private async Task ApplyMigrations()
+    {
+        _migApplying = true;
+        _migError = null;
+        var ok = await MigSvc.ApplyAsync();
+        _migApplying = false;
+
+        if (ok)
+            _migDialogOpen = false;
+        else
+            _migError = "Error al aplicar migraciones. Revisa los logs del servidor.";
+    }
 
     private async Task DoLogin()
     {

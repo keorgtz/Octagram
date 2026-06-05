@@ -1,7 +1,6 @@
 @inherits LayoutComponentBase
 @inject AuthService AuthSvc
 @inject NavigationManager Nav
-@inject MigrationService MigSvc
 
 <MudThemeProvider Theme="_theme" />
 <MudPopoverProvider />
@@ -13,7 +12,7 @@
     <div style="display:flex;height:100vh;align-items:center;justify-content:center;background:var(--page-bg,#F2F3F7);">
         <div style="text-align:center;">
             <span class="material-symbols-rounded fill" style="font-size:40px;color:var(--in,#6366F1);">local_shipping</span>
-            <div style="font-size:13px;color:var(--gray-muted,#6B7280);margin-top:8px;">@_loadingMsg</div>
+            <div style="font-size:13px;color:var(--gray-muted,#6B7280);margin-top:8px;">Cargando...</div>
         </div>
     </div>
 }
@@ -21,133 +20,64 @@ else if (_user == null)
 {
     <RedirectToLogin />
 }
-else
+else if (_user.Rol == UserRole.Repartidor)
 {
-    @if (_user.Rol == UserRole.Repartidor)
-    {
-        <div class="rep-layout">
-            <div class="rep-topbar">
-                <div style="display:flex;align-items:center;gap:8px;">
-                    <span class="material-symbols-rounded fill" style="color:var(--in);font-size:22px;">local_shipping</span>
-                    <span class="app-name">Octagram</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:8px;">
-                    <span style="font-size:12px;color:var(--gray-muted);" class="hide-mobile">@_user.FullName</span>
-                    <button class="icon-btn" @onclick="Logout" title="Cerrar sesión">
-                        <span class="material-symbols-rounded">logout</span>
-                    </button>
-                </div>
+    <div class="rep-layout">
+        <div class="rep-topbar">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span class="material-symbols-rounded fill" style="color:var(--in);font-size:22px;">local_shipping</span>
+                <span class="app-name">Octagram</span>
             </div>
-            <div class="rep-content">
-                @Body
-            </div>
-            <div class="status-bar">
-                <span><span class="status-dot"></span>Conectado</span>
-                <span>OctagramDelivery · @DateTime.Now.ToString("ddd d MMM", new System.Globalization.CultureInfo("es-MX"))</span>
-            </div>
-        </div>
-    }
-    else
-    {
-        <div class="app-shell @(_sidebarOpen ? "" : "sidebar-collapsed")">
-
-            <header class="titlebar">
-                <button class="icon-btn" @onclick="ToggleSidebar" title="Menú">
-                    <span class="material-symbols-rounded">menu</span>
-                </button>
-                <div class="titlebar-brand">
-                    <span class="material-symbols-rounded fill titlebar-brand-icon">local_shipping</span>
-                    <span class="titlebar-brand-name">Octagram</span>
-                    <span class="titlebar-brand-sub">Delivery</span>
-                </div>
-                <div class="titlebar-spacer"></div>
-                <div class="titlebar-user hide-mobile">
-                    <div class="user-avatar">@GetInitials(_user.FullName)</div>
-                    <span class="titlebar-username">@_user.FullName</span>
-                </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:12px;color:var(--gray-muted);" class="hide-mobile">@_user.FullName</span>
                 <button class="icon-btn" @onclick="Logout" title="Cerrar sesión">
                     <span class="material-symbols-rounded">logout</span>
                 </button>
-            </header>
-
-            <nav class="sidebar">
-                <NavMenu UserRol="@_user.Rol" SidebarOpen="@_sidebarOpen" />
-            </nav>
-
-            <main class="main-content">
-                @Body
-            </main>
-
-        </div>
-    }
-}
-
-<!-- Diálogo de migraciones pendientes -->
-<MudDialog @bind-Visible="_migDialogOpen" Options="_migDialogOptions">
-    <TitleContent>
-        <div style="display:flex;align-items:center;gap:10px;">
-            <span class="material-symbols-rounded" style="color:var(--or,#F59E0B);font-size:22px;">warning</span>
-            <span style="font-weight:600;">Migraciones Pendientes</span>
-        </div>
-    </TitleContent>
-    <DialogContent>
-        <p style="font-size:13px;color:var(--gray-muted,#6B7280);margin-bottom:12px;">
-            Se detectaron <strong>@_pendingMigrations.Count</strong> migración(es) de base de datos pendiente(s):
-        </p>
-        <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:10px;margin-bottom:8px;">
-            @foreach (var m in _pendingMigrations)
-            {
-                <div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;font-family:monospace;color:#374151;">
-                    <span class="material-symbols-rounded" style="font-size:16px;color:#6B7280;">arrow_right</span>
-                    @m
-                </div>
-            }
-        </div>
-        @if (_migApplying)
-        {
-            <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px;color:var(--in,#6366F1);">
-                <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Primary" />
-                Aplicando migraciones...
             </div>
-        }
-        @if (_migError != null)
-        {
-            <MudAlert Severity="Severity.Error" Dense="true" Class="mt-2">@_migError</MudAlert>
-        }
-    </DialogContent>
-    <DialogActions>
-        <MudButton Variant="Variant.Text"
-                   Color="Color.Default"
-                   Disabled="_migApplying"
-                   OnClick="SkipMigrations">
-            Continuar sin aplicar
-        </MudButton>
-        <MudButton Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   Disabled="_migApplying"
-                   OnClick="ApplyMigrations">
-            Aplicar migraciones
-        </MudButton>
-    </DialogActions>
-</MudDialog>
+        </div>
+        <div class="rep-content">@Body</div>
+        <div class="status-bar">
+            <span><span class="status-dot"></span>Conectado</span>
+            <span>OctagramDelivery · @DateTime.Now.ToString("ddd d MMM", new System.Globalization.CultureInfo("es-MX"))</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="app-shell @(_sidebarOpen ? "" : "sidebar-collapsed")">
+
+        <header class="titlebar">
+            <button class="icon-btn" @onclick="ToggleSidebar" title="Menú">
+                <span class="material-symbols-rounded">menu</span>
+            </button>
+            <div class="titlebar-brand">
+                <span class="material-symbols-rounded fill titlebar-brand-icon">local_shipping</span>
+                <span class="titlebar-brand-name">Octagram</span>
+                <span class="titlebar-brand-sub">Delivery</span>
+            </div>
+            <div class="titlebar-spacer"></div>
+            <div class="titlebar-user hide-mobile">
+                <div class="user-avatar">@GetInitials(_user.FullName)</div>
+                <span class="titlebar-username">@_user.FullName</span>
+            </div>
+            <button class="icon-btn" @onclick="Logout" title="Cerrar sesión">
+                <span class="material-symbols-rounded">logout</span>
+            </button>
+        </header>
+
+        <nav class="sidebar">
+            <NavMenu UserRol="@_user.Rol" SidebarOpen="@_sidebarOpen" />
+        </nav>
+
+        <main class="main-content">@Body</main>
+
+    </div>
+}
 
 @code {
     private UserInfo? _user;
     private bool _loading = true;
-    private string _loadingMsg = "Cargando...";
     private bool _sidebarOpen = true;
-
-    private bool _migDialogOpen;
-    private List<string> _pendingMigrations = [];
-    private bool _migApplying;
-    private string? _migError;
-
-    private readonly DialogOptions _migDialogOptions = new()
-    {
-        CloseOnEscapeKey = false,
-        BackdropClick = false,
-        CloseButton = false
-    };
 
     private MudTheme _theme = new()
     {
@@ -177,51 +107,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        _loadingMsg = "Cargando...";
         _user = await AuthSvc.GetCurrentUser();
         _loading = false;
-
-        if (_user != null)
-        {
-            _loadingMsg = "Verificando base de datos...";
-            await CheckMigrationsAsync();
-        }
-    }
-
-    private async Task CheckMigrationsAsync()
-    {
-        var status = await MigSvc.GetStatusAsync();
-        if (status == null || status.Pending.Count == 0) return;
-
-        _pendingMigrations = status.Pending;
-        _migDialogOpen = true;
-        StateHasChanged();
-    }
-
-    private void SkipMigrations()
-    {
-        _migDialogOpen = false;
-    }
-
-    private async Task ApplyMigrations()
-    {
-        _migApplying = true;
-        _migError = null;
-        StateHasChanged();
-
-        var ok = await MigSvc.ApplyAsync();
-        _migApplying = false;
-
-        if (ok)
-        {
-            _migDialogOpen = false;
-        }
-        else
-        {
-            _migError = "Error al aplicar las migraciones. Verifica los logs del servidor.";
-        }
-
-        StateHasChanged();
     }
 
     private void ToggleSidebar() => _sidebarOpen = !_sidebarOpen;

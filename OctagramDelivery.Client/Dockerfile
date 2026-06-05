@@ -1,7 +1,8 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
+COPY ["OctagramDelivery.Domain/OctagramDelivery.Domain.csproj", "OctagramDelivery.Domain/"]
+COPY ["OctagramDelivery.Application/OctagramDelivery.Application.csproj", "OctagramDelivery.Application/"]
 COPY ["OctagramDelivery.Client/OctagramDelivery.Client.csproj", "OctagramDelivery.Client/"]
-COPY ["OctagramDelivery.Shared/OctagramDelivery.Shared.csproj", "OctagramDelivery.Shared/"]
 RUN dotnet restore "OctagramDelivery.Client/OctagramDelivery.Client.csproj"
 COPY . .
 WORKDIR "/src/OctagramDelivery.Client"
