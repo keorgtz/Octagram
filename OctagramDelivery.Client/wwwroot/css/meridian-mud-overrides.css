@@ -5,9 +5,9 @@
 
 :root {
     /* Paleta principal → MeridianUI */
-    --mud-palette-primary: var(--primary, #1976D2);
-    --mud-palette-primary-darken: var(--primary-dark, #1565C0);
-    --mud-palette-primary-lighten: var(--primary-light, #BBDEFB);
+    --mud-palette-primary: var(--primary, #1EB980);
+    --mud-palette-primary-darken: var(--primary-dark, #159E6D);
+    --mud-palette-primary-lighten: var(--primary-light, #D9F7EA);
     --mud-palette-primary-text: #FFFFFF;
 
     --mud-palette-success: var(--em, #10B981);
@@ -98,8 +98,8 @@
 
 .mud-nav-item .mud-nav-link.active,
 .mud-nav-item .mud-nav-link:hover {
-    background: var(--in-bg, #EEF2FF) !important;
-    color: var(--in, #6366F1) !important;
+    background: var(--pr-100, #D9F7EA) !important;
+    color: var(--primary, #1EB980) !important;
 }
 
 .mud-nav-item .mud-nav-link .mud-nav-link-icon {
@@ -108,7 +108,7 @@
 
 .mud-nav-item .mud-nav-link.active .mud-nav-link-icon,
 .mud-nav-item .mud-nav-link:hover .mud-nav-link-icon {
-    color: var(--in, #6366F1) !important;
+    color: var(--primary, #1EB980) !important;
 }
 
 /* ── AppBar MeridianUI ─────────────────────────────────────────── */

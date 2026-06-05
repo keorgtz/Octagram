@@ -1,11 +1,11 @@
 {
-  "name": "OctagramDelivery.Client",
-  "short_name": "OctagramDelivery.Client",
+  "name": "Octagram Delivery",
+  "short_name": "Octagram",
   "id": "./",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#03173d",
+  "theme_color": "#1EB980",
   "prefer_related_applications": false,
   "icons": [
     {

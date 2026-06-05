@@ -28,7 +28,7 @@
     else
     {
         <div class="kpi-grid">
-            <div class="kpi-card" style="--accent-color:var(--in);">
+            <div class="kpi-card" style="--accent-color:var(--primary);">
                 <div class="kpi-label">Negocios</div>
                 <div class="kpi-value">@_negocios.Count</div>
             </div>
@@ -40,7 +40,7 @@
                 <div class="kpi-label">Neto Total</div>
                 <div class="kpi-value" style="font-size:22px;">@_negocios.Sum(n => n.TotalNeto).ToString("C0", _mx)</div>
             </div>
-            <div class="kpi-card" style="--accent-color:var(--in);">
+            <div class="kpi-card" style="--accent-color:var(--primary);">
                 <div class="kpi-label">Efectivo Total</div>
                 <div class="kpi-value" style="font-size:22px;">@_negocios.Sum(n => n.TotalEfectivoEnCalle).ToString("C0", _mx)</div>
             </div>

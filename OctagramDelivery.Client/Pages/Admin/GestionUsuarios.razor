@@ -49,7 +49,7 @@
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd>
-                        <span style="font-family:monospace;font-size:13px;font-weight:600;color:var(--in);">@context.Username</span>
+                        <span style="font-family:monospace;font-size:13px;font-weight:600;color:var(--primary);">@context.Username</span>
                     </MudTd>
                     <MudTd><span class="fw-500">@context.FullName</span></MudTd>
                     <MudTd Style="text-align:center;">
@@ -96,7 +96,7 @@
 <MudDialog @bind-Visible="_dialogOpen">
     <TitleContent>
         <div style="display:flex;align-items:center;gap:10px;">
-            <span class="material-symbols-rounded" style="color:var(--in);font-size:20px;">
+            <span class="material-symbols-rounded" style="color:var(--primary);font-size:20px;">
                 @(_esCrear ? "person_add" : "manage_accounts")
             </span>
             <span>@(_esCrear ? "Nuevo Usuario" : "Editar Usuario")</span>

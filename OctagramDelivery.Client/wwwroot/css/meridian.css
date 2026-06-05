@@ -89,6 +89,13 @@
   /* Pink — acento secundario (bloqueadas) */
   --pk:        #EC4899;
 
+  /* ── OCTAGRAM PRIMARY — paleta de marca (verde) ── */
+  --pr-500:    #1EB980;   /* Primary 500 — CTA / botones / activo */
+  --pr-400:    #65D1A8;   /* Primary 400 — hover / secundario     */
+  --pr-300:    #97E3C4;   /* Primary 300 — bordes / separadores   */
+  --pr-200:    #C1F0DD;   /* Primary 200 — fondos medios          */
+  --pr-100:    #D9F7EA;   /* Primary 100 — fondos suaves / sidebar activo */
+
   /* ── KEORSOFT BRAND BLUES — corporativo ──
      Sólo para chrome de marca (logos, splash, hero brand) — NO para data UI.
      Para UI semántica seguir usando la paleta MeridianUI de arriba. */
@@ -112,9 +119,9 @@
   --pay-none:  #9E9E9E;
 
   /* ── Primario de acción (CTA / botones de página) ── */
-  --primary:        #1976D2;
-  --primary-dark:   #1565C0;
-  --primary-light:  #BBDEFB;
+  --primary:        #1EB980;
+  --primary-dark:   #159E6D;
+  --primary-light:  #D9F7EA;
 
   /* ── Neutros ── */
   --gray-dark:   #1C1E26;  /* Texto principal */
@@ -127,10 +134,10 @@
 
   /* ── App shell ── */
   --sidebar-bg:        #FFFFFF;
-  --sidebar-active-bg: var(--in-bg);   /* Indigo soft — per spec §6.2 */
-  --sidebar-active-fg: var(--in);      /* Indigo strong */
-  --sidebar-hover-bg:  #F0F4FF;        /* Indigo pre-active */
-  --sidebar-active-shadow: 0 1px 3px rgba(99,102,241,.12);
+  --sidebar-active-bg: var(--pr-100, #D9F7EA);  /* Octagram Primary 100 */
+  --sidebar-active-fg: var(--pr-500, #1EB980);  /* Octagram Primary 500 */
+  --sidebar-hover-bg:  #E8FAF3;                 /* Octagram hover tint  */
+  --sidebar-active-shadow: 0 1px 3px rgba(30,185,128,.15);
   --sidebar-border:    #E5E7EB;
   --titlebar-h:     48px;
   --statusbar-h:    28px;
