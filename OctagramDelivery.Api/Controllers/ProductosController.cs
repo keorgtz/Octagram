@@ -108,6 +108,13 @@ public class ProductosController : ControllerBase
         var tier = await _ctx.PriceTiers
             .FirstOrDefaultAsync(pt => pt.Id == tierId && pt.ProductId == productoId && pt.Product!.TenantId == negocioId);
         if (tier == null) return NotFound();
+
+        // FK es NO ACTION (SQL Server no permite SET NULL por rutas de cascada múltiples).
+        // Nullear manualmente antes de borrar.
+        await _ctx.CustomerProducts
+            .Where(cp => cp.PriceTierId == tierId)
+            .ExecuteUpdateAsync(s => s.SetProperty(cp => cp.PriceTierId, (int?)null));
+
         _ctx.PriceTiers.Remove(tier);
         await _ctx.SaveChangesAsync();
         return NoContent();

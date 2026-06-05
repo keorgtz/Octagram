@@ -52,11 +52,13 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_CustomerProducts_Pric
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_PriceTiers_ProductId_Numero' AND object_id = OBJECT_ID(N'PriceTiers'))
     CREATE UNIQUE INDEX [IX_PriceTiers_ProductId_Numero] ON [PriceTiers]([ProductId], [Numero]);");
 
-            // FK de CustomerProducts → PriceTiers con ON DELETE SET NULL
+            // FK de CustomerProducts → PriceTiers con ON DELETE NO ACTION
+            // (SET NULL no es válido en SQL Server por rutas de cascada múltiples:
+            //  Products → PriceTiers CASCADE y Customers → CustomerProducts CASCADE)
             migrationBuilder.Sql(@"
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_CustomerProducts_PriceTiers_PriceTierId')
     ALTER TABLE [CustomerProducts] ADD CONSTRAINT [FK_CustomerProducts_PriceTiers_PriceTierId]
-        FOREIGN KEY ([PriceTierId]) REFERENCES [PriceTiers]([Id]) ON DELETE SET NULL;");
+        FOREIGN KEY ([PriceTierId]) REFERENCES [PriceTiers]([Id]) ON DELETE NO ACTION;");
         }
 
         /// <inheritdoc />

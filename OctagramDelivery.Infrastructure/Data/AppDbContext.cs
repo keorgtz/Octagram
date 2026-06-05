@@ -49,7 +49,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<CustomerProduct>()
             .HasOne(cp => cp.Product).WithMany(p => p.CustomerProducts).HasForeignKey(cp => cp.ProductId).OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<CustomerProduct>()
-            .HasOne(cp => cp.PriceTier).WithMany().HasForeignKey(cp => cp.PriceTierId).OnDelete(DeleteBehavior.SetNull).IsRequired(false);
+            .HasOne(cp => cp.PriceTier).WithMany().HasForeignKey(cp => cp.PriceTierId).OnDelete(DeleteBehavior.NoAction).IsRequired(false);
         modelBuilder.Entity<CustomerProduct>()
             .HasIndex(cp => new { cp.CustomerId, cp.ProductId }).IsUnique();
 

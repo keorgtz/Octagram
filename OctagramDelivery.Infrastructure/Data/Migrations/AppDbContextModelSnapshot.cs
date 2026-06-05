@@ -405,7 +405,7 @@ namespace OctagramDelivery.Infrastructure.Data.Migrations
                     b.HasOne("OctagramDelivery.Domain.Entities.PriceTier", "PriceTier")
                         .WithMany()
                         .HasForeignKey("PriceTierId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("OctagramDelivery.Domain.Entities.Product", "Product")
                         .WithMany("CustomerProducts")
