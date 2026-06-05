@@ -30,6 +30,9 @@ namespace OctagramDelivery.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -41,11 +44,7 @@ namespace OctagramDelivery.Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("TenantId")
+                    b.Property<int>("Rol")
                         .HasColumnType("int");
 
                     b.Property<string>("Username")
@@ -53,8 +52,6 @@ namespace OctagramDelivery.Api.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("TenantId");
 
                     b.ToTable("Users");
                 });
@@ -67,24 +64,23 @@ namespace OctagramDelivery.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Address")
+                    b.Property<int>("DiasEntrega")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Direccion")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<TimeSpan?>("ApproximateDeliveryTime")
+                    b.Property<TimeSpan?>("HoraAproximada")
                         .HasColumnType("time");
-
-                    b.Property<string>("DeliveryDays")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Phone")
+                    b.Property<string>("Telefono")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("TenantId")
@@ -97,6 +93,38 @@ namespace OctagramDelivery.Api.Migrations
                     b.ToTable("Customers");
                 });
 
+            modelBuilder.Entity("OctagramDelivery.Shared.Models.CustomerProduct", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("CantidadHabitual")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("PrecioEspecial")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("CustomerId", "ProductId")
+                        .IsUnique();
+
+                    b.ToTable("CustomerProducts");
+                });
+
             modelBuilder.Entity("OctagramDelivery.Shared.Models.DeliveryDay", b =>
                 {
                     b.Property<int>("Id")
@@ -105,23 +133,23 @@ namespace OctagramDelivery.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("DriverId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TenantId")
+                    b.Property<int>("Estado")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("TotalCashCollected")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
 
-                    b.Property<decimal>("TotalCashExpected")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<DateTime>("FechaApertura")
+                        .HasColumnType("datetime2");
 
-                    b.Property<decimal>("TotalNonCash")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<DateTime?>("FechaCierre")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -132,7 +160,7 @@ namespace OctagramDelivery.Api.Migrations
                     b.ToTable("DeliveryDays");
                 });
 
-            modelBuilder.Entity("OctagramDelivery.Shared.Models.DeliveryDetail", b =>
+            modelBuilder.Entity("OctagramDelivery.Shared.Models.DeliveryDayCustomer", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -143,31 +171,68 @@ namespace OctagramDelivery.Api.Migrations
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
-                    b.Property<int>("DeliveryRoundId")
+                    b.Property<int>("DeliveryDayId")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsCashPayment")
+                    b.Property<bool>("ExcluidoDeEfectivo")
                         .HasColumnType("bit");
 
-                    b.Property<decimal>("PriceAtDelivery")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("ProductId")
+                    b.Property<int>("MetodoPagoAlternativo")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("QuantityDelivered")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("QuantityReturned")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<string>("NotaExclusion")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
 
-                    b.HasIndex("DeliveryRoundId");
+                    b.HasIndex("DeliveryDayId", "CustomerId")
+                        .IsUnique();
+
+                    b.ToTable("DeliveryDayCustomers");
+                });
+
+            modelBuilder.Entity("OctagramDelivery.Shared.Models.DeliveryDetail", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("CantidadDevuelta")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<decimal>("CantidadEntregada")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DeliveryRoundId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GramajePreset")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("PrecioUnitario")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("DeliveryRoundId", "CustomerId", "ProductId")
+                        .IsUnique();
 
                     b.ToTable("DeliveryDetails");
                 });
@@ -183,14 +248,15 @@ namespace OctagramDelivery.Api.Migrations
                     b.Property<int>("DeliveryDayId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("FinishedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("Etiqueta")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RoundNumber")
+                    b.Property<int>("NumeroRonda")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("StartedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<int>("Orden")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -210,17 +276,18 @@ namespace OctagramDelivery.Api.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("Price")
+                    b.Property<decimal>("PrecioPorUnidad")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("TenantId")
                         .HasColumnType("int");
 
-                    b.Property<int>("UnitType")
+                    b.Property<int>("TipoMedida")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -238,16 +305,19 @@ namespace OctagramDelivery.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Direccion")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("LogoUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -256,15 +326,31 @@ namespace OctagramDelivery.Api.Migrations
                     b.ToTable("Tenants");
                 });
 
-            modelBuilder.Entity("OctagramDelivery.Shared.Models.AppUser", b =>
+            modelBuilder.Entity("OctagramDelivery.Shared.Models.UsuarioNegocio", b =>
                 {
-                    b.HasOne("OctagramDelivery.Shared.Models.Tenant", "Tenant")
-                        .WithMany("Users")
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Navigation("Tenant");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("EsPrincipal")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("UserId", "TenantId")
+                        .IsUnique();
+
+                    b.ToTable("UsuarioNegocios");
                 });
 
             modelBuilder.Entity("OctagramDelivery.Shared.Models.Customer", b =>
@@ -278,23 +364,61 @@ namespace OctagramDelivery.Api.Migrations
                     b.Navigation("Tenant");
                 });
 
+            modelBuilder.Entity("OctagramDelivery.Shared.Models.CustomerProduct", b =>
+                {
+                    b.HasOne("OctagramDelivery.Shared.Models.Customer", "Customer")
+                        .WithMany("CustomerProducts")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OctagramDelivery.Shared.Models.Product", "Product")
+                        .WithMany("CustomerProducts")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("OctagramDelivery.Shared.Models.DeliveryDay", b =>
                 {
                     b.HasOne("OctagramDelivery.Shared.Models.AppUser", "Driver")
-                        .WithMany()
+                        .WithMany("DeliveryDays")
                         .HasForeignKey("DriverId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("OctagramDelivery.Shared.Models.Tenant", "Tenant")
-                        .WithMany()
+                        .WithMany("DeliveryDays")
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Driver");
 
                     b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("OctagramDelivery.Shared.Models.DeliveryDayCustomer", b =>
+                {
+                    b.HasOne("OctagramDelivery.Shared.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OctagramDelivery.Shared.Models.DeliveryDay", "DeliveryDay")
+                        .WithMany("DayCustomers")
+                        .HasForeignKey("DeliveryDayId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("DeliveryDay");
                 });
 
             modelBuilder.Entity("OctagramDelivery.Shared.Models.DeliveryDetail", b =>
@@ -346,8 +470,41 @@ namespace OctagramDelivery.Api.Migrations
                     b.Navigation("Tenant");
                 });
 
+            modelBuilder.Entity("OctagramDelivery.Shared.Models.UsuarioNegocio", b =>
+                {
+                    b.HasOne("OctagramDelivery.Shared.Models.Tenant", "Tenant")
+                        .WithMany("UsuarioNegocios")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OctagramDelivery.Shared.Models.AppUser", "User")
+                        .WithMany("UsuarioNegocios")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OctagramDelivery.Shared.Models.AppUser", b =>
+                {
+                    b.Navigation("DeliveryDays");
+
+                    b.Navigation("UsuarioNegocios");
+                });
+
+            modelBuilder.Entity("OctagramDelivery.Shared.Models.Customer", b =>
+                {
+                    b.Navigation("CustomerProducts");
+                });
+
             modelBuilder.Entity("OctagramDelivery.Shared.Models.DeliveryDay", b =>
                 {
+                    b.Navigation("DayCustomers");
+
                     b.Navigation("Rounds");
                 });
 
@@ -356,13 +513,20 @@ namespace OctagramDelivery.Api.Migrations
                     b.Navigation("Details");
                 });
 
+            modelBuilder.Entity("OctagramDelivery.Shared.Models.Product", b =>
+                {
+                    b.Navigation("CustomerProducts");
+                });
+
             modelBuilder.Entity("OctagramDelivery.Shared.Models.Tenant", b =>
                 {
                     b.Navigation("Customers");
 
+                    b.Navigation("DeliveryDays");
+
                     b.Navigation("Products");
 
-                    b.Navigation("Users");
+                    b.Navigation("UsuarioNegocios");
                 });
 #pragma warning restore 612, 618
         }

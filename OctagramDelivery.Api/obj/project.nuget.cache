@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "G9gt/vbzUEg=",
+  "dgSpecHash": "AoiO411xNps=",
   "success": true,
-  "projectFilePath": "C:\\Users\\kevin\\KeorSoft\\Development\\Web\\AriesDelivery\\OctagramDelivery.Api\\OctagramDelivery.Api.csproj",
+  "projectFilePath": "C:\\Users\\kevin\\KeorSoft\\Development\\Web\\OctagramDelivery\\OctagramDelivery.Api\\OctagramDelivery.Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\kevin\\.nuget\\packages\\azure.core\\1.47.1\\azure.core.1.47.1.nupkg.sha512",
     "C:\\Users\\kevin\\.nuget\\packages\\azure.identity\\1.14.2\\azure.identity.1.14.2.nupkg.sha512",
+    "C:\\Users\\kevin\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\kevin\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\kevin\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\10.0.8\\microsoft.aspnetcore.authentication.jwtbearer.10.0.8.nupkg.sha512",
     "C:\\Users\\kevin\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.8\\microsoft.aspnetcore.openapi.10.0.8.nupkg.sha512",

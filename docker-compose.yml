@@ -1,5 +1,3 @@
-
-
 services:
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -14,7 +12,7 @@ services:
       - proxy
 
   api:
-    build: 
+    build:
       context: .
       dockerfile: OctagramDelivery.Api/Dockerfile
     container_name: octagram-api
@@ -22,12 +20,17 @@ services:
     depends_on:
       - db
     environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Server=db;Database=OctagramDeliveryDb;User Id=sa;Password=Your_password123;TrustServerCertificate=True
+      - Jwt__Key=EstaEsUnaSuperClaveSecretaParaJWTMuyLargaYSegura_OctagramDelivery_2026!
+      - Jwt__Issuer=octagram-api.endevour.mx
+      - Jwt__Audience=octagram-app.endevour.mx
     networks:
       - proxy
 
   client:
-    build: 
+    build:
       context: .
       dockerfile: OctagramDelivery.Client/Dockerfile
     container_name: octagram-client

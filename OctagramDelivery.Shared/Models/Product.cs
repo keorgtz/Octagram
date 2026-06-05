@@ -1,20 +1,18 @@
-namespace OctagramDelivery.Shared.Models;
+using OctagramDelivery.Shared.Enums;
 
-public enum UnitType
-{
-    Piece,
-    Weight
-}
+namespace OctagramDelivery.Shared.Models;
 
 public class Product
 {
     public int Id { get; set; }
     public int TenantId { get; set; }
     public Tenant? Tenant { get; set; }
-    
-    public string Name { get; set; } = string.Empty;
-    public UnitType UnitType { get; set; } = UnitType.Piece;
-    public decimal Price { get; set; }
-    
+
+    public string Nombre { get; set; } = string.Empty;
+    public TipoMedida TipoMedida { get; set; } = TipoMedida.Pieza;
+    public decimal PrecioPorUnidad { get; set; }
+
     public bool IsActive { get; set; } = true;
+
+    public ICollection<CustomerProduct> CustomerProducts { get; set; } = new List<CustomerProduct>();
 }

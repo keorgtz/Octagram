@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using OctagramDelivery.Api.Data;
-using OctagramDelivery.Shared.Models;
+using OctagramDelivery.Shared.DTOs;
+using OctagramDelivery.Shared.Enums;
 
 namespace OctagramDelivery.Api.Controllers;
 
@@ -23,48 +24,52 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
-        
-        // Simplicidad: validamos texto plano. TODO: Hash (BCrypt/Argon2)
-        if (user == null || user.PasswordHash != request.Password)
+        var user = await _context.Users
+            .Include(u => u.UsuarioNegocios)
+            .FirstOrDefaultAsync(u => u.Username == request.Username && u.IsActive);
+
+        if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+            return Unauthorized("Usuario o contraseña incorrectos.");
+
+        var negocioIds = user.UsuarioNegocios.Select(un => un.TenantId).ToList();
+        var token = GenerateToken(user, negocioIds);
+
+        return Ok(new LoginResponse
         {
-            return Unauthorized("Usuario o contraseña incorrectos");
-        }
-
-        if (!user.IsActive) return Unauthorized("Usuario inactivo");
-
-        var token = GenerateToken(user);
-        return Ok(new { Token = token });
+            Token = token,
+            UserId = user.Id,
+            FullName = user.FullName,
+            Rol = user.Rol,
+            NegocioIds = negocioIds
+        });
     }
 
-    private string GenerateToken(AppUser user)
+    private string GenerateToken(Shared.Models.AppUser user, List<int> negocioIds)
     {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Username),
-            new Claim("Id", user.Id.ToString()),
-            new Claim("TenantId", user.TenantId.ToString()),
-            new Claim(ClaimTypes.Role, user.Role)
+            new(JwtRegisteredClaimNames.Sub, user.Username),
+            new("id", user.Id.ToString()),
+            new("fullName", user.FullName),
+            new(ClaimTypes.Role, user.Rol.ToString()),
+            new("rol", ((int)user.Rol).ToString())
         };
+
+        foreach (var nid in negocioIds)
+            claims.Add(new Claim("negocioId", nid.ToString()));
 
         var token = new JwtSecurityToken(
             issuer: _config["Jwt:Issuer"],
             audience: _config["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(8),
-            signingCredentials: credentials);
+            expires: DateTime.UtcNow.AddHours(10),
+            signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
-}
-
-public class LoginRequest
-{
-    public string Username { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
 }

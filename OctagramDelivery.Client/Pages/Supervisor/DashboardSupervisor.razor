@@ -1,0 +1,118 @@
+@page "/supervisor/dashboard"
+@attribute [Authorize(Roles = $"{nameof(UserRole.Supervisor)},{nameof(UserRole.Gerente)},{nameof(UserRole.Admin)}")]
+@inject ApiService Api
+@inject AuthService AuthSvc
+
+<PageTitle>Dashboard Supervisor · OctagramDelivery</PageTitle>
+
+<div style="padding:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+        <div>
+            <h1 style="font-size:20px;font-weight:700;color:var(--gray-dark);margin:0;">Dashboard</h1>
+            <div style="font-size:12px;color:var(--gray-muted);margin-top:2px;">@(_data?.TenantNombre)</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+            <MudDatePicker Date="_fecha" DateChanged="OnFechaChanged" Variant="Variant.Outlined" Margin="Margin.Dense" />
+            <MudIconButton Icon="@Icons.Material.Rounded.Refresh" Color="Color.Primary" OnClick="Cargar" />
+        </div>
+    </div>
+
+    @if (_cargando)
+    {
+        <div style="text-align:center;padding:48px;"><MudProgressCircular Color="Color.Primary" Indeterminate="true" /></div>
+    }
+    else if (_data == null)
+    {
+        <MudAlert Severity="Severity.Info">No hay datos para esta fecha.</MudAlert>
+    }
+    else
+    {
+        <!-- KPI row -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px;">
+            <div class="kpi-card" style="--accent-color:var(--em);">
+                <div class="kpi-label">Activos</div>
+                <div class="kpi-value">@_data.RepartidoresActivos</div>
+            </div>
+            <div class="kpi-card" style="--accent-color:var(--am);">
+                <div class="kpi-label">Cerrados</div>
+                <div class="kpi-value">@_data.RepartidoresCerrados</div>
+            </div>
+            <div class="kpi-card" style="--accent-color:var(--vi);">
+                <div class="kpi-label">Venta Neta</div>
+                <div class="kpi-value" style="font-size:22px;">@_data.TotalNeto.ToString("C0", new System.Globalization.CultureInfo("es-MX"))</div>
+            </div>
+            <div class="kpi-card" style="--accent-color:var(--in);">
+                <div class="kpi-label">Efectivo en Calle</div>
+                <div class="kpi-value" style="font-size:22px;">@_data.TotalEfectivoEnCalle.ToString("C0", new System.Globalization.CultureInfo("es-MX"))</div>
+            </div>
+        </div>
+
+        <!-- Tabla de repartidores -->
+        <MudCard>
+            <MudCardContent Style="padding:0;">
+                <MudTable Items="_data.Repartidores" Hover="true" Dense="true" Striped="false">
+                    <HeaderContent>
+                        <MudTh>Repartidor</MudTh>
+                        <MudTh Style="text-align:center;">Estado</MudTh>
+                        <MudTh Style="text-align:center;">Clientes</MudTh>
+                        <MudTh Style="text-align:right;">Entregado</MudTh>
+                        <MudTh Style="text-align:right;">Devuelto</MudTh>
+                        <MudTh Style="text-align:right;">Neto</MudTh>
+                        <MudTh Style="text-align:right;">Efectivo</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Repartidor">
+                            <div style="font-weight:500;">@context.FullName</div>
+                        </MudTd>
+                        <MudTd DataLabel="Estado" Style="text-align:center;">
+                            <MudChip T="string"
+                                     Color="@(context.Estado == JornadaEstado.Abierta ? Color.Success : Color.Default)"
+                                     Size="Size.Small" Variant="Variant.Filled">
+                                @(context.Estado == JornadaEstado.Abierta ? "Activo" : "Cerrado")
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Clientes" Style="text-align:center;">
+                            @context.ClientesAtendidos / @context.TotalClientes
+                        </MudTd>
+                        <MudTd DataLabel="Entregado" Style="text-align:right;font-variant-numeric:tabular-nums;color:var(--em);">
+                            @context.TotalEntregado.ToString("C0", new System.Globalization.CultureInfo("es-MX"))
+                        </MudTd>
+                        <MudTd DataLabel="Devuelto" Style="text-align:right;font-variant-numeric:tabular-nums;color:var(--or);">
+                            @context.TotalDevuelto.ToString("C0", new System.Globalization.CultureInfo("es-MX"))
+                        </MudTd>
+                        <MudTd DataLabel="Neto" Style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:var(--vi);">
+                            @context.TotalNeto.ToString("C0", new System.Globalization.CultureInfo("es-MX"))
+                        </MudTd>
+                        <MudTd DataLabel="Efectivo" Style="text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:var(--in);">
+                            @context.TotalEfectivo.ToString("C0", new System.Globalization.CultureInfo("es-MX"))
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudCardContent>
+        </MudCard>
+    }
+</div>
+
+@code {
+    private DashboardNegocioDto? _data;
+    private bool _cargando = true;
+    private DateTime? _fecha = DateTime.Today;
+    private int _negocioId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await AuthSvc.GetCurrentUser();
+        _negocioId = user?.NegocioIds.FirstOrDefault() ?? 0;
+        await Cargar();
+    }
+
+    private async Task OnFechaChanged(DateTime? f) { _fecha = f; await Cargar(); }
+
+    private async Task Cargar()
+    {
+        _cargando = true;
+        var f = _fecha.HasValue ? DateOnly.FromDateTime(_fecha.Value) : DateOnly.FromDateTime(DateTime.Today);
+        _data = await Api.GetDashboardSupervisorAsync(_negocioId, f);
+        _cargando = false;
+    }
+}

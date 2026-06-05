@@ -1,0 +1,157 @@
+@page "/admin/usuarios"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@inject ApiService Api
+@inject ISnackbar Snackbar
+@inject IDialogService Dialog
+
+<PageTitle>Usuarios · OctagramDelivery</PageTitle>
+
+<div style="padding:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+        <h1 style="font-size:20px;font-weight:700;color:var(--gray-dark);margin:0;">Usuarios</h1>
+        <MudButton StartIcon="@Icons.Material.Rounded.PersonAdd" Variant="Variant.Filled" Color="Color.Primary" OnClick="AbrirCrear">
+            Nuevo Usuario
+        </MudButton>
+    </div>
+
+    @if (_cargando) { <MudProgressLinear Indeterminate="true" Color="Color.Primary" /> }
+    else
+    {
+        <MudTable Items="_usuarios" Hover="true" Dense="true" Filter="FilterFunc">
+            <ToolBarContent>
+                <MudTextField @bind-Value="_busqueda" Placeholder="Buscar..." Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Rounded.Search" FullWidth="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Usuario</MudTh>
+                <MudTh>Nombre</MudTh>
+                <MudTh Style="text-align:center;">Rol</MudTh>
+                <MudTh>Negocios</MudTh>
+                <MudTh Style="text-align:center;">Estado</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd><span style="font-family:monospace;font-size:13px;color:var(--primary);">@context.Username</span></MudTd>
+                <MudTd><span style="font-weight:500;">@context.FullName</span></MudTd>
+                <MudTd Style="text-align:center;">
+                    <MudChip T="string" Color="@GetRolColor(context.Rol)" Size="Size.Small">@context.Rol</MudChip>
+                </MudTd>
+                <MudTd Style="font-size:12px;color:var(--gray-muted);">@string.Join(", ", context.NegocioNombres.Take(2))</MudTd>
+                <MudTd Style="text-align:center;">
+                    <MudChip T="string" Color="@(context.IsActive ? Color.Success : Color.Default)" Size="Size.Small">@(context.IsActive ? "Activo" : "Inactivo")</MudChip>
+                </MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Rounded.Edit" Size="Size.Small" Color="Color.Primary" OnClick="@(() => AbrirEditar(context))" />
+                    <MudIconButton Icon="@Icons.Material.Rounded.PersonOff" Size="Size.Small" Color="Color.Warning" OnClick="@(() => Desactivar(context))" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</div>
+
+<MudDialog @bind-Visible="_dialogOpen">
+    <TitleContent><MudText Typo="Typo.h6">@(_esCrear ? "Nuevo Usuario" : "Editar Usuario")</MudText></TitleContent>
+    <DialogContent>
+        @if (_esCrear)
+        {
+            <MudTextField @bind-Value="_username" Label="Username" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" />
+            <MudTextField @bind-Value="_password" Label="Contraseña" InputType="InputType.Password" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" />
+        }
+        <MudTextField @bind-Value="_fullName" Label="Nombre Completo" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" />
+        <MudSelect T="UserRole" @bind-Value="_rol" Label="Rol" Variant="Variant.Outlined" FullWidth="true" Class="mb-3">
+            @foreach (UserRole r in Enum.GetValues<UserRole>())
+            {
+                <MudSelectItem T="UserRole" Value="r">@r</MudSelectItem>
+            }
+        </MudSelect>
+        @if (!_esCrear)
+        {
+            <MudTextField @bind-Value="_newPassword" Label="Nueva contraseña (dejar vacío para no cambiar)" InputType="InputType.Password" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" />
+        }
+        <MudSelect T="int" @bind-SelectedValues="_selectedNegocios" Label="Negocios" MultiSelection="true" Variant="Variant.Outlined" FullWidth="true">
+            @foreach (var n in _negociosList)
+            {
+                <MudSelectItem T="int" Value="n.Id">@n.Nombre</MudSelectItem>
+            }
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CerrarDialog">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Guardar">Guardar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private List<UserDto> _usuarios = new();
+    private List<TenantDto> _negociosList = new();
+    private bool _cargando = true;
+    private string _busqueda = string.Empty;
+
+    private bool _dialogOpen;
+    private bool _esCrear;
+    private int _editId;
+    private string _username = "", _password = "", _fullName = "", _newPassword = "";
+    private UserRole _rol = UserRole.Repartidor;
+    private IEnumerable<int> _selectedNegocios = new List<int>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _cargando = true;
+        (_usuarios, _negociosList) = (await Api.GetUsuariosAsync() ?? new(), await Api.GetNegociosAsync() ?? new());
+        _cargando = false;
+    }
+
+    private bool FilterFunc(UserDto u) => string.IsNullOrEmpty(_busqueda) ||
+        u.Username.Contains(_busqueda, StringComparison.OrdinalIgnoreCase) ||
+        u.FullName.Contains(_busqueda, StringComparison.OrdinalIgnoreCase);
+
+    private void AbrirCrear()
+    {
+        _esCrear = true; _editId = 0; _username = _password = _fullName = _newPassword = "";
+        _rol = UserRole.Repartidor; _selectedNegocios = new List<int>(); _dialogOpen = true;
+    }
+
+    private void AbrirEditar(UserDto u)
+    {
+        _esCrear = false; _editId = u.Id; _username = u.Username; _fullName = u.FullName; _newPassword = "";
+        _rol = u.Rol; _selectedNegocios = u.NegocioIds; _dialogOpen = true;
+    }
+
+    private void CerrarDialog() => _dialogOpen = false;
+
+    private async Task Guardar()
+    {
+        HttpResponseMessage resp;
+        if (_esCrear)
+            resp = await Api.CreateUsuarioAsync(new CreateUserRequest { Username = _username, Password = _password, FullName = _fullName, Rol = _rol, NegocioIds = _selectedNegocios.ToList() });
+        else
+            resp = await Api.UpdateUsuarioAsync(_editId, new UpdateUserRequest { FullName = _fullName, Rol = _rol, IsActive = true, NegocioIds = _selectedNegocios.ToList(), NewPassword = string.IsNullOrEmpty(_newPassword) ? null : _newPassword });
+
+        if (resp.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Usuario guardado.", Severity.Success);
+            CerrarDialog();
+            _usuarios = await Api.GetUsuariosAsync() ?? new();
+        }
+        else Snackbar.Add("Error al guardar.", Severity.Error);
+    }
+
+    private async Task Desactivar(UserDto u)
+    {
+        var ok = await Dialog.ShowMessageBox("Desactivar usuario", $"¿Desactivar a {u.FullName}?", yesText: "Desactivar", cancelText: "Cancelar");
+        if (ok == true)
+        {
+            await Api.DeleteUsuarioAsync(u.Id);
+            Snackbar.Add("Usuario desactivado.", Severity.Warning);
+            _usuarios = await Api.GetUsuariosAsync() ?? new();
+        }
+    }
+
+    private static Color GetRolColor(UserRole r) => r switch
+    {
+        UserRole.Admin      => Color.Error,
+        UserRole.Gerente    => Color.Warning,
+        UserRole.Supervisor => Color.Info,
+        _                   => Color.Success
+    };
+}

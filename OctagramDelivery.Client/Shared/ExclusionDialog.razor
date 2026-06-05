@@ -1,0 +1,25 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6"><span class="micon" style="margin-right:6px;color:var(--or);">money_off</span>Excluir de efectivo</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body2" Class="mb-3">Selecciona el método de pago alternativo:</MudText>
+        <MudRadioGroup T="MetodoPago" @bind-Value="_metodo">
+            <MudRadio T="MetodoPago" Value="MetodoPago.TarjetaCredito">Tarjeta de crédito</MudRadio>
+            <MudRadio T="MetodoPago" Value="MetodoPago.TarjetaDebito">Tarjeta de débito</MudRadio>
+            <MudRadio T="MetodoPago" Value="MetodoPago.Transferencia">Transferencia</MudRadio>
+        </MudRadioGroup>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Color="Color.Warning" Variant="Variant.Filled" OnClick="Confirm">Excluir</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    private MetodoPago _metodo = MetodoPago.TarjetaCredito;
+
+    private void Confirm() => MudDialog.Close(DialogResult.Ok(_metodo));
+    private void Cancel()  => MudDialog.Cancel();
+}

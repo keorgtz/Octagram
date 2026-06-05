@@ -1,0 +1,114 @@
+@page "/admin/negocios"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@inject ApiService Api
+@inject ISnackbar Snackbar
+@inject IDialogService Dialog
+
+<PageTitle>Negocios · OctagramDelivery</PageTitle>
+
+<div style="padding:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+        <h1 style="font-size:20px;font-weight:700;color:var(--gray-dark);margin:0;">Negocios</h1>
+        <MudButton StartIcon="@Icons.Material.Rounded.Add" Variant="Variant.Filled" Color="Color.Primary" OnClick="AbrirCrear">
+            Nuevo Negocio
+        </MudButton>
+    </div>
+
+    @if (_cargando)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    }
+    else
+    {
+        <MudTable Items="_negocios" Hover="true" Dense="true" Striped="false">
+            <HeaderContent>
+                <MudTh>Nombre</MudTh>
+                <MudTh>Dirección</MudTh>
+                <MudTh Style="text-align:center;">Repartidores</MudTh>
+                <MudTh Style="text-align:center;">Estado</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd><span style="font-weight:500;">@context.Nombre</span></MudTd>
+                <MudTd>@(context.Direccion ?? "—")</MudTd>
+                <MudTd Style="text-align:center;">@context.TotalRepartidores</MudTd>
+                <MudTd Style="text-align:center;">
+                    <MudChip T="string" Color="@(context.IsActive ? Color.Success : Color.Default)" Size="Size.Small">
+                        @(context.IsActive ? "Activo" : "Inactivo")
+                    </MudChip>
+                </MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Rounded.Edit" Size="Size.Small" Color="Color.Primary" OnClick="@(() => AbrirEditar(context))" />
+                    <MudIconButton Icon="@Icons.Material.Rounded.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => Eliminar(context))" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</div>
+
+<!-- Dialog inline -->
+<MudDialog @bind-Visible="_dialogOpen">
+    <TitleContent><MudText Typo="Typo.h6">@(_editando?.Id > 0 ? "Editar Negocio" : "Nuevo Negocio")</MudText></TitleContent>
+    <DialogContent>
+        @if (_editando != null)
+        {
+            <MudTextField @bind-Value="_editando.Nombre" Label="Nombre" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" />
+            <MudTextField @bind-Value="_editando.Direccion" Label="Dirección" Variant="Variant.Outlined" FullWidth="true" Class="mb-3" />
+            <MudTextField @bind-Value="_editando.LogoUrl" Label="URL del Logo (opcional)" Variant="Variant.Outlined" FullWidth="true" />
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CerrarDialog">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Guardar">Guardar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private List<TenantDto> _negocios = new();
+    private bool _cargando = true;
+    private bool _dialogOpen;
+    private TenantDto? _editando;
+
+    protected override async Task OnInitializedAsync() => await Cargar();
+
+    private async Task Cargar()
+    {
+        _cargando = true;
+        _negocios = await Api.GetNegociosAsync() ?? new();
+        _cargando = false;
+    }
+
+    private void AbrirCrear() { _editando = new TenantDto(); _dialogOpen = true; }
+    private void AbrirEditar(TenantDto t) { _editando = new TenantDto { Id = t.Id, Nombre = t.Nombre, Direccion = t.Direccion, LogoUrl = t.LogoUrl }; _dialogOpen = true; }
+    private void CerrarDialog() { _dialogOpen = false; _editando = null; }
+
+    private async Task Guardar()
+    {
+        if (_editando == null) return;
+        var req = new CreateTenantRequest { Nombre = _editando.Nombre, Direccion = _editando.Direccion, LogoUrl = _editando.LogoUrl };
+        HttpResponseMessage resp;
+        if (_editando.Id > 0)
+            resp = await Api.UpdateNegocioAsync(_editando.Id, req);
+        else
+            resp = await Api.CreateNegocioAsync(req);
+
+        if (resp.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Negocio guardado.", Severity.Success);
+            CerrarDialog();
+            await Cargar();
+        }
+        else Snackbar.Add("Error al guardar.", Severity.Error);
+    }
+
+    private async Task Eliminar(TenantDto t)
+    {
+        var ok = await Dialog.ShowMessageBox("Eliminar negocio", $"¿Desactivar el negocio \"{t.Nombre}\"?", yesText: "Desactivar", cancelText: "Cancelar");
+        if (ok == true)
+        {
+            await Api.DeleteNegocioAsync(t.Id);
+            Snackbar.Add("Negocio desactivado.", Severity.Warning);
+            await Cargar();
+        }
+    }
+}

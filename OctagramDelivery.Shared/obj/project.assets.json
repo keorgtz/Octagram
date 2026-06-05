@@ -15,11 +15,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\kevin\\KeorSoft\\Development\\Web\\AriesDelivery\\OctagramDelivery.Shared\\OctagramDelivery.Shared.csproj",
+      "projectUniqueName": "C:\\Users\\kevin\\KeorSoft\\Development\\Web\\OctagramDelivery\\OctagramDelivery.Shared\\OctagramDelivery.Shared.csproj",
       "projectName": "OctagramDelivery.Shared",
-      "projectPath": "C:\\Users\\kevin\\KeorSoft\\Development\\Web\\AriesDelivery\\OctagramDelivery.Shared\\OctagramDelivery.Shared.csproj",
+      "projectPath": "C:\\Users\\kevin\\KeorSoft\\Development\\Web\\OctagramDelivery\\OctagramDelivery.Shared\\OctagramDelivery.Shared.csproj",
       "packagesPath": "C:\\Users\\kevin\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\kevin\\KeorSoft\\Development\\Web\\AriesDelivery\\OctagramDelivery.Shared\\obj\\",
+      "outputPath": "C:\\Users\\kevin\\KeorSoft\\Development\\Web\\OctagramDelivery\\OctagramDelivery.Shared\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages",

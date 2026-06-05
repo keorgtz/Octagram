@@ -1,0 +1,520 @@
+@page "/repartidor/jornada"
+@attribute [Authorize(Roles = nameof(UserRole.Repartidor))]
+@implements IDisposable
+@inject ApiService Api
+@inject AuthService AuthSvc
+@inject ISnackbar Snackbar
+@inject IDialogService Dialog
+
+<PageTitle>Mi Jornada · OctagramDelivery</PageTitle>
+
+@if (_cargando)
+{
+    <div style="display:flex;height:60vh;align-items:center;justify-content:center;">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+    </div>
+}
+else if (_jornada == null)
+{
+    <div style="padding:24px;text-align:center;">
+        <span class="micon" style="font-size:56px;color:var(--gray-muted);">delivery_dining</span>
+        <h2 style="color:var(--gray-dark);margin-top:8px;">Sin jornada activa</h2>
+        <p style="color:var(--gray-muted);">No hay una jornada abierta para hoy.</p>
+        @if (_negocioId > 0)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AbrirJornada" Style="margin-top:8px;">
+                <span class="micon" style="margin-right:6px;">play_circle</span> Abrir Jornada de Hoy
+            </MudButton>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Warning">No tienes un negocio asignado. Contacta a tu supervisor.</MudAlert>
+        }
+    </div>
+}
+else
+{
+    <!-- Barra de acciones -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--white);border-bottom:1px solid var(--gray-line);flex-wrap:wrap;gap:8px;">
+        <div>
+            <span style="font-weight:700;font-size:15px;color:var(--gray-dark);">@_jornada.TenantNombre</span>
+            <span style="font-size:12px;color:var(--gray-muted);margin-left:8px;">@_jornada.Fecha.ToString("ddd d MMM", new System.Globalization.CultureInfo("es-MX"))</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+            <span class="save-indicator @_saveClass">@_saveText</span>
+            <MudButton StartIcon="@Icons.Material.Rounded.Add" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="AgregarRonda">
+                Ronda
+            </MudButton>
+            @if (_jornada.Estado == JornadaEstado.Abierta)
+            {
+                <MudButton StartIcon="@Icons.Material.Rounded.CheckCircle" Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" OnClick="CerrarJornada">
+                    Cerrar
+                </MudButton>
+            }
+            else
+            {
+                <MudChip T="string" Color="Color.Default" Size="Size.Small">Cerrada</MudChip>
+            }
+        </div>
+    </div>
+
+    <!-- Grid scrollable -->
+    <div class="jornada-grid" style="flex:1;overflow:auto;">
+        <table class="jornada-table">
+            <thead>
+                <tr>
+                    <th rowspan="2" style="min-width:160px;">Cliente</th>
+                    @foreach (var ronda in _jornada.Rondas)
+                    {
+                        <th colspan="@(_productos.Count * 2)" class="col-ronda-header">
+                            @ronda.Etiqueta
+                            @if (_jornada.Rondas.Count > 1 && _jornada.Estado == JornadaEstado.Abierta)
+                            {
+                                <MudIconButton Icon="@Icons.Material.Rounded.Close" Size="Size.Small"
+                                               Style="margin-left:4px;padding:0;color:var(--in);"
+                                               OnClick="@(() => EliminarRonda(ronda))" />
+                            }
+                        </th>
+                    }
+                    <th rowspan="2" style="text-align:right;background:var(--vi-bg);color:var(--vi);">TOTAL DÍA</th>
+                    <th rowspan="2" style="text-align:right;background:var(--in-bg);color:var(--in);">$ EFECTIVO</th>
+                </tr>
+                <tr>
+                    @foreach (var _ in _jornada.Rondas)
+                    {
+                        @foreach (var prod in _productos)
+                        {
+                            <th style="min-width:52px;white-space:nowrap;">@prod.Nombre <span style="color:var(--em);">Ent</span></th>
+                            <th style="min-width:52px;white-space:nowrap;">@prod.Nombre <span style="color:var(--or);">Dev</span></th>
+                        }
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var cliente in _clientes)
+                {
+                    var excluido = _exclusiones.TryGetValue(cliente.Id, out var ex) && ex.ExcluidoDeEfectivo;
+                    var totalCliente = GetTotalCliente(cliente.Id);
+                    <tr class="@(excluido ? "row-excluido" : "")">
+                        <td class="col-cliente">
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <MudCheckBox T="bool"
+                                             Value="!excluido"
+                                             ValueChanged="@(async (bool v) => await ToggleExclusion(cliente.Id, !v))"
+                                             Size="Size.Small"
+                                             Color="Color.Primary"
+                                             Disabled="@(_jornada.Estado != JornadaEstado.Abierta)" />
+                                <div>
+                                    <div style="font-size:12px;font-weight:500;">@cliente.Nombre</div>
+                                    @if (excluido && _exclusiones.TryGetValue(cliente.Id, out var exInfo))
+                                    {
+                                        <span class="badge-excluido">@GetMetodoPagoLabel(exInfo.MetodoPagoAlternativo)</span>
+                                    }
+                                </div>
+                            </div>
+                        </td>
+
+                        @foreach (var ronda in _jornada.Rondas)
+                        {
+                            @foreach (var prod in _productos)
+                            {
+                                var celda = GetOrCreateCelda(ronda.Id, cliente.Id, prod.Id);
+                                <td>
+                                    <input type="number"
+                                           class="celda-input"
+                                           style="border:1px solid var(--gray-line);border-radius:4px;padding:3px 4px;width:54px;text-align:right;font-size:12px;font-variant-numeric:tabular-nums;"
+                                           min="0" step="@(prod.TipoMedida == TipoMedida.Gramaje ? "0.25" : "1")"
+                                           value="@celda.Entregado"
+                                           @onchange="@(e => OnCeldaChange(ronda.Id, cliente.Id, prod.Id, true, e))"
+                                           disabled="@(_jornada.Estado != JornadaEstado.Abierta)" />
+                                </td>
+                                <td>
+                                    <input type="number"
+                                           class="celda-input"
+                                           style="border:1px solid var(--gray-line);border-radius:4px;padding:3px 4px;width:54px;text-align:right;font-size:12px;font-variant-numeric:tabular-nums;color:var(--or);"
+                                           min="0" step="@(prod.TipoMedida == TipoMedida.Gramaje ? "0.25" : "1")"
+                                           value="@celda.Devuelto"
+                                           @onchange="@(e => OnCeldaChange(ronda.Id, cliente.Id, prod.Id, false, e))"
+                                           disabled="@(_jornada.Estado != JornadaEstado.Abierta)" />
+                                </td>
+                            }
+                        }
+
+                        <td class="col-total">@totalCliente.Neto.ToString("C", new System.Globalization.CultureInfo("es-MX"))</td>
+                        <td class="@(excluido ? "col-total" : "col-efectivo")">
+                            @if (excluido)
+                            {
+                                <span style="font-size:10px;color:var(--gray-muted);">excluido</span>
+                            }
+                            else
+                            {
+                                @totalCliente.Neto.ToString("C", new System.Globalization.CultureInfo("es-MX"))
+                            }
+                        </td>
+                    </tr>
+                }
+
+                <!-- Fila de totales por producto -->
+                <tr style="background:var(--gray-foot);font-weight:700;">
+                    <td class="col-cliente" style="font-size:11px;letter-spacing:0.4px;text-transform:uppercase;color:var(--gray-muted);">TOTALES</td>
+                    @foreach (var ronda in _jornada.Rondas)
+                    {
+                        @foreach (var prod in _productos)
+                        {
+                            var (ent, dev) = GetTotalProductoRonda(ronda.Id, prod.Id);
+                            <td style="font-size:12px;font-variant-numeric:tabular-nums;text-align:right;color:var(--em);">@ent.ToString("N2")</td>
+                            <td style="font-size:12px;font-variant-numeric:tabular-nums;text-align:right;color:var(--or);">@dev.ToString("N2")</td>
+                        }
+                    }
+                    <td class="col-total">@_totalBruto.ToString("C", new System.Globalization.CultureInfo("es-MX"))</td>
+                    <td class="col-efectivo">@_totalEfectivo.ToString("C", new System.Globalization.CultureInfo("es-MX"))</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Panel sticky de totales -->
+    <div class="totales-bar">
+        <div class="total-item total-bruto">
+            <div class="t-label">Entregado Bruto</div>
+            <span class="t-amount">@_totalBruto.ToString("C", new System.Globalization.CultureInfo("es-MX"))</span>
+        </div>
+        <div class="total-item total-dev">
+            <div class="t-label">Devuelto</div>
+            <span class="t-amount">@_totalDevuelto.ToString("C", new System.Globalization.CultureInfo("es-MX"))</span>
+        </div>
+        <div class="total-item total-neto">
+            <div class="t-label">Venta Neta</div>
+            <span class="t-amount">@_totalNeto.ToString("C", new System.Globalization.CultureInfo("es-MX"))</span>
+        </div>
+        <div class="total-item total-efect" style="flex:2;min-width:160px;">
+            <div class="t-label">Efectivo a Rendir</div>
+            <span class="t-amount" style="font-size:24px;">@_totalEfectivo.ToString("C", new System.Globalization.CultureInfo("es-MX"))</span>
+            @if (_totalExcluido > 0)
+            {
+                <div style="font-size:10px;color:var(--gray-muted);margin-top:2px;">
+                    Excluido de efectivo: @_totalExcluido.ToString("C", new System.Globalization.CultureInfo("es-MX"))
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private JornadaDto? _jornada;
+    private List<ProductDto> _productos = new();
+    private List<CustomerDto> _clientes = new();
+    private bool _cargando = true;
+    private int _negocioId;
+
+    // Estado de celdas: (RondaId, ClienteId, ProductoId) → (Entregado, Devuelto)
+    private Dictionary<(int, int, int), CeldaState> _celdas = new();
+    // Exclusiones: ClienteId → ClienteJornadaDto
+    private Dictionary<int, ClienteJornadaDto> _exclusiones = new();
+
+    // Totales calculados en cliente
+    private decimal _totalBruto;
+    private decimal _totalDevuelto;
+    private decimal _totalNeto;
+    private decimal _totalEfectivo;
+    private decimal _totalExcluido;
+
+    // Auto-save
+    private Timer? _saveTimer;
+    private string _saveText = "Guardado ✓";
+    private string _saveClass = "save-indicator save-ok";
+    private bool _hayCambiosPendientes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await AuthSvc.GetCurrentUser();
+        _negocioId = user?.NegocioIds.FirstOrDefault() ?? 0;
+
+        if (_negocioId > 0)
+        {
+            await CargarJornada();
+        }
+        _cargando = false;
+    }
+
+    private async Task CargarJornada()
+    {
+        try
+        {
+            _jornada = await Api.GetJornadaHoyAsync(_negocioId);
+        }
+        catch { _jornada = null; }
+
+        if (_jornada != null)
+        {
+            _productos = await Api.GetProductosAsync(_negocioId) ?? new();
+            _clientes  = await Api.GetClientesAsync(_negocioId) ?? new();
+            _clientes  = _clientes.Where(c => TieneEntregaHoy(c)).ToList();
+
+            // Cargar exclusiones
+            _exclusiones = _jornada.Clientes.ToDictionary(c => c.ClienteId);
+
+            // Cargar celdas desde jornada
+            foreach (var ronda in _jornada.Rondas)
+            {
+                foreach (var det in ronda.Detalles)
+                {
+                    var key = (ronda.Id, det.ClienteId, det.ProductoId);
+                    var precio = _productos.FirstOrDefault(p => p.Id == det.ProductoId)?.PrecioPorUnidad ?? det.PrecioUnitario;
+                    _celdas[key] = new CeldaState
+                    {
+                        Entregado = det.CantidadEntregada,
+                        Devuelto  = det.CantidadDevuelta,
+                        Precio    = precio
+                    };
+                }
+            }
+            RecalcularTotales();
+        }
+    }
+
+    private bool TieneEntregaHoy(CustomerDto c)
+    {
+        var hoy = (int)DateTime.Today.DayOfWeek;
+        // DayOfWeek: 0=Dom, 1=Lun... → bitmask: Lun=1,Mar=2,Mie=4,Jue=8,Vie=16,Sab=32,Dom=64
+        int bit = hoy == 0 ? 64 : (1 << (hoy - 1));
+        return (c.DiasEntrega & bit) != 0 || c.DiasEntrega == 0;
+    }
+
+    private CeldaState GetOrCreateCelda(int rondaId, int clienteId, int prodId)
+    {
+        var key = (rondaId, clienteId, prodId);
+        if (!_celdas.TryGetValue(key, out var c))
+        {
+            var precio = _productos.FirstOrDefault(p => p.Id == prodId)?.PrecioPorUnidad ?? 0;
+            c = new CeldaState { Precio = precio };
+            _celdas[key] = c;
+        }
+        return c;
+    }
+
+    private void OnCeldaChange(int rondaId, int clienteId, int prodId, bool esEntregado, ChangeEventArgs e)
+    {
+        if (!decimal.TryParse(e.Value?.ToString(), out var val)) val = 0;
+        val = Math.Max(0, val);
+        var celda = GetOrCreateCelda(rondaId, clienteId, prodId);
+        if (esEntregado) celda.Entregado = val;
+        else             celda.Devuelto  = Math.Min(val, celda.Entregado);
+
+        RecalcularTotales();
+        MarcarCambioPendiente();
+    }
+
+    private void RecalcularTotales()
+    {
+        _totalBruto = _totalDevuelto = _totalNeto = _totalEfectivo = _totalExcluido = 0;
+
+        foreach (var cliente in _clientes)
+        {
+            var excluido = _exclusiones.TryGetValue(cliente.Id, out var ex) && ex.ExcluidoDeEfectivo;
+            decimal netoCli = 0;
+
+            foreach (var ronda in (_jornada?.Rondas ?? new()))
+            {
+                foreach (var prod in _productos)
+                {
+                    var celda = GetOrCreateCelda(ronda.Id, cliente.Id, prod.Id);
+                    _totalBruto   += celda.Entregado * celda.Precio;
+                    _totalDevuelto += celda.Devuelto * celda.Precio;
+                    netoCli += (celda.Entregado - celda.Devuelto) * celda.Precio;
+                }
+            }
+            if (excluido) _totalExcluido += netoCli;
+            else          _totalEfectivo  += netoCli;
+        }
+        _totalNeto = _totalBruto - _totalDevuelto;
+    }
+
+    private (decimal Neto, decimal Bruto) GetTotalCliente(int clienteId)
+    {
+        decimal bruto = 0, neto = 0;
+        foreach (var ronda in (_jornada?.Rondas ?? new()))
+        {
+            foreach (var prod in _productos)
+            {
+                var celda = GetOrCreateCelda(ronda.Id, clienteId, prod.Id);
+                bruto += celda.Entregado * celda.Precio;
+                neto  += (celda.Entregado - celda.Devuelto) * celda.Precio;
+            }
+        }
+        return (neto, bruto);
+    }
+
+    private (decimal Ent, decimal Dev) GetTotalProductoRonda(int rondaId, int prodId)
+    {
+        decimal ent = 0, dev = 0;
+        foreach (var cli in _clientes)
+        {
+            var celda = GetOrCreateCelda(rondaId, cli.Id, prodId);
+            ent += celda.Entregado;
+            dev += celda.Devuelto;
+        }
+        return (ent, dev);
+    }
+
+    private void MarcarCambioPendiente()
+    {
+        _hayCambiosPendientes = true;
+        _saveText = "Guardando...";
+        _saveClass = "save-indicator save-wait";
+
+        _saveTimer?.Dispose();
+        _saveTimer = new Timer(async _ =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await GuardarTodoAsync();
+                StateHasChanged();
+            });
+        }, null, 3000, Timeout.Infinite);
+    }
+
+    private async Task GuardarTodoAsync()
+    {
+        if (_jornada == null || !_hayCambiosPendientes) return;
+        try
+        {
+            foreach (var ronda in _jornada.Rondas)
+            {
+                var detalles = new List<DetalleUpsertItem>();
+                foreach (var cli in _clientes)
+                {
+                    foreach (var prod in _productos)
+                    {
+                        var celda = GetOrCreateCelda(ronda.Id, cli.Id, prod.Id);
+                        if (celda.Entregado > 0 || celda.Devuelto > 0)
+                        {
+                            detalles.Add(new DetalleUpsertItem
+                            {
+                                ClienteId = cli.Id,
+                                ProductoId = prod.Id,
+                                CantidadEntregada = celda.Entregado,
+                                CantidadDevuelta  = celda.Devuelto,
+                                PrecioUnitario    = celda.Precio,
+                                GramajePreset     = GramajePreset.Ninguno
+                            });
+                        }
+                    }
+                }
+                await Api.BulkSaveDetallesAsync(ronda.Id, new BulkSaveRondaRequest { Detalles = detalles });
+            }
+            _hayCambiosPendientes = false;
+            _saveText = "Guardado ✓";
+            _saveClass = "save-indicator save-ok";
+        }
+        catch
+        {
+            _saveText = "Error al guardar";
+            _saveClass = "save-indicator save-error";
+        }
+    }
+
+    private async Task AgregarRonda()
+    {
+        var dialog = await Dialog.ShowAsync<AgregarRondaDialog>("Nueva Ronda");
+        var result = await dialog.Result;
+        if (result is { Canceled: false } && result.Data is string etiqueta)
+        {
+            var resp = await Api.AddRondaAsync(_jornada!.Id, new AddRondaRequest { Etiqueta = etiqueta });
+            if (resp.IsSuccessStatusCode)
+            {
+                var nueva = await resp.Content.ReadFromJsonAsync<RondaDto>();
+                if (nueva != null) _jornada!.Rondas.Add(nueva);
+                Snackbar.Add("Ronda agregada", Severity.Success);
+            }
+        }
+    }
+
+    private async Task EliminarRonda(RondaDto ronda)
+    {
+        var confirm = await Dialog.ShowMessageBox("Eliminar ronda",
+            $"¿Eliminar la ronda \"{ronda.Etiqueta}\"? Se perderán los datos capturados.",
+            yesText: "Eliminar", cancelText: "Cancelar");
+        if (confirm == true)
+        {
+            var resp = await Api.DeleteRondaAsync(ronda.Id);
+            if (resp.IsSuccessStatusCode)
+            {
+                _jornada!.Rondas.Remove(ronda);
+                var keysToRemove = _celdas.Keys.Where(k => k.Item1 == ronda.Id).ToList();
+                foreach (var k in keysToRemove) _celdas.Remove(k);
+                RecalcularTotales();
+            }
+        }
+    }
+
+    private async Task ToggleExclusion(int clienteId, bool excluir)
+    {
+        var req = new ToggleExclusionRequest { ExcluidoDeEfectivo = excluir, MetodoPagoAlternativo = MetodoPago.Efectivo };
+        if (excluir)
+        {
+            // Preguntar método de pago
+            var dialog = await Dialog.ShowAsync<ExclusionDialog>($"Cliente excluido de efectivo");
+            var result = await dialog.Result;
+            if (result is { Canceled: false } && result.Data is MetodoPago mp)
+                req.MetodoPagoAlternativo = mp;
+            else return;
+        }
+        await Api.ToggleExclusionAsync(_jornada!.Id, clienteId, req);
+
+        if (excluir)
+            _exclusiones[clienteId] = new ClienteJornadaDto { ClienteId = clienteId, ExcluidoDeEfectivo = true, MetodoPagoAlternativo = req.MetodoPagoAlternativo };
+        else
+            _exclusiones.Remove(clienteId);
+
+        RecalcularTotales();
+    }
+
+    private async Task CerrarJornada()
+    {
+        await GuardarTodoAsync();
+        var confirm = await Dialog.ShowMessageBox("Cerrar jornada",
+            $"El efectivo a rendir es: {_totalEfectivo:C}. ¿Confirmar cierre de jornada?",
+            yesText: "Confirmar cierre", cancelText: "Cancelar");
+        if (confirm != true) return;
+
+        var resp = await Api.CerrarJornadaAsync(_jornada!.Id);
+        if (resp.IsSuccessStatusCode)
+        {
+            _jornada.Estado = JornadaEstado.Cerrada;
+            Snackbar.Add($"Jornada cerrada. Efectivo a entregar: {_totalEfectivo:C}", Severity.Success);
+        }
+    }
+
+    private async Task AbrirJornada()
+    {
+        var resp = await Api.AbrirJornadaAsync(new OpenJornadaRequest { TenantId = _negocioId });
+        if (resp.IsSuccessStatusCode)
+        {
+            _jornada = await resp.Content.ReadFromJsonAsync<JornadaDto>();
+            _productos = await Api.GetProductosAsync(_negocioId) ?? new();
+            _clientes  = (await Api.GetClientesAsync(_negocioId) ?? new()).Where(c => TieneEntregaHoy(c)).ToList();
+            RecalcularTotales();
+        }
+    }
+
+    private static string GetMetodoPagoLabel(MetodoPago mp) => mp switch
+    {
+        MetodoPago.TarjetaCredito  => "T. CRÉDITO",
+        MetodoPago.TarjetaDebito   => "T. DÉBITO",
+        MetodoPago.Transferencia   => "TRANSF.",
+        _                          => "OTRO"
+    };
+
+    public void Dispose()
+    {
+        _saveTimer?.Dispose();
+    }
+
+    private class CeldaState
+    {
+        public decimal Entregado { get; set; }
+        public decimal Devuelto  { get; set; }
+        public decimal Precio    { get; set; }
+    }
+}

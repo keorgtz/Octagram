@@ -1,0 +1,354 @@
+/* ════════════════════════════════════════════════════════════════
+   OctagramDelivery · MudBlazor → MeridianUI Override Tokens
+   Carga DESPUÉS de MudBlazor.min.css
+   ════════════════════════════════════════════════════════════════ */
+
+:root {
+    /* Paleta principal → MeridianUI */
+    --mud-palette-primary: var(--primary, #1976D2);
+    --mud-palette-primary-darken: var(--primary-dark, #1565C0);
+    --mud-palette-primary-lighten: var(--primary-light, #BBDEFB);
+    --mud-palette-primary-text: #FFFFFF;
+
+    --mud-palette-success: var(--em, #10B981);
+    --mud-palette-success-darken: #059669;
+    --mud-palette-success-text: #FFFFFF;
+
+    --mud-palette-warning: var(--am, #F59E0B);
+    --mud-palette-warning-darken: #D97706;
+    --mud-palette-warning-text: #FFFFFF;
+
+    --mud-palette-error: #F44336;
+    --mud-palette-error-darken: #C62828;
+    --mud-palette-error-text: #FFFFFF;
+
+    --mud-palette-info: var(--in, #6366F1);
+    --mud-palette-info-darken: #4338CA;
+    --mud-palette-info-text: #FFFFFF;
+
+    --mud-palette-background: var(--page-bg, #F2F3F7);
+    --mud-palette-surface: var(--white, #FFFFFF);
+    --mud-palette-appbar-background: var(--white, #FFFFFF);
+    --mud-palette-appbar-text: var(--gray-dark, #1C1E26);
+    --mud-palette-drawer-background: var(--white, #FFFFFF);
+    --mud-palette-drawer-text: var(--gray-dark, #1C1E26);
+    --mud-palette-drawer-icon: var(--gray-muted, #6B7280);
+    --mud-palette-text-primary: var(--gray-dark, #1C1E26);
+    --mud-palette-text-secondary: var(--gray-muted, #6B7280);
+    --mud-palette-text-disabled: #BDBDBD;
+    --mud-palette-divider: var(--gray-line, #E5E7EB);
+    --mud-palette-table-hover: #FAFAFA;
+    --mud-palette-table-striped: #F9FAFB;
+
+    --mud-default-borderradius: 10px;
+    --mud-typography-default-family: "'Segoe UI', system-ui, -apple-system, sans-serif";
+    --mud-typography-h6-size: 16px;
+    --mud-typography-h6-weight: 700;
+
+    /* Elevaciones MeridianUI */
+    --mud-elevation-1: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06);
+    --mud-elevation-2: 0 2px 6px rgba(0,0,0,.15), 0 1px 3px rgba(0,0,0,.12);
+    --mud-elevation-4: 0 4px 16px rgba(0,0,0,.16);
+    --mud-elevation-8: 0 4px 16px rgba(0,0,0,.16);
+}
+
+/* ── Tabla MeridianUI ──────────────────────────────────────────── */
+.mud-table-head .mud-table-cell {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--gray-muted) !important;
+    background: var(--gray-foot, #F9FAFB) !important;
+    border-bottom: 1.5px solid var(--gray-line) !important;
+}
+
+.mud-table-row:hover td {
+    background: #FAFAFA !important;
+}
+
+.mud-table-cell {
+    font-size: 13px;
+    color: var(--gray-700, #374151);
+}
+
+/* ── Card MeridianUI ───────────────────────────────────────────── */
+.mud-card {
+    box-shadow: var(--shadow, 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06)) !important;
+    border-radius: var(--r-lg, 14px) !important;
+}
+
+.mud-card-header {
+    border-bottom: 1px solid var(--gray-line);
+}
+
+/* ── Drawer / Sidebar MeridianUI ───────────────────────────────── */
+.mud-drawer {
+    border-right: 1px solid var(--gray-line) !important;
+    box-shadow: none !important;
+}
+
+.mud-nav-item .mud-nav-link {
+    border-radius: var(--r-md, 10px) !important;
+    margin: 1px 8px !important;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-muted);
+}
+
+.mud-nav-item .mud-nav-link.active,
+.mud-nav-item .mud-nav-link:hover {
+    background: var(--in-bg, #EEF2FF) !important;
+    color: var(--in, #6366F1) !important;
+}
+
+.mud-nav-item .mud-nav-link .mud-nav-link-icon {
+    color: var(--gray-muted);
+}
+
+.mud-nav-item .mud-nav-link.active .mud-nav-link-icon,
+.mud-nav-item .mud-nav-link:hover .mud-nav-link-icon {
+    color: var(--in, #6366F1) !important;
+}
+
+/* ── AppBar MeridianUI ─────────────────────────────────────────── */
+.mud-appbar {
+    border-bottom: 1px solid var(--gray-line) !important;
+    box-shadow: var(--shadow) !important;
+}
+
+/* ── Inputs MeridianUI ─────────────────────────────────────────── */
+.mud-input-outlined .mud-input-outlined-border {
+    border-radius: var(--r-md, 10px) !important;
+    border-color: var(--gray-line) !important;
+}
+
+.mud-input-focused .mud-input-outlined-border {
+    border-color: var(--primary) !important;
+}
+
+/* ── Botones MeridianUI ────────────────────────────────────────── */
+.mud-button-filled-primary {
+    background-color: var(--primary) !important;
+    border-radius: var(--r-md) !important;
+    box-shadow: var(--shadow) !important;
+    text-transform: none !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.2px;
+}
+
+.mud-button-outlined-primary {
+    border-color: var(--primary) !important;
+    color: var(--primary) !important;
+    border-radius: var(--r-md) !important;
+    text-transform: none !important;
+    font-weight: 600 !important;
+}
+
+/* ── Chips de pago MeridianUI ──────────────────────────────────── */
+.chip-efectivo   { background: rgba(76,175,80,.15); color: #388E3C; }
+.chip-tcredito   { background: rgba(33,150,243,.15); color: #1565C0; }
+.chip-tdebito    { background: rgba(156,39,176,.15); color: #7B1FA2; }
+.chip-transferencia { background: rgba(255,152,0,.15); color: #E65100; }
+
+/* ── Grid de jornada (hoja de cálculo) ─────────────────────────── */
+.jornada-grid {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: calc(100vh - 220px);
+}
+
+.jornada-table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 600px;
+    font-size: 12px;
+}
+
+.jornada-table th {
+    background: var(--gray-foot);
+    color: var(--gray-muted);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    padding: 6px 8px;
+    border-bottom: 1.5px solid var(--gray-line);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.jornada-table th.col-ronda-header {
+    background: var(--in-bg);
+    color: var(--in);
+    border-bottom: 2px solid var(--in-lt);
+    text-align: center;
+}
+
+.jornada-table td {
+    padding: 4px 6px;
+    border-bottom: 1px solid var(--gray-line);
+    vertical-align: middle;
+}
+
+.jornada-table tr:hover td {
+    background: #FAFAFA;
+}
+
+.jornada-table td.col-cliente {
+    font-weight: 500;
+    color: var(--gray-dark);
+    min-width: 140px;
+    max-width: 200px;
+    position: sticky;
+    left: 0;
+    background: var(--white);
+    z-index: 1;
+    border-right: 1px solid var(--gray-line);
+}
+
+.jornada-table tr:hover td.col-cliente {
+    background: #FAFAFA;
+}
+
+.jornada-table td.col-total {
+    background: var(--vi-bg, #F5F3FF);
+    font-weight: 700;
+    color: var(--vi, #8B5CF6);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.jornada-table td.col-efectivo {
+    background: var(--in-bg, #EEF2FF);
+    font-weight: 700;
+    color: var(--in, #6366F1);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.jornada-table td.excluido-row {
+    opacity: 0.5;
+}
+
+.celda-input {
+    width: 60px;
+    display: block;
+}
+
+.celda-input input {
+    text-align: right;
+    font-size: 12px !important;
+    font-variant-numeric: tabular-nums;
+    padding: 2px 4px !important;
+}
+
+.row-excluido td { opacity: 0.6; }
+.row-excluido td.col-cliente { opacity: 1.0; }
+
+.badge-excluido {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    padding: 2px 5px;
+    border-radius: 4px;
+    background: rgba(249,115,22,.15);
+    color: #C2410C;
+    display: inline-block;
+    margin-top: 2px;
+}
+
+/* ── Panel sticky de totales ───────────────────────────────────── */
+.totales-bar {
+    position: sticky;
+    bottom: 0;
+    background: var(--white);
+    border-top: 1.5px solid var(--gray-line);
+    box-shadow: 0 -2px 8px rgba(0,0,0,.08);
+    padding: 10px 16px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    z-index: 10;
+}
+
+.total-item {
+    flex: 1;
+    min-width: 130px;
+    padding: 8px 12px;
+    border-radius: var(--r-md);
+    text-align: center;
+}
+
+.total-item .t-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--gray-muted);
+}
+
+.total-item .t-amount {
+    font-size: 20px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    display: block;
+    margin-top: 2px;
+}
+
+.total-bruto  { background: var(--em-bg); }  .total-bruto .t-amount  { color: var(--em); }
+.total-dev    { background: var(--or-bg); }  .total-dev .t-amount    { color: var(--or); }
+.total-neto   { background: var(--vi-bg); }  .total-neto .t-amount   { color: var(--vi); }
+.total-efect  { background: var(--in-bg); }  .total-efect .t-amount  { color: var(--in); }
+
+/* ── KPI Cards ─────────────────────────────────────────────────── */
+.kpi-card {
+    background: var(--white);
+    border-radius: var(--r-xl, 20px);
+    box-shadow: var(--shadow);
+    padding: 12px 18px 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--accent-color, var(--primary));
+    border-radius: var(--r-xl) var(--r-xl) 0 0;
+}
+
+.kpi-card .kpi-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--gray-muted);
+}
+
+.kpi-card .kpi-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent-color, var(--primary));
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    margin-top: 4px;
+}
+
+/* ── Save indicator ─────────────────────────────────────────────── */
+.save-indicator {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+.save-ok    { background: var(--em-pl); color: var(--em); }
+.save-wait  { background: var(--am-pl); color: #92400E; }
+.save-error { background: rgba(244,67,54,.12); color: #C62828; }

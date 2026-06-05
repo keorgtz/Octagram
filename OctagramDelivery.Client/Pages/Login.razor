@@ -1,22 +1,106 @@
 @page "/login"
+@layout EmptyLayout
+@inject AuthService AuthSvc
+@inject NavigationManager Nav
 
-<PageTitle>Login</PageTitle>
+<PageTitle>Iniciar sesión · OctagramDelivery</PageTitle>
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-4">
-        <div class="card shadow border-0">
-            <div class="card-body p-4">
-                <h3 class="text-center mb-4">Iniciar Sesión</h3>
-                <div class="mb-3">
-                    <label class="form-label">Usuario</label>
-                    <input type="text" class="form-control" placeholder="Ej: admin" />
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<div class="login-page">
+    <div class="login-card">
+        <MudCard Elevation="2" Style="border-radius:var(--r-xl);">
+            <MudCardContent Style="padding:32px;">
+                <div style="text-align:center;margin-bottom:28px;">
+                    <div style="font-size:28px;font-weight:800;color:var(--primary);letter-spacing:-0.5px;">Octagram</div>
+                    <div style="font-size:13px;color:var(--gray-muted);margin-top:2px;">Delivery · Sistema de Repartos</div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Contraseña</label>
-                    <input type="password" class="form-control" />
-                </div>
-                <button class="btn btn-primary w-100">Entrar</button>
-            </div>
+
+                <EditForm Model="_req" OnValidSubmit="DoLogin">
+                    <DataAnnotationsValidator />
+
+                    <MudTextField @bind-Value="_req.Username"
+                                  Label="Usuario"
+                                  Variant="Variant.Outlined"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Rounded.Person"
+                                  Disabled="_loading"
+                                  FullWidth="true"
+                                  Class="mb-3" />
+
+                    <MudTextField @bind-Value="_req.Password"
+                                  Label="Contraseña"
+                                  Variant="Variant.Outlined"
+                                  InputType="@(_showPass ? InputType.Text : InputType.Password)"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@(_showPass ? Icons.Material.Rounded.VisibilityOff : Icons.Material.Rounded.Visibility)"
+                                  OnAdornmentClick="() => _showPass = !_showPass"
+                                  Disabled="_loading"
+                                  FullWidth="true"
+                                  Class="mb-4" />
+
+                    @if (_error != null)
+                    {
+                        <MudAlert Severity="Severity.Error" Class="mb-3" Dense="true">@_error</MudAlert>
+                    }
+
+                    <MudButton ButtonType="ButtonType.Submit"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               Size="Size.Large"
+                               Disabled="_loading"
+                               Style="height:44px;font-weight:600;font-size:15px;">
+                        @if (_loading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" />
+                        }
+                        else
+                        {
+                            <span>Entrar</span>
+                        }
+                    </MudButton>
+                </EditForm>
+            </MudCardContent>
+        </MudCard>
+
+        <div style="text-align:center;margin-top:16px;font-size:11px;color:var(--gray-muted);">
+            OctagramDelivery · KeorSoft © 2026
         </div>
     </div>
 </div>
+
+@code {
+    private readonly LoginRequest _req = new();
+    private string? _error;
+    private bool _loading;
+    private bool _showPass;
+
+    private async Task DoLogin()
+    {
+        _loading = true;
+        _error = null;
+        var (ok, err) = await AuthSvc.Login(_req);
+        if (ok)
+        {
+            var user = await AuthSvc.GetCurrentUser();
+            var dest = user?.Rol switch
+            {
+                UserRole.Repartidor => "/repartidor/jornada",
+                UserRole.Supervisor => "/supervisor/dashboard",
+                UserRole.Gerente    => "/gerente/dashboard",
+                UserRole.Admin      => "/admin/dashboard",
+                _                   => "/"
+            };
+            Nav.NavigateTo(dest);
+        }
+        else
+        {
+            _error = err;
+            _loading = false;
+        }
+    }
+}

@@ -1,49 +1,24 @@
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">OctagramDelivery.Client</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
-</div>
-
-<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="repartos">
-                <span class="bi bi-truck-nav-menu" aria-hidden="true"></span> Mis Repartos
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="dashboard">
-                <span class="bi bi-bar-chart-fill-nav-menu" aria-hidden="true"></span> Dashboard
-            </NavLink>
-        </div>
-    </nav>
-</div>
-
 @code {
-    private bool collapseNavMenu = true;
-
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
+    [Parameter] public UserRole UserRol { get; set; }
 }
+
+<MudNavMenu>
+    @if (UserRol == UserRole.Admin)
+    {
+        <MudNavLink Href="/admin/dashboard" Icon="@Icons.Material.Rounded.Dashboard" Match="NavLinkMatch.All">Dashboard</MudNavLink>
+        <MudNavLink Href="/admin/negocios" Icon="@Icons.Material.Rounded.Store">Negocios</MudNavLink>
+        <MudNavLink Href="/admin/usuarios" Icon="@Icons.Material.Rounded.ManageAccounts">Usuarios</MudNavLink>
+    }
+    else if (UserRol == UserRole.Gerente)
+    {
+        <MudNavLink Href="/gerente/dashboard" Icon="@Icons.Material.Rounded.Dashboard" Match="NavLinkMatch.All">Dashboard</MudNavLink>
+        <MudNavLink Href="/gerente/negocios" Icon="@Icons.Material.Rounded.Store">Mis Negocios</MudNavLink>
+    }
+    else if (UserRol == UserRole.Supervisor)
+    {
+        <MudNavLink Href="/supervisor/dashboard" Icon="@Icons.Material.Rounded.Dashboard" Match="NavLinkMatch.All">Dashboard</MudNavLink>
+        <MudNavLink Href="/supervisor/clientes" Icon="@Icons.Material.Rounded.People">Clientes</MudNavLink>
+        <MudNavLink Href="/supervisor/productos" Icon="@Icons.Material.Rounded.Inventory2">Productos</MudNavLink>
+        <MudNavLink Href="/supervisor/repartidores" Icon="@Icons.Material.Rounded.DeliveryDining">Repartidores</MudNavLink>
+    }
+</MudNavMenu>

@@ -1,16 +1,101 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
+@inherits LayoutComponentBase
+@inject AuthService AuthSvc
+@inject NavigationManager Nav
+
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+@if (_loading)
+{
+    <div style="display:flex;height:100vh;align-items:center;justify-content:center;background:#F2F3F7;">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
     </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+}
+else if (_user == null)
+{
+    <RedirectToLogin />
+}
+else if (_user.Rol == UserRole.Repartidor)
+{
+    <div class="rep-layout">
+        <div class="rep-topbar">
+            <span class="app-name">Octagram</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:13px;color:var(--gray-muted);">@_user.FullName</span>
+                <MudIconButton Icon="@Icons.Material.Rounded.Logout" Size="Size.Small" Color="Color.Default" OnClick="Logout" />
+            </div>
         </div>
-
-        <article class="content px-4">
+        <div class="rep-content">
             @Body
-        </article>
-    </main>
-</div>
+        </div>
+        <div class="status-bar">
+            <span><span class="status-dot"></span>Conectado</span>
+            <span>OctagramDelivery · @DateTime.Now.ToString("ddd d MMM", new System.Globalization.CultureInfo("es-MX"))</span>
+        </div>
+    </div>
+}
+else
+{
+    <MudLayout>
+        <MudAppBar Elevation="1" Color="Color.Surface" Dense="true">
+            <MudIconButton Icon="@Icons.Material.Rounded.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
+            <span style="font-size:18px;font-weight:700;color:var(--primary);letter-spacing:-0.3px;margin-left:4px;">Octagram</span>
+            <span style="font-size:12px;color:var(--gray-muted);margin-left:8px;" class="hide-mobile">Delivery</span>
+            <MudSpacer />
+            <span style="font-size:13px;color:var(--gray-muted);" class="hide-mobile">@_user.FullName</span>
+            <MudIconButton Icon="@Icons.Material.Rounded.Logout" Size="Size.Small" Color="Color.Default" OnClick="Logout" Title="Cerrar sesión" />
+        </MudAppBar>
+
+        <MudDrawer @bind-Open="_drawerOpen" Elevation="0" ClipMode="DrawerClipMode.Always">
+            <MudDrawerHeader>
+                <div style="padding:8px 0;">
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.6px;text-transform:uppercase;color:var(--gray-muted);">
+                        @_user.Rol.ToString().ToUpper()
+                    </div>
+                </div>
+            </MudDrawerHeader>
+            <NavMenu UserRol="@_user.Rol" />
+        </MudDrawer>
+
+        <MudMainContent>
+            @Body
+        </MudMainContent>
+    </MudLayout>
+}
+
+@code {
+    private UserInfo? _user;
+    private bool _loading = true;
+    private bool _drawerOpen = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _user = await AuthSvc.GetCurrentUser();
+        _loading = false;
+
+        if (_user != null)
+        {
+            if (_user.Rol == UserRole.Repartidor && Nav.Uri.Contains("/login"))
+                Nav.NavigateTo("/repartidor/jornada");
+            else if (_user.Rol != UserRole.Repartidor && Nav.Uri.Contains("/login"))
+                RedirectByRole();
+        }
+    }
+
+    private void RedirectByRole()
+    {
+        var dest = _user!.Rol switch
+        {
+            UserRole.Supervisor => "/supervisor/dashboard",
+            UserRole.Gerente    => "/gerente/dashboard",
+            UserRole.Admin      => "/admin/dashboard",
+            _                   => "/"
+        };
+        Nav.NavigateTo(dest);
+    }
+
+    private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+    private async Task Logout() { await AuthSvc.Logout(); Nav.NavigateTo("/login"); }
+}

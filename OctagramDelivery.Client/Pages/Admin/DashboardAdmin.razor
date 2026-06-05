@@ -1,0 +1,94 @@
+@page "/admin/dashboard"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@inject ApiService Api
+@inject NavigationManager Nav
+
+<PageTitle>Dashboard Admin · OctagramDelivery</PageTitle>
+
+<div style="padding:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+        <h1 style="font-size:20px;font-weight:700;color:var(--gray-dark);margin:0;">Administración Global</h1>
+        <div style="display:flex;gap:8px;">
+            <MudButton StartIcon="@Icons.Material.Rounded.Store" Variant="Variant.Outlined" Color="Color.Primary" Href="/admin/negocios">Negocios</MudButton>
+            <MudButton StartIcon="@Icons.Material.Rounded.ManageAccounts" Variant="Variant.Outlined" Color="Color.Primary" Href="/admin/usuarios">Usuarios</MudButton>
+            <MudIconButton Icon="@Icons.Material.Rounded.Refresh" Color="Color.Primary" OnClick="Cargar" />
+        </div>
+    </div>
+
+    @if (_cargando)
+    {
+        <div style="text-align:center;padding:48px;"><MudProgressCircular Color="Color.Primary" Indeterminate="true" /></div>
+    }
+    else if (_data != null)
+    {
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px;">
+            <div class="kpi-card" style="--accent-color:var(--in);">
+                <div class="kpi-label">Negocios</div>
+                <div class="kpi-value">@_data.TotalNegocios</div>
+            </div>
+            <div class="kpi-card" style="--accent-color:var(--em);">
+                <div class="kpi-label">Repartidores Activos</div>
+                <div class="kpi-value">@_data.TotalRepartidoresActivos</div>
+            </div>
+            <div class="kpi-card" style="--accent-color:var(--vi);">
+                <div class="kpi-label">Efectivo Global Hoy</div>
+                <div class="kpi-value" style="font-size:20px;">@_data.TotalEfectivoGlobal.ToString("C0", new System.Globalization.CultureInfo("es-MX"))</div>
+            </div>
+        </div>
+
+        @foreach (var neg in _data.Negocios)
+        {
+            <MudCard Class="mb-3">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <MudText Typo="Typo.h6" Style="font-weight:700;">@neg.TenantNombre</MudText>
+                            <div style="display:flex;gap:6px;align-items:center;">
+                                <span style="font-size:12px;color:var(--gray-muted);">@neg.RepartidoresActivos activos · @neg.RepartidoresCerrados cerrados</span>
+                                <span style="font-weight:700;color:var(--in);font-variant-numeric:tabular-nums;">@neg.TotalEfectivoEnCalle.ToString("C0", new System.Globalization.CultureInfo("es-MX"))</span>
+                            </div>
+                        </div>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent Style="padding:0;">
+                    <MudTable Items="neg.Repartidores" Hover="true" Dense="true">
+                        <HeaderContent>
+                            <MudTh>Repartidor</MudTh>
+                            <MudTh Style="text-align:center;">Clientes</MudTh>
+                            <MudTh Style="text-align:right;">Entregado</MudTh>
+                            <MudTh Style="text-align:right;">Neto</MudTh>
+                            <MudTh Style="text-align:right;">Efectivo</MudTh>
+                            <MudTh Style="text-align:center;">Estado</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@context.FullName</MudTd>
+                            <MudTd Style="text-align:center;">@context.ClientesAtendidos/@context.TotalClientes</MudTd>
+                            <MudTd Style="text-align:right;color:var(--em);font-variant-numeric:tabular-nums;">@context.TotalEntregado.ToString("C0", new System.Globalization.CultureInfo("es-MX"))</MudTd>
+                            <MudTd Style="text-align:right;color:var(--vi);font-weight:600;font-variant-numeric:tabular-nums;">@context.TotalNeto.ToString("C0", new System.Globalization.CultureInfo("es-MX"))</MudTd>
+                            <MudTd Style="text-align:right;color:var(--in);font-weight:700;font-variant-numeric:tabular-nums;">@context.TotalEfectivo.ToString("C0", new System.Globalization.CultureInfo("es-MX"))</MudTd>
+                            <MudTd Style="text-align:center;">
+                                <MudChip T="string" Color="@(context.Estado == JornadaEstado.Abierta ? Color.Success : Color.Default)" Size="Size.Small">
+                                    @(context.Estado == JornadaEstado.Abierta ? "Activo" : "Cerrado")
+                                </MudChip>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudCardContent>
+            </MudCard>
+        }
+    }
+</div>
+
+@code {
+    private DashboardAdminDto? _data;
+    private bool _cargando = true;
+
+    protected override async Task OnInitializedAsync() => await Cargar();
+
+    private async Task Cargar()
+    {
+        _cargando = true;
+        _data = await Api.GetDashboardAdminAsync();
+        _cargando = false;
+    }
+}
