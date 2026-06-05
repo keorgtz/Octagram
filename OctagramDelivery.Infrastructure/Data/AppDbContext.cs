@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
     public DbSet<UsuarioNegocio> UsuarioNegocios { get; set; } = null!;
     public DbSet<Customer> Customers { get; set; } = null!;
     public DbSet<Product> Products { get; set; } = null!;
+    public DbSet<PriceTier> PriceTiers { get; set; } = null!;
     public DbSet<CustomerProduct> CustomerProducts { get; set; } = null!;
     public DbSet<DeliveryDay> DeliveryDays { get; set; } = null!;
     public DbSet<DeliveryDayCustomer> DeliveryDayCustomers { get; set; } = null!;
@@ -36,10 +37,19 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<UsuarioNegocio>()
             .HasIndex(un => new { un.UserId, un.TenantId }).IsUnique();
 
+        modelBuilder.Entity<PriceTier>()
+            .HasOne(pt => pt.Product).WithMany(p => p.PriceTiers).HasForeignKey(pt => pt.ProductId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<PriceTier>()
+            .HasIndex(pt => new { pt.ProductId, pt.Numero }).IsUnique();
+        modelBuilder.Entity<PriceTier>()
+            .Property(pt => pt.Precio).HasPrecision(18, 2);
+
         modelBuilder.Entity<CustomerProduct>()
             .HasOne(cp => cp.Customer).WithMany(c => c.CustomerProducts).HasForeignKey(cp => cp.CustomerId).OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<CustomerProduct>()
             .HasOne(cp => cp.Product).WithMany(p => p.CustomerProducts).HasForeignKey(cp => cp.ProductId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<CustomerProduct>()
+            .HasOne(cp => cp.PriceTier).WithMany().HasForeignKey(cp => cp.PriceTierId).OnDelete(DeleteBehavior.SetNull).IsRequired(false);
         modelBuilder.Entity<CustomerProduct>()
             .HasIndex(cp => new { cp.CustomerId, cp.ProductId }).IsUnique();
 
@@ -66,7 +76,6 @@ public class AppDbContext : DbContext
             .HasIndex(d => new { d.DeliveryRoundId, d.CustomerId, d.ProductId }).IsUnique();
 
         modelBuilder.Entity<CustomerProduct>().Property(p => p.CantidadHabitual).HasPrecision(18, 3);
-        modelBuilder.Entity<CustomerProduct>().Property(p => p.PrecioEspecial).HasPrecision(18, 2);
         modelBuilder.Entity<Product>().Property(p => p.PrecioPorUnidad).HasPrecision(18, 2);
         modelBuilder.Entity<DeliveryDetail>().Property(d => d.CantidadEntregada).HasPrecision(18, 3);
         modelBuilder.Entity<DeliveryDetail>().Property(d => d.CantidadDevuelta).HasPrecision(18, 3);

@@ -281,7 +281,11 @@ else
                 foreach (var det in ronda.Detalles)
                 {
                     var key = (ronda.Id, det.ClienteId, det.ProductoId);
-                    var precio = _productos.FirstOrDefault(p => p.Id == det.ProductoId)?.PrecioPorUnidad ?? det.PrecioUnitario;
+                    var clienteProd = _clientes.FirstOrDefault(c => c.Id == det.ClienteId)
+                                               ?.Productos.FirstOrDefault(p => p.ProductId == det.ProductoId);
+                    var precio = clienteProd?.PrecioEfectivo
+                              ?? _productos.FirstOrDefault(p => p.Id == det.ProductoId)?.PrecioPorUnidad
+                              ?? det.PrecioUnitario;
                     _celdas[key] = new CeldaState
                     {
                         Entregado = det.CantidadEntregada,
@@ -307,7 +311,11 @@ else
         var key = (rondaId, clienteId, prodId);
         if (!_celdas.TryGetValue(key, out var c))
         {
-            var precio = _productos.FirstOrDefault(p => p.Id == prodId)?.PrecioPorUnidad ?? 0;
+            var clienteProd = _clientes.FirstOrDefault(x => x.Id == clienteId)
+                                       ?.Productos.FirstOrDefault(p => p.ProductId == prodId);
+            var precio = clienteProd?.PrecioEfectivo
+                      ?? _productos.FirstOrDefault(p => p.Id == prodId)?.PrecioPorUnidad
+                      ?? 0;
             c = new CeldaState { Precio = precio };
             _celdas[key] = c;
         }

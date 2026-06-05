@@ -683,6 +683,72 @@ body,
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   NEGOCIO DETAIL DIALOG — layout de 3 tabs
+   ═══════════════════════════════════════════════════════════════════ */
+.neg-tab-panel {
+    padding: 0 2px;
+}
+
+.neg-inline-form {
+    background: var(--page-bg, #F2F3F7);
+    border: 1px solid var(--gray-line, #E5E7EB);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+}
+
+/* Two-column layout for Clientes tab */
+.neg-clientes-grid {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 0;
+    border: 1px solid var(--gray-line, #E5E7EB);
+    border-radius: 12px;
+    overflow: hidden;
+    min-height: 420px;
+}
+
+.neg-clientes-left {
+    border-right: 1px solid var(--gray-line, #E5E7EB);
+    background: var(--white, #fff);
+}
+
+.neg-clientes-right {
+    padding: 16px;
+    background: var(--white, #fff);
+    overflow-y: auto;
+}
+
+.neg-cliente-item {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--gray-line, #E5E7EB);
+    cursor: pointer;
+    transition: background 120ms ease;
+}
+
+.neg-cliente-item:hover {
+    background: var(--sidebar-hover-bg, #E8FAF3);
+}
+
+.neg-cliente-item.active {
+    background: var(--sidebar-active-bg, #D9F7EA);
+    border-left: 3px solid var(--primary, #1EB980);
+}
+
+/* Tier form in GestionProductos */
+.tier-form {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    padding: 12px 14px;
+    background: var(--page-bg, #F2F3F7);
+    border: 1px solid var(--gray-line, #E5E7EB);
+    border-radius: 10px;
+    margin-top: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    GRAMAJE PRESETS — botones rápidos ¼ · ½ · 1 kg
    ═══════════════════════════════════════════════════════════════════ */
 .gramaje-presets {

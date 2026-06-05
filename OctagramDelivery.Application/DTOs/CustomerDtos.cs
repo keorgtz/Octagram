@@ -22,7 +22,8 @@ public class CustomerProductDto
     public string ProductNombre { get; set; } = string.Empty;
     public TipoMedida TipoMedida { get; set; }
     public decimal CantidadHabitual { get; set; }
-    public decimal? PrecioEspecial { get; set; }
+    public int? PriceTierId { get; set; }
+    public decimal PrecioEfectivo { get; set; }
     public decimal PrecioBase { get; set; }
 }
 
@@ -44,5 +45,5 @@ public class ProductAssignItem
 {
     public int ProductId { get; set; }
     public decimal CantidadHabitual { get; set; }
-    public decimal? PrecioEspecial { get; set; }
+    public int? PriceTierId { get; set; }
 }

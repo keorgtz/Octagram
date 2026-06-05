@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OctagramDelivery.Infrastructure.Data;
 using OctagramDelivery.Application.DTOs;
-using OctagramDelivery.Domain.Enums;
 using OctagramDelivery.Domain.Entities;
 
 namespace OctagramDelivery.Api.Controllers;
@@ -20,11 +19,13 @@ public class ClientesController : ControllerBase
     public async Task<ActionResult<List<CustomerDto>>> GetAll(int negocioId)
     {
         var customers = await _ctx.Customers
-            .Include(c => c.CustomerProducts).ThenInclude(cp => cp.Product)
+            .Include(c => c.CustomerProducts).ThenInclude(cp => cp.Product).ThenInclude(p => p!.PriceTiers)
+            .Include(c => c.CustomerProducts).ThenInclude(cp => cp.PriceTier)
             .Where(c => c.TenantId == negocioId && c.IsActive)
+            .OrderBy(c => c.Nombre)
             .ToListAsync();
 
-        return Ok(customers.Select(c => MapCustomer(c)));
+        return Ok(customers.Select(MapCustomer));
     }
 
     [HttpPost]
@@ -81,7 +82,7 @@ public class ClientesController : ControllerBase
                 CustomerId = id,
                 ProductId = item.ProductId,
                 CantidadHabitual = item.CantidadHabitual,
-                PrecioEspecial = item.PrecioEspecial
+                PriceTierId = item.PriceTierId
             });
         }
         await _ctx.SaveChangesAsync();
@@ -106,7 +107,8 @@ public class ClientesController : ControllerBase
             TipoMedida       = cp.Product?.TipoMedida ?? OctagramDelivery.Domain.Enums.TipoMedida.Pieza,
             PrecioBase       = cp.Product?.PrecioPorUnidad ?? 0,
             CantidadHabitual = cp.CantidadHabitual,
-            PrecioEspecial   = cp.PrecioEspecial
+            PriceTierId      = cp.PriceTierId,
+            PrecioEfectivo   = cp.PriceTier?.Precio ?? cp.Product?.PrecioPorUnidad ?? 0
         }).ToList()
     };
 }

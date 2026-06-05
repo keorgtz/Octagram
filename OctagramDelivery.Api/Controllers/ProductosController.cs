@@ -19,14 +19,12 @@ public class ProductosController : ControllerBase
     public async Task<ActionResult<List<ProductDto>>> GetAll(int negocioId)
     {
         var products = await _ctx.Products
+            .Include(p => p.PriceTiers)
             .Where(p => p.TenantId == negocioId && p.IsActive)
+            .OrderBy(p => p.Nombre)
             .ToListAsync();
 
-        return Ok(products.Select(p => new ProductDto
-        {
-            Id = p.Id, TenantId = p.TenantId, Nombre = p.Nombre,
-            TipoMedida = p.TipoMedida, PrecioPorUnidad = p.PrecioPorUnidad, IsActive = p.IsActive
-        }));
+        return Ok(products.Select(MapProduct));
     }
 
     [HttpPost]
@@ -41,8 +39,7 @@ public class ProductosController : ControllerBase
         };
         _ctx.Products.Add(p);
         await _ctx.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetAll), new { negocioId },
-            new ProductDto { Id = p.Id, TenantId = p.TenantId, Nombre = p.Nombre, TipoMedida = p.TipoMedida, PrecioPorUnidad = p.PrecioPorUnidad, IsActive = true });
+        return CreatedAtAction(nameof(GetAll), new { negocioId }, MapProduct(p));
     }
 
     [HttpPut("{id}")]
@@ -66,4 +63,67 @@ public class ProductosController : ControllerBase
         await _ctx.SaveChangesAsync();
         return NoContent();
     }
+
+    // ── Perfiles de precio ────────────────────────────────────────
+
+    [HttpGet("{productoId}/perfiles")]
+    public async Task<ActionResult<List<PriceTierDto>>> GetPerfiles(int negocioId, int productoId)
+    {
+        var perfiles = await _ctx.PriceTiers
+            .Where(pt => pt.ProductId == productoId && pt.Product!.TenantId == negocioId)
+            .OrderBy(pt => pt.Numero)
+            .ToListAsync();
+
+        return Ok(perfiles.Select(MapTier));
+    }
+
+    [HttpPost("{productoId}/perfiles")]
+    public async Task<ActionResult<PriceTierDto>> CreatePerfil(int negocioId, int productoId, [FromBody] UpsertPriceTierRequest req)
+    {
+        var product = await _ctx.Products.FirstOrDefaultAsync(p => p.Id == productoId && p.TenantId == negocioId);
+        if (product == null) return NotFound();
+
+        var tier = new PriceTier { ProductId = productoId, Numero = req.Numero, Etiqueta = req.Etiqueta, Precio = req.Precio };
+        _ctx.PriceTiers.Add(tier);
+        await _ctx.SaveChangesAsync();
+        return CreatedAtAction(nameof(GetPerfiles), new { negocioId, productoId }, MapTier(tier));
+    }
+
+    [HttpPut("{productoId}/perfiles/{tierId}")]
+    public async Task<IActionResult> UpdatePerfil(int negocioId, int productoId, int tierId, [FromBody] UpsertPriceTierRequest req)
+    {
+        var tier = await _ctx.PriceTiers
+            .FirstOrDefaultAsync(pt => pt.Id == tierId && pt.ProductId == productoId && pt.Product!.TenantId == negocioId);
+        if (tier == null) return NotFound();
+        tier.Numero = req.Numero;
+        tier.Etiqueta = req.Etiqueta;
+        tier.Precio = req.Precio;
+        await _ctx.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpDelete("{productoId}/perfiles/{tierId}")]
+    public async Task<IActionResult> DeletePerfil(int negocioId, int productoId, int tierId)
+    {
+        var tier = await _ctx.PriceTiers
+            .FirstOrDefaultAsync(pt => pt.Id == tierId && pt.ProductId == productoId && pt.Product!.TenantId == negocioId);
+        if (tier == null) return NotFound();
+        _ctx.PriceTiers.Remove(tier);
+        await _ctx.SaveChangesAsync();
+        return NoContent();
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────
+
+    private static ProductDto MapProduct(Product p) => new()
+    {
+        Id = p.Id, TenantId = p.TenantId, Nombre = p.Nombre,
+        TipoMedida = p.TipoMedida, PrecioPorUnidad = p.PrecioPorUnidad, IsActive = p.IsActive,
+        Perfiles = p.PriceTiers.OrderBy(t => t.Numero).Select(MapTier).ToList()
+    };
+
+    private static PriceTierDto MapTier(PriceTier t) => new()
+    {
+        Id = t.Id, Numero = t.Numero, Etiqueta = t.Etiqueta, Precio = t.Precio
+    };
 }

@@ -12,7 +12,7 @@
     <div class="page-header">
         <div>
             <h1 class="h-page-title">Productos</h1>
-            <p class="page-subtitle">Catálogo de productos del negocio</p>
+            <p class="page-subtitle">Catálogo de productos y perfiles de precio</p>
         </div>
         <div class="page-header-actions">
             @if (_esGerente && _misNegocios.Count > 1)
@@ -41,15 +41,21 @@
     else
     {
         <div class="data-card">
-            <MudTable Items="_productos" Hover="true" Dense="true" Striped="false">
+            <MudTable Items="_productos" Hover="true" Dense="true" Striped="false" T="ProductDto">
                 <HeaderContent>
+                    <MudTh Style="width:28px;"></MudTh>
                     <MudTh>Nombre</MudTh>
                     <MudTh Style="text-align:center;">Tipo</MudTh>
-                    <MudTh Style="text-align:right;">Precio / Unidad</MudTh>
-                    <MudTh Style="text-align:center;">Estado</MudTh>
-                    <MudTh Style="width:72px;text-align:center;">Acciones</MudTh>
+                    <MudTh Style="text-align:right;">Precio base</MudTh>
+                    <MudTh Style="text-align:center;">Perfiles</MudTh>
+                    <MudTh Style="width:80px;text-align:center;">Acciones</MudTh>
                 </HeaderContent>
                 <RowTemplate>
+                    <MudTd Style="padding:0 4px;">
+                        <MudIconButton Icon="@(_expandedIds.Contains(context.Id) ? Icons.Material.Rounded.ExpandLess : Icons.Material.Rounded.ExpandMore)"
+                                       Size="Size.Small" Color="Color.Default"
+                                       OnClick="@(() => ToggleExpand(context.Id))" />
+                    </MudTd>
                     <MudTd><span class="fw-600">@context.Nombre</span></MudTd>
                     <MudTd Style="text-align:center;">
                         <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
@@ -57,32 +63,125 @@
                             @(context.TipoMedida == TipoMedida.Gramaje ? "Gramaje" : "Pieza")
                         </MudChip>
                     </MudTd>
-                    <MudTd Style="text-align:right;font-variant-numeric:tabular-nums;">
+                    <MudTd Style="text-align:right;" Class="tabnum">
                         @context.PrecioPorUnidad.ToString("C", _mx)
                         @if (context.TipoMedida == TipoMedida.Gramaje)
-                        {
-                            <span class="text-muted" style="font-size:10px;"> /KG</span>
-                        }
+                        { <span class="text-muted" style="font-size:10px;"> /KG</span> }
                     </MudTd>
                     <MudTd Style="text-align:center;">
-                        <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
-                                 Color="@(context.IsActive ? Color.Success : Color.Default)">
-                            @(context.IsActive ? "Activo" : "Inactivo")
-                        </MudChip>
+                        @if (context.Perfiles.Count > 0)
+                        {
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Success">
+                                @context.Perfiles.Count
+                            </MudChip>
+                        }
+                        else
+                        {
+                            <span style="font-size:11px;color:var(--gray-muted);">—</span>
+                        }
                     </MudTd>
                     <MudTd Style="text-align:center;">
                         <div style="display:inline-flex;gap:2px;align-items:center;">
                             <MudIconButton Icon="@Icons.Material.Rounded.Edit"
-                                           Size="Size.Small" Color="Color.Default"
-                                           title="Editar"
+                                           Size="Size.Small" Color="Color.Default" title="Editar"
                                            OnClick="@(() => AbrirEditar(context))" />
                             <MudIconButton Icon="@Icons.Material.Rounded.Delete"
-                                           Size="Size.Small" Color="Color.Default"
-                                           title="Desactivar"
+                                           Size="Size.Small" Color="Color.Default" title="Desactivar"
                                            OnClick="@(() => Eliminar(context))" />
                         </div>
                     </MudTd>
                 </RowTemplate>
+                <ChildRowContent Context="prod">
+                    @if (_expandedIds.Contains(prod.Id))
+                    {
+                        <td colspan="6" style="padding:0;background:var(--page-bg);">
+                            <div style="padding:12px 20px 16px;">
+                                <div style="font-size:11px;font-weight:700;text-transform:uppercase;
+                                            letter-spacing:.05em;color:var(--gray-muted);margin-bottom:10px;">
+                                    Perfiles de precio · @prod.Nombre
+                                </div>
+
+                                @if (prod.Perfiles.Any())
+                                {
+                                    <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:12px;">
+                                        <thead>
+                                            <tr style="border-bottom:1px solid var(--gray-line);">
+                                                <th style="text-align:left;padding:4px 8px;font-weight:700;font-size:11px;color:var(--gray-muted);text-transform:uppercase;">Nro</th>
+                                                <th style="text-align:left;padding:4px 8px;font-weight:700;font-size:11px;color:var(--gray-muted);text-transform:uppercase;">Etiqueta</th>
+                                                <th style="text-align:right;padding:4px 8px;font-weight:700;font-size:11px;color:var(--gray-muted);text-transform:uppercase;">Precio</th>
+                                                <th style="width:60px;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var tier in prod.Perfiles.OrderBy(t => t.Numero))
+                                            {
+                                                <tr style="border-bottom:1px solid var(--gray-line);">
+                                                    <td style="padding:6px 8px;">
+                                                        <span class="fw-700" style="color:var(--primary);">@tier.Numero</span>
+                                                    </td>
+                                                    <td style="padding:6px 8px;">
+                                                        <span class="text-muted">@(tier.Etiqueta ?? "—")</span>
+                                                    </td>
+                                                    <td style="padding:6px 8px;text-align:right;" class="tabnum fw-600 text-em">
+                                                        @tier.Precio.ToString("C", _mx)
+                                                    </td>
+                                                    <td style="padding:2px 4px;">
+                                                        <div style="display:inline-flex;gap:2px;">
+                                                            <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                                                                           Size="Size.Small" Color="Color.Default"
+                                                                           OnClick="@(() => AbrirEditarTier(prod, tier))" />
+                                                            <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                                                           Size="Size.Small" Color="Color.Default"
+                                                                           OnClick="@(() => EliminarTier(prod, tier))" />
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                }
+                                else
+                                {
+                                    <div style="font-size:12px;color:var(--gray-muted);margin-bottom:12px;">
+                                        Sin perfiles configurados. Todos los clientes usarán el precio base.
+                                    </div>
+                                }
+
+                                @if (_tierProductoId == prod.Id)
+                                {
+                                    <div class="tier-form">
+                                        <MudNumericField T="int" @bind-Value="_tierNumero" Label="Nro"
+                                                         Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                         Style="width:70px;" Min="1" />
+                                        <MudTextField @bind-Value="_tierEtiqueta" Label="Etiqueta (opcional)"
+                                                      Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                      Style="width:160px;" />
+                                        <MudNumericField T="decimal" @bind-Value="_tierPrecio" Label="Precio"
+                                                         Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                         Style="width:120px;" Min="0" Format="F2" Culture="_mx"
+                                                         Adornment="Adornment.Start" AdornmentText="$" />
+                                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                                   OnClick="@(() => GuardarTier(prod))">
+                                            Guardar
+                                        </MudButton>
+                                        <MudButton Variant="Variant.Text" Size="Size.Small"
+                                                   OnClick="CerrarTierForm">
+                                            Cancelar
+                                        </MudButton>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <MudButton StartIcon="@Icons.Material.Rounded.Add"
+                                               Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                                               OnClick="@(() => AbrirCrearTier(prod))">
+                                        Agregar Perfil
+                                    </MudButton>
+                                }
+                            </div>
+                        </td>
+                    }
+                </ChildRowContent>
                 <NoRecordsContent>
                     <div class="empty-state">
                         <span class="material-symbols-rounded">inventory_2</span>
@@ -94,6 +193,7 @@
     }
 </div>
 
+<!-- Dialog crear/editar producto -->
 <MudDialog @bind-Visible="_dialogOpen">
     <TitleContent>
         <div style="display:flex;align-items:center;gap:10px;">
@@ -111,7 +211,7 @@
             <MudSelectItem T="TipoMedida" Value="TipoMedida.Gramaje">Gramaje (precio por KG)</MudSelectItem>
         </MudSelect>
         <MudNumericField T="decimal" @bind-Value="_precio"
-                         Label="@(_tipoMedida == TipoMedida.Gramaje ? "Precio por KG" : "Precio por pieza")"
+                         Label="@(_tipoMedida == TipoMedida.Gramaje ? "Precio base por KG" : "Precio base por pieza")"
                          Variant="Variant.Outlined" FullWidth="true" Min="0"
                          Adornment="Adornment.Start" AdornmentText="$"
                          Format="F2" Culture="_mx" />
@@ -132,11 +232,22 @@
     private bool _esGerente;
     private int  _negocioActivo;
 
-    private bool     _dialogOpen, _esCrear;
-    private int      _editId;
-    private string   _nombre    = "";
+    // Expand state for tiers
+    private HashSet<int> _expandedIds = new();
+
+    // Product dialog
+    private bool       _dialogOpen, _esCrear;
+    private int        _editId;
+    private string     _nombre    = "";
     private TipoMedida _tipoMedida = TipoMedida.Pieza;
-    private decimal  _precio;
+    private decimal    _precio;
+
+    // Tier inline form
+    private int     _tierProductoId;
+    private int     _tierEditId;
+    private int     _tierNumero = 1;
+    private string? _tierEtiqueta;
+    private decimal _tierPrecio;
 
     protected override async Task OnInitializedAsync()
     {
@@ -145,7 +256,7 @@
 
         if (_esGerente)
         {
-            _misNegocios  = await Api.GetNegociosAsync() ?? new();
+            _misNegocios   = await Api.GetNegociosAsync() ?? new();
             _negocioActivo = _misNegocios.FirstOrDefault()?.Id ?? 0;
         }
         else
@@ -157,7 +268,7 @@
         _cargando = false;
     }
 
-    private async Task CambiarNegocio(int id) { _negocioActivo = id; await Cargar(); }
+    private async Task CambiarNegocio(int id) { _negocioActivo = id; _expandedIds.Clear(); await Cargar(); }
 
     private async Task Cargar()
     {
@@ -166,6 +277,14 @@
         _cargando = false;
     }
 
+    private void ToggleExpand(int prodId)
+    {
+        if (_expandedIds.Contains(prodId)) _expandedIds.Remove(prodId);
+        else _expandedIds.Add(prodId);
+        CerrarTierForm();
+    }
+
+    // ── Producto CRUD ─────────────────────────────────────────────
     private void AbrirCrear()
     {
         _esCrear = true; _editId = 0;
@@ -206,6 +325,57 @@
         {
             await Api.DeleteProductoAsync(_negocioActivo, p.Id);
             Snackbar.Add("Producto desactivado.", Severity.Warning);
+            await Cargar();
+        }
+    }
+
+    // ── Perfiles de precio ────────────────────────────────────────
+    private void AbrirCrearTier(ProductDto prod)
+    {
+        _tierProductoId = prod.Id;
+        _tierEditId     = 0;
+        _tierNumero     = (prod.Perfiles.Any() ? prod.Perfiles.Max(t => t.Numero) + 1 : 1);
+        _tierEtiqueta   = null;
+        _tierPrecio     = prod.PrecioPorUnidad;
+    }
+
+    private void AbrirEditarTier(ProductDto prod, PriceTierDto tier)
+    {
+        _tierProductoId = prod.Id;
+        _tierEditId     = tier.Id;
+        _tierNumero     = tier.Numero;
+        _tierEtiqueta   = tier.Etiqueta;
+        _tierPrecio     = tier.Precio;
+        _expandedIds.Add(prod.Id);
+    }
+
+    private void CerrarTierForm() => _tierProductoId = 0;
+
+    private async Task GuardarTier(ProductDto prod)
+    {
+        var req = new UpsertPriceTierRequest { Numero = _tierNumero, Etiqueta = _tierEtiqueta, Precio = _tierPrecio };
+        var resp = _tierEditId == 0
+            ? await Api.CreatePerfilAsync(_negocioActivo, prod.Id, req)
+            : await Api.UpdatePerfilAsync(_negocioActivo, prod.Id, _tierEditId, req);
+
+        if (resp.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Perfil guardado.", Severity.Success);
+            CerrarTierForm();
+            await Cargar();
+        }
+        else Snackbar.Add("Error al guardar el perfil.", Severity.Error);
+    }
+
+    private async Task EliminarTier(ProductDto prod, PriceTierDto tier)
+    {
+        var ok = await Dialog.ShowMessageBox("Eliminar perfil",
+            $"¿Eliminar el Perfil {tier.Numero} de \"{prod.Nombre}\"?",
+            yesText: "Eliminar", cancelText: "Cancelar");
+        if (ok == true)
+        {
+            await Api.DeletePerfilAsync(_negocioActivo, prod.Id, tier.Id);
+            Snackbar.Add("Perfil eliminado.", Severity.Warning);
             await Cargar();
         }
     }

@@ -189,11 +189,21 @@
                                          Label="Cant. habitual" Style="width:110px;"
                                          Variant="Variant.Outlined" Margin="Margin.Dense" Min="0"
                                          Format="@(prod.TipoMedida == TipoMedida.Gramaje ? "F2" : "F0")" />
-                        <MudNumericField T="decimal?" Value="asig.PrecioEspecial"
-                                         ValueChanged="@(v => asig.PrecioEspecial = v)"
-                                         Label="Precio especial" Style="width:120px;"
-                                         Variant="Variant.Outlined" Margin="Margin.Dense" Min="0"
-                                         Placeholder="(base)" />
+                        <MudSelect T="int?" Value="asig.PriceTierId"
+                                   ValueChanged="@(v => asig.PriceTierId = v)"
+                                   Label="Perfil" Style="width:170px;"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense"
+                                   Clearable="false">
+                            <MudSelectItem T="int?" Value="(int?)null">
+                                Base — @prod.PrecioPorUnidad.ToString("C", _mx)
+                            </MudSelectItem>
+                            @foreach (var tier in prod.Perfiles.OrderBy(t => t.Numero))
+                            {
+                                <MudSelectItem T="int?" Value="(int?)tier.Id">
+                                    Perfil @tier.Numero@(tier.Etiqueta != null ? " · " + tier.Etiqueta : "") — @tier.Precio.ToString("C", _mx)
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
                     }
                 </div>
             }
@@ -321,7 +331,7 @@
         {
             ProductId        = p.ProductId,
             CantidadHabitual = p.CantidadHabitual,
-            PrecioEspecial   = p.PrecioEspecial
+            PriceTierId      = p.PriceTierId
         }).ToList();
         _dialogProductos = true;
     }

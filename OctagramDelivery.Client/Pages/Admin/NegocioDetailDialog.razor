@@ -1,0 +1,793 @@
+@inject ApiService Api
+@inject ISnackbar Snackbar
+@inject IDialogService Dialog
+
+<MudDialog>
+    <TitleContent>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <span class="material-symbols-rounded" style="color:var(--primary);font-size:20px;">store</span>
+            <div>
+                <div style="font-size:15px;font-weight:700;">@NombreNegocio</div>
+                <div style="font-size:11px;color:var(--gray-muted);font-weight:400;margin-top:1px;">Gestión del negocio</div>
+            </div>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudTabs Elevation="0" Rounded="false" ApplyEffectsToContainer="false"
+                 Style="min-height:480px;" PanelClass="neg-tab-panel">
+            <!-- ══════════════════════════════ TAB USUARIOS ══════════════════════════════ -->
+            <MudTabPanel Text="Usuarios" Icon="@Icons.Material.Rounded.Group">
+                <div style="padding:16px 0;">
+                    <!-- Toolbar -->
+                    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+                        @if (!_showAsignarForm && !_showCrearForm)
+                        {
+                            <MudButton StartIcon="@Icons.Material.Rounded.PersonSearch"
+                                       Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                                       OnClick="@(() => { _showAsignarForm = true; _showCrearForm = false; })">
+                                Asignar existente
+                            </MudButton>
+                            <MudButton StartIcon="@Icons.Material.Rounded.PersonAdd"
+                                       Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                       OnClick="@(() => { _showCrearForm = true; _showAsignarForm = false; ResetCrearForm(); })">
+                                Crear nuevo
+                            </MudButton>
+                        }
+                    </div>
+
+                    <!-- Inline: Asignar existente -->
+                    @if (_showAsignarForm)
+                    {
+                        <div class="neg-inline-form">
+                            <div style="font-size:12px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px;">
+                                Asignar usuario existente
+                            </div>
+                            <MudSelect T="int?" @bind-Value="_asignarUserId" Label="Seleccionar usuario"
+                                       Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:100%;max-width:380px;"
+                                       Class="mb-3">
+                                <MudSelectItem T="int?" Value="(int?)null">— Seleccionar —</MudSelectItem>
+                                @foreach (var u in _usuariosDisponibles)
+                                {
+                                    <MudSelectItem T="int?" Value="(int?)u.Id">
+                                        @u.FullName (@u.Username) · @u.Rol
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                            <div style="display:flex;gap:8px;">
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                           OnClick="AsignarUsuario" Disabled="_asignarUserId == null">
+                                    Asignar
+                                </MudButton>
+                                <MudButton Variant="Variant.Text" Size="Size.Small"
+                                           OnClick="@(() => { _showAsignarForm = false; _asignarUserId = null; })">
+                                    Cancelar
+                                </MudButton>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Inline: Crear nuevo -->
+                    @if (_showCrearForm)
+                    {
+                        <div class="neg-inline-form">
+                            <div style="font-size:12px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px;">
+                                Crear y asignar nuevo usuario
+                            </div>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                                <MudTextField @bind-Value="_nuevoUsername" Label="Usuario (login)"
+                                              Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                <MudTextField @bind-Value="_nuevoNombre" Label="Nombre completo"
+                                              Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                <MudTextField @bind-Value="_nuevaPassword" Label="Contraseña"
+                                              InputType="InputType.Password"
+                                              Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                <MudSelect T="UserRole" @bind-Value="_nuevoRol" Label="Rol"
+                                           Variant="Variant.Outlined" Margin="Margin.Dense">
+                                    <MudSelectItem T="UserRole" Value="UserRole.Supervisor">Supervisor</MudSelectItem>
+                                    <MudSelectItem T="UserRole" Value="UserRole.Repartidor">Repartidor</MudSelectItem>
+                                </MudSelect>
+                            </div>
+                            <div style="display:flex;gap:8px;">
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                           OnClick="CrearUsuario">
+                                    Crear y Asignar
+                                </MudButton>
+                                <MudButton Variant="Variant.Text" Size="Size.Small"
+                                           OnClick="@(() => _showCrearForm = false)">
+                                    Cancelar
+                                </MudButton>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Tabla de usuarios actuales -->
+                    @if (_cargandoUsuarios)
+                    {
+                        <div class="loading-state" style="padding:40px;"><MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" /></div>
+                    }
+                    else if (!_usuarios.Any())
+                    {
+                        <div class="empty-state" style="padding:40px;">
+                            <span class="material-symbols-rounded">group_off</span>
+                            <p>Sin usuarios asignados a este negocio.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <MudTable Items="_usuarios" Hover="true" Dense="true" Elevation="0">
+                            <HeaderContent>
+                                <MudTh>Nombre</MudTh>
+                                <MudTh>Usuario</MudTh>
+                                <MudTh Style="text-align:center;">Rol</MudTh>
+                                <MudTh Style="width:48px;"></MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd><span class="fw-600">@context.FullName</span></MudTd>
+                                <MudTd><span class="text-muted" style="font-size:12px;">@context.Username</span></MudTd>
+                                <MudTd Style="text-align:center;">
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                                             Color="@(context.Rol == UserRole.Supervisor ? Color.Info : Color.Default)">
+                                        @context.Rol
+                                    </MudChip>
+                                </MudTd>
+                                <MudTd>
+                                    <MudIconButton Icon="@Icons.Material.Rounded.LinkOff"
+                                                   Size="Size.Small" Color="Color.Default"
+                                                   title="Remover del negocio"
+                                                   OnClick="@(() => RemoverUsuario(context))" />
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                </div>
+            </MudTabPanel>
+
+            <!-- ══════════════════════════════ TAB PRODUCTOS ══════════════════════════════ -->
+            <MudTabPanel Text="Productos" Icon="@Icons.Material.Rounded.Inventory2">
+                <div style="padding:16px 0;">
+                    <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+                        <MudButton StartIcon="@Icons.Material.Rounded.Add"
+                                   Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                   OnClick="AbrirCrearProducto">
+                            Nuevo Producto
+                        </MudButton>
+                    </div>
+
+                    @if (_cargandoProductos)
+                    {
+                        <div class="loading-state" style="padding:40px;"><MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" /></div>
+                    }
+                    else if (!_productos.Any())
+                    {
+                        <div class="empty-state" style="padding:40px;">
+                            <span class="material-symbols-rounded">inventory_2</span>
+                            <p>Sin productos registrados.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <MudExpansionPanels Elevation="0">
+                            @foreach (var prod in _productos)
+                            {
+                                <MudExpansionPanel Dense="true">
+                                    <TitleContent>
+                                        <div style="display:flex;align-items:center;gap:12px;width:100%;">
+                                            <div style="flex:1;min-width:0;">
+                                                <span class="fw-600">@prod.Nombre</span>
+                                            </div>
+                                            <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                                                     Color="@(prod.TipoMedida == TipoMedida.Gramaje ? Color.Info : Color.Default)">
+                                                @(prod.TipoMedida == TipoMedida.Gramaje ? "Gramaje" : "Pieza")
+                                            </MudChip>
+                                            <span class="tabnum fw-600" style="min-width:80px;text-align:right;font-size:13px;">
+                                                @prod.PrecioPorUnidad.ToString("C", _mx)
+                                            </span>
+                                            @if (prod.Perfiles.Any())
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Success">
+                                                    @prod.Perfiles.Count perfiles
+                                                </MudChip>
+                                            }
+                                            <div @onclick:stopPropagation="true" style="display:inline-flex;gap:2px;">
+                                                <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                                                               Size="Size.Small" Color="Color.Default"
+                                                               title="Editar producto"
+                                                               OnClick="@(() => AbrirEditarProducto(prod))" />
+                                                <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                                               Size="Size.Small" Color="Color.Default"
+                                                               title="Desactivar producto"
+                                                               OnClick="@(() => EliminarProducto(prod))" />
+                                            </div>
+                                        </div>
+                                    </TitleContent>
+                                    <ChildContent>
+                                        <div style="padding:8px 4px 12px;">
+                                            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-muted);margin-bottom:10px;">
+                                                Perfiles de precio
+                                            </div>
+
+                                            @if (prod.Perfiles.Any())
+                                            {
+                                                <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:12px;">
+                                                    <thead>
+                                                        <tr style="border-bottom:1px solid var(--gray-line);">
+                                                            <th style="text-align:left;padding:4px 8px;font-size:11px;color:var(--gray-muted);font-weight:700;text-transform:uppercase;">Nro</th>
+                                                            <th style="text-align:left;padding:4px 8px;font-size:11px;color:var(--gray-muted);font-weight:700;text-transform:uppercase;">Etiqueta</th>
+                                                            <th style="text-align:right;padding:4px 8px;font-size:11px;color:var(--gray-muted);font-weight:700;text-transform:uppercase;">Precio</th>
+                                                            <th style="width:60px;"></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var tier in prod.Perfiles.OrderBy(t => t.Numero))
+                                                        {
+                                                            <tr style="border-bottom:1px solid var(--gray-line);">
+                                                                <td style="padding:6px 8px;"><span class="fw-700 text-primary">@tier.Numero</span></td>
+                                                                <td style="padding:6px 8px;"><span class="text-muted">@(tier.Etiqueta ?? "—")</span></td>
+                                                                <td style="padding:6px 8px;text-align:right;" class="tabnum fw-600 text-em">@tier.Precio.ToString("C", _mx)</td>
+                                                                <td style="padding:2px 4px;">
+                                                                    <div style="display:inline-flex;gap:2px;">
+                                                                        <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                                                                                       Size="Size.Small" Color="Color.Default"
+                                                                                       OnClick="@(() => AbrirEditarTier(prod, tier))" />
+                                                                        <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                                                                       Size="Size.Small" Color="Color.Default"
+                                                                                       OnClick="@(() => EliminarTier(prod, tier))" />
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            }
+                                            else
+                                            {
+                                                <div style="font-size:12px;color:var(--gray-muted);margin-bottom:12px;">Sin perfiles — todos los clientes usan el precio base.</div>
+                                            }
+
+                                            @if (_tierProductoId == prod.Id)
+                                            {
+                                                <div class="neg-inline-form">
+                                                    <div style="font-size:11px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">
+                                                        @(_tierEditId == 0 ? "Nuevo perfil" : "Editar perfil")
+                                                    </div>
+                                                    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+                                                        <MudNumericField T="int" @bind-Value="_tierNumero" Label="Nro"
+                                                                         Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                                         Style="width:65px;" Min="1" />
+                                                        <MudTextField @bind-Value="_tierEtiqueta" Label="Etiqueta (opcional)"
+                                                                      Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                                      Style="width:160px;" />
+                                                        <MudNumericField T="decimal" @bind-Value="_tierPrecio" Label="Precio"
+                                                                         Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                                         Style="width:120px;" Min="0" Format="F2" Culture="_mx"
+                                                                         Adornment="Adornment.Start" AdornmentText="$" />
+                                                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                                                   OnClick="@(() => GuardarTier(prod))">Guardar</MudButton>
+                                                        <MudButton Variant="Variant.Text" Size="Size.Small"
+                                                                   OnClick="CerrarTierForm">Cancelar</MudButton>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <MudButton StartIcon="@Icons.Material.Rounded.Add"
+                                                           Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                                                           OnClick="@(() => AbrirCrearTier(prod))">
+                                                    Agregar Perfil
+                                                </MudButton>
+                                            }
+                                        </div>
+                                    </ChildContent>
+                                </MudExpansionPanel>
+                            }
+                        </MudExpansionPanels>
+                    }
+                </div>
+
+                <!-- Sub-dialog producto -->
+                <MudDialog @bind-Visible="_dialogProductoOpen">
+                    <TitleContent>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span class="material-symbols-rounded" style="color:var(--primary);font-size:20px;">inventory_2</span>
+                            <span>@(_esCrearProducto ? "Nuevo Producto" : "Editar Producto")</span>
+                        </div>
+                    </TitleContent>
+                    <DialogContent>
+                        <MudTextField @bind-Value="_prodNombre" Label="Nombre del producto"
+                                      Variant="Variant.Outlined" FullWidth="true" Class="mb-3"
+                                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Label" />
+                        <MudSelect T="TipoMedida" @bind-Value="_prodTipo" Label="Tipo de medida"
+                                   Variant="Variant.Outlined" FullWidth="true" Class="mb-3">
+                            <MudSelectItem T="TipoMedida" Value="TipoMedida.Pieza">Pieza (por unidad)</MudSelectItem>
+                            <MudSelectItem T="TipoMedida" Value="TipoMedida.Gramaje">Gramaje (precio por KG)</MudSelectItem>
+                        </MudSelect>
+                        <MudNumericField T="decimal" @bind-Value="_prodPrecio"
+                                         Label="@(_prodTipo == TipoMedida.Gramaje ? "Precio base por KG" : "Precio base por pieza")"
+                                         Variant="Variant.Outlined" FullWidth="true" Min="0"
+                                         Adornment="Adornment.Start" AdornmentText="$" Format="F2" Culture="_mx" />
+                    </DialogContent>
+                    <DialogActions>
+                        <MudButton Variant="Variant.Text" OnClick="@(() => _dialogProductoOpen = false)">Cancelar</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GuardarProducto">Guardar</MudButton>
+                    </DialogActions>
+                </MudDialog>
+            </MudTabPanel>
+
+            <!-- ══════════════════════════════ TAB CLIENTES ══════════════════════════════ -->
+            <MudTabPanel Text="Clientes" Icon="@Icons.Material.Rounded.People">
+                <div style="padding:16px 0;">
+                    <div class="neg-clientes-grid">
+                        <!-- Lista de clientes -->
+                        <div class="neg-clientes-left">
+                            <div style="padding:10px 12px;border-bottom:1px solid var(--gray-line);display:flex;align-items:center;justify-content:space-between;">
+                                <span style="font-size:12px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.04em;">
+                                    Clientes (@_clientes.Count)
+                                </span>
+                                <MudIconButton Icon="@Icons.Material.Rounded.PersonAdd"
+                                               Size="Size.Small" Color="Color.Primary"
+                                               title="Nuevo cliente"
+                                               OnClick="AbrirCrearCliente" />
+                            </div>
+
+                            @if (_cargandoClientes)
+                            {
+                                <div style="padding:24px;text-align:center;"><MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" /></div>
+                            }
+                            else
+                            {
+                                <div style="overflow-y:auto;max-height:400px;">
+                                    @foreach (var c in _clientes)
+                                    {
+                                        <div class="@("neg-cliente-item" + (_clienteSeleccionado?.Id == c.Id ? " active" : ""))"
+                                             @onclick="@(() => SeleccionarCliente(c))">
+                                            <div class="fw-600" style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">@c.Nombre</div>
+                                            <div style="font-size:11px;color:var(--gray-muted);">@c.Productos.Count productos</div>
+                                            <div style="display:flex;gap:4px;margin-top:2px;" @onclick:stopPropagation="true">
+                                                <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                                                               Size="Size.Small" Color="Color.Default"
+                                                               OnClick="@(() => AbrirEditarCliente(c))" />
+                                                <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                                               Size="Size.Small" Color="Color.Default"
+                                                               OnClick="@(() => EliminarCliente(c))" />
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (!_clientes.Any())
+                                    {
+                                        <div style="padding:24px;text-align:center;color:var(--gray-muted);font-size:12px;">
+                                            Sin clientes registrados.
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Panel derecho -->
+                        <div class="neg-clientes-right">
+                            @switch (_clientePanelMode)
+                            {
+                                case ClientePanelMode.None:
+                                    <div class="empty-state" style="margin-top:60px;">
+                                        <span class="material-symbols-rounded">touch_app</span>
+                                        <p>Selecciona un cliente para configurar sus perfiles de precio.</p>
+                                    </div>
+                                    break;
+
+                                case ClientePanelMode.AsignarProductos:
+                                    <div>
+                                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                                            <div>
+                                                <div class="fw-700" style="font-size:14px;">@_clienteSeleccionado?.Nombre</div>
+                                                <div style="font-size:11px;color:var(--gray-muted);">Configuración de precios por producto</div>
+                                            </div>
+                                        </div>
+
+                                        @foreach (var prod in _productos)
+                                        {
+                                            var asig = _clienteAsignaciones.FirstOrDefault(a => a.ProductId == prod.Id);
+                                            var activo = asig != null;
+                                            <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--gray-line);flex-wrap:wrap;">
+                                                <MudCheckBox T="bool" Value="activo"
+                                                             ValueChanged="@(v => ToggleProdCliente(prod.Id, v))"
+                                                             Color="Color.Primary" />
+                                                <div style="flex:1;min-width:100px;">
+                                                    <div class="fw-500" style="font-size:13px;">@prod.Nombre</div>
+                                                    <div style="font-size:11px;color:var(--gray-muted);">
+                                                        @(prod.TipoMedida == TipoMedida.Gramaje ? "Gramaje" : "Pieza") — Base: @prod.PrecioPorUnidad.ToString("C", _mx)
+                                                    </div>
+                                                </div>
+                                                @if (activo && asig != null)
+                                                {
+                                                    <MudNumericField T="decimal" Value="asig.CantidadHabitual"
+                                                                     ValueChanged="@(v => asig.CantidadHabitual = v)"
+                                                                     Label="Cant." Style="width:90px;"
+                                                                     Variant="Variant.Outlined" Margin="Margin.Dense" Min="0"
+                                                                     Format="@(prod.TipoMedida == TipoMedida.Gramaje ? "F2" : "F0")" />
+                                                    <MudSelect T="int?" Value="asig.PriceTierId"
+                                                               ValueChanged="@(v => asig.PriceTierId = v)"
+                                                               Label="Perfil" Style="width:180px;"
+                                                               Variant="Variant.Outlined" Margin="Margin.Dense">
+                                                        <MudSelectItem T="int?" Value="(int?)null">
+                                                            Base — @prod.PrecioPorUnidad.ToString("C", _mx)
+                                                        </MudSelectItem>
+                                                        @foreach (var tier in prod.Perfiles.OrderBy(t => t.Numero))
+                                                        {
+                                                            <MudSelectItem T="int?" Value="(int?)tier.Id">
+                                                                Perfil @tier.Numero@(tier.Etiqueta != null ? " · " + tier.Etiqueta : "") — @tier.Precio.ToString("C", _mx)
+                                                            </MudSelectItem>
+                                                        }
+                                                    </MudSelect>
+                                                }
+                                            </div>
+                                        }
+
+                                        <div style="margin-top:16px;">
+                                            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                                       OnClick="GuardarProductosCliente">
+                                                Guardar asignación
+                                            </MudButton>
+                                        </div>
+                                    </div>
+                                    break;
+
+                                case ClientePanelMode.EditarCliente:
+                                case ClientePanelMode.CrearCliente:
+                                    <div>
+                                        <div class="fw-700" style="font-size:14px;margin-bottom:14px;">
+                                            @(_clientePanelMode == ClientePanelMode.CrearCliente ? "Nuevo cliente" : $"Editar · {_clienteSeleccionado?.Nombre}")
+                                        </div>
+                                        <MudTextField @bind-Value="_cliNombre" Label="Nombre"
+                                                      Variant="Variant.Outlined" FullWidth="true" Class="mb-3"
+                                                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Person" />
+                                        <MudTextField @bind-Value="_cliDireccion" Label="Dirección"
+                                                      Variant="Variant.Outlined" FullWidth="true" Class="mb-3"
+                                                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.LocationOn" />
+                                        <MudTextField @bind-Value="_cliTelefono" Label="Teléfono"
+                                                      Variant="Variant.Outlined" FullWidth="true" Class="mb-3"
+                                                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Phone" />
+                                        <MudTimePicker @bind-Time="_cliHora" Label="Hora aproximada de entrega"
+                                                       Variant="Variant.Outlined" Style="width:100%;" Class="mb-3" AmPm="false" />
+                                        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">
+                                            Días de entrega
+                                        </div>
+                                        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;">
+                                            @foreach (var d in _diasOptions)
+                                            {
+                                                var activo = (_cliDias & d.Bit) != 0;
+                                                <button class="@("dia-btn" + (activo ? " dia-btn-active" : ""))"
+                                                        @onclick="@(() => _cliDias ^= d.Bit)" type="button">
+                                                    @d.Label
+                                                </button>
+                                            }
+                                        </div>
+                                        <div style="display:flex;gap:8px;">
+                                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GuardarCliente">Guardar</MudButton>
+                                            <MudButton Variant="Variant.Text"
+                                                       OnClick="@(() => { _clientePanelMode = ClientePanelMode.None; })">Cancelar</MudButton>
+                                        </div>
+                                    </div>
+                                    break;
+                            }
+                        </div>
+                    </div>
+                </div>
+            </MudTabPanel>
+        </MudTabs>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" OnClick="Close">Cerrar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public int TenantId { get; set; }
+    [Parameter] public string NombreNegocio { get; set; } = "";
+
+    private static readonly System.Globalization.CultureInfo _mx = new("es-MX");
+    private static readonly (int Bit, string Label)[] _diasOptions =
+    {
+        (1,"L"),(2,"M"),(4,"X"),(8,"J"),(16,"V"),(32,"S"),(64,"D")
+    };
+
+    // ── Usuarios ──────────────────────────────────────────────────
+    private List<UsuarioNegocioDto> _usuarios          = new();
+    private List<UserDto>           _usuariosDisponibles = new();
+    private bool  _cargandoUsuarios = true;
+    private bool  _showAsignarForm, _showCrearForm;
+    private int?  _asignarUserId;
+    private string _nuevoUsername = "", _nuevoNombre = "", _nuevaPassword = "";
+    private UserRole _nuevoRol = UserRole.Repartidor;
+
+    // ── Productos ─────────────────────────────────────────────────
+    private List<ProductDto> _productos       = new();
+    private bool _cargandoProductos = true;
+    private bool _dialogProductoOpen, _esCrearProducto;
+    private int      _editProductoId;
+    private string   _prodNombre = "";
+    private TipoMedida _prodTipo = TipoMedida.Pieza;
+    private decimal  _prodPrecio;
+    // Tier form state
+    private int     _tierProductoId, _tierEditId;
+    private int     _tierNumero = 1;
+    private string? _tierEtiqueta;
+    private decimal _tierPrecio;
+
+    // ── Clientes ──────────────────────────────────────────────────
+    private List<CustomerDto> _clientes        = new();
+    private bool _cargandoClientes = true;
+    private CustomerDto? _clienteSeleccionado;
+    private List<ProductAssignItem> _clienteAsignaciones = new();
+    private enum ClientePanelMode { None, AsignarProductos, EditarCliente, CrearCliente }
+    private ClientePanelMode _clientePanelMode = ClientePanelMode.None;
+    // Client form fields
+    private int      _editClienteId;
+    private string   _cliNombre = "", _cliDireccion = "", _cliTelefono = "";
+    private TimeSpan? _cliHora;
+    private int      _cliDias;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(CargarUsuarios(), CargarProductos(), CargarClientes());
+        await CargarUsuariosDisponibles();
+    }
+
+    private void Close() => MudDialog.Close();
+
+    // ── Usuarios ──────────────────────────────────────────────────
+    private async Task CargarUsuarios()
+    {
+        _cargandoUsuarios = true;
+        _usuarios = await Api.GetUsuariosNegocioAsync(TenantId) ?? new();
+        _cargandoUsuarios = false;
+    }
+
+    private async Task CargarUsuariosDisponibles()
+    {
+        var todos = await Api.GetUsuariosAsync() ?? new();
+        var asignadosIds = _usuarios.Select(u => u.UserId).ToHashSet();
+        _usuariosDisponibles = todos
+            .Where(u => !asignadosIds.Contains(u.Id)
+                     && (u.Rol == UserRole.Supervisor || u.Rol == UserRole.Repartidor))
+            .ToList();
+    }
+
+    private void ResetCrearForm()
+    {
+        _nuevoUsername = ""; _nuevoNombre = ""; _nuevaPassword = ""; _nuevoRol = UserRole.Repartidor;
+    }
+
+    private async Task AsignarUsuario()
+    {
+        if (_asignarUserId == null) return;
+        var resp = await Api.AsignarUsuarioNegocioAsync(TenantId, new AsignarUsuarioRequest { UserId = _asignarUserId.Value });
+        if (resp.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Usuario asignado.", Severity.Success);
+            _showAsignarForm = false; _asignarUserId = null;
+            await CargarUsuarios();
+            await CargarUsuariosDisponibles();
+        }
+        else Snackbar.Add("Error al asignar el usuario.", Severity.Error);
+    }
+
+    private async Task CrearUsuario()
+    {
+        if (string.IsNullOrWhiteSpace(_nuevoUsername) || string.IsNullOrWhiteSpace(_nuevoNombre) || string.IsNullOrWhiteSpace(_nuevaPassword))
+        { Snackbar.Add("Completa todos los campos.", Severity.Warning); return; }
+
+        var resp = await Api.CrearUsuarioNegocioAsync(TenantId, new CrearUsuarioNegocioRequest
+        {
+            Username = _nuevoUsername, FullName = _nuevoNombre,
+            Password = _nuevaPassword, Rol = _nuevoRol
+        });
+        if (resp.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Usuario creado y asignado.", Severity.Success);
+            _showCrearForm = false;
+            await CargarUsuarios();
+        }
+        else
+        {
+            var msg = await resp.Content.ReadAsStringAsync();
+            Snackbar.Add(msg.Contains("existe") ? "El nombre de usuario ya existe." : "Error al crear el usuario.", Severity.Error);
+        }
+    }
+
+    private async Task RemoverUsuario(UsuarioNegocioDto u)
+    {
+        var ok = await Dialog.ShowMessageBox("Remover usuario",
+            $"¿Remover a {u.FullName} de este negocio?", yesText: "Remover", cancelText: "Cancelar");
+        if (ok == true)
+        {
+            await Api.RemoverUsuarioNegocioAsync(TenantId, u.UserId);
+            Snackbar.Add("Usuario removido.", Severity.Warning);
+            await CargarUsuarios();
+            await CargarUsuariosDisponibles();
+        }
+    }
+
+    // ── Productos ─────────────────────────────────────────────────
+    private async Task CargarProductos()
+    {
+        _cargandoProductos = true;
+        _productos = await Api.GetProductosAsync(TenantId) ?? new();
+        _cargandoProductos = false;
+    }
+
+    private void AbrirCrearProducto()
+    {
+        _esCrearProducto = true; _editProductoId = 0;
+        _prodNombre = ""; _prodTipo = TipoMedida.Pieza; _prodPrecio = 0;
+        _dialogProductoOpen = true;
+    }
+
+    private void AbrirEditarProducto(ProductDto p)
+    {
+        _esCrearProducto = false; _editProductoId = p.Id;
+        _prodNombre = p.Nombre; _prodTipo = p.TipoMedida; _prodPrecio = p.PrecioPorUnidad;
+        _dialogProductoOpen = true;
+    }
+
+    private async Task GuardarProducto()
+    {
+        if (string.IsNullOrWhiteSpace(_prodNombre)) { Snackbar.Add("El nombre es requerido.", Severity.Warning); return; }
+        var req = new CreateProductRequest { Nombre = _prodNombre, TipoMedida = _prodTipo, PrecioPorUnidad = _prodPrecio };
+        var resp = _esCrearProducto
+            ? await Api.CreateProductoAsync(TenantId, req)
+            : await Api.UpdateProductoAsync(TenantId, _editProductoId, req);
+        if (resp.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Producto guardado.", Severity.Success);
+            _dialogProductoOpen = false;
+            await CargarProductos();
+        }
+        else Snackbar.Add("Error al guardar el producto.", Severity.Error);
+    }
+
+    private async Task EliminarProducto(ProductDto p)
+    {
+        var ok = await Dialog.ShowMessageBox("Desactivar producto",
+            $"¿Desactivar \"{p.Nombre}\"?", yesText: "Desactivar", cancelText: "Cancelar");
+        if (ok == true)
+        {
+            await Api.DeleteProductoAsync(TenantId, p.Id);
+            Snackbar.Add("Producto desactivado.", Severity.Warning);
+            await CargarProductos();
+        }
+    }
+
+    private void AbrirCrearTier(ProductDto prod)
+    {
+        _tierProductoId = prod.Id; _tierEditId = 0;
+        _tierNumero = prod.Perfiles.Any() ? prod.Perfiles.Max(t => t.Numero) + 1 : 1;
+        _tierEtiqueta = null; _tierPrecio = prod.PrecioPorUnidad;
+    }
+
+    private void AbrirEditarTier(ProductDto prod, PriceTierDto tier)
+    {
+        _tierProductoId = prod.Id; _tierEditId = tier.Id;
+        _tierNumero = tier.Numero; _tierEtiqueta = tier.Etiqueta; _tierPrecio = tier.Precio;
+    }
+
+    private void CerrarTierForm() => _tierProductoId = 0;
+
+    private async Task GuardarTier(ProductDto prod)
+    {
+        var req = new UpsertPriceTierRequest { Numero = _tierNumero, Etiqueta = _tierEtiqueta, Precio = _tierPrecio };
+        var resp = _tierEditId == 0
+            ? await Api.CreatePerfilAsync(TenantId, prod.Id, req)
+            : await Api.UpdatePerfilAsync(TenantId, prod.Id, _tierEditId, req);
+        if (resp.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Perfil guardado.", Severity.Success);
+            CerrarTierForm(); await CargarProductos();
+        }
+        else Snackbar.Add("Error al guardar el perfil.", Severity.Error);
+    }
+
+    private async Task EliminarTier(ProductDto prod, PriceTierDto tier)
+    {
+        var ok = await Dialog.ShowMessageBox("Eliminar perfil",
+            $"¿Eliminar el Perfil {tier.Numero} de \"{prod.Nombre}\"?",
+            yesText: "Eliminar", cancelText: "Cancelar");
+        if (ok == true)
+        {
+            await Api.DeletePerfilAsync(TenantId, prod.Id, tier.Id);
+            Snackbar.Add("Perfil eliminado.", Severity.Warning);
+            await CargarProductos();
+        }
+    }
+
+    // ── Clientes ──────────────────────────────────────────────────
+    private async Task CargarClientes()
+    {
+        _cargandoClientes = true;
+        _clientes = await Api.GetClientesAsync(TenantId) ?? new();
+        _cargandoClientes = false;
+    }
+
+    private void SeleccionarCliente(CustomerDto c)
+    {
+        _clienteSeleccionado = c;
+        _clienteAsignaciones = c.Productos.Select(p => new ProductAssignItem
+        {
+            ProductId = p.ProductId, CantidadHabitual = p.CantidadHabitual, PriceTierId = p.PriceTierId
+        }).ToList();
+        _clientePanelMode = ClientePanelMode.AsignarProductos;
+    }
+
+    private void AbrirCrearCliente()
+    {
+        _clienteSeleccionado = null;
+        _editClienteId = 0;
+        _cliNombre = ""; _cliDireccion = ""; _cliTelefono = ""; _cliHora = null; _cliDias = 0;
+        _clientePanelMode = ClientePanelMode.CrearCliente;
+    }
+
+    private void AbrirEditarCliente(CustomerDto c)
+    {
+        _clienteSeleccionado = c;
+        _editClienteId = c.Id;
+        _cliNombre = c.Nombre; _cliDireccion = c.Direccion ?? ""; _cliTelefono = c.Telefono ?? "";
+        _cliHora = c.HoraAproximada; _cliDias = c.DiasEntrega;
+        _clientePanelMode = ClientePanelMode.EditarCliente;
+    }
+
+    private async Task GuardarCliente()
+    {
+        if (string.IsNullOrWhiteSpace(_cliNombre)) { Snackbar.Add("El nombre es requerido.", Severity.Warning); return; }
+        var req = new CreateCustomerRequest
+        {
+            Nombre = _cliNombre, Direccion = _cliDireccion, Telefono = _cliTelefono,
+            DiasEntrega = _cliDias, HoraAproximada = _cliHora
+        };
+        var resp = _clientePanelMode == ClientePanelMode.CrearCliente
+            ? await Api.CreateClienteAsync(TenantId, req)
+            : await Api.UpdateClienteAsync(TenantId, _editClienteId, req);
+
+        if (resp.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Cliente guardado.", Severity.Success);
+            _clientePanelMode = ClientePanelMode.None;
+            await CargarClientes();
+        }
+        else Snackbar.Add("Error al guardar el cliente.", Severity.Error);
+    }
+
+    private async Task EliminarCliente(CustomerDto c)
+    {
+        var ok = await Dialog.ShowMessageBox("Desactivar cliente",
+            $"¿Desactivar a \"{c.Nombre}\"?", yesText: "Desactivar", cancelText: "Cancelar");
+        if (ok == true)
+        {
+            await Api.DeleteClienteAsync(TenantId, c.Id);
+            Snackbar.Add("Cliente desactivado.", Severity.Warning);
+            if (_clienteSeleccionado?.Id == c.Id) { _clienteSeleccionado = null; _clientePanelMode = ClientePanelMode.None; }
+            await CargarClientes();
+        }
+    }
+
+    private void ToggleProdCliente(int productId, bool incluir)
+    {
+        if (incluir)
+        {
+            if (!_clienteAsignaciones.Any(a => a.ProductId == productId))
+                _clienteAsignaciones.Add(new ProductAssignItem { ProductId = productId, CantidadHabitual = 1 });
+        }
+        else _clienteAsignaciones.RemoveAll(a => a.ProductId == productId);
+    }
+
+    private async Task GuardarProductosCliente()
+    {
+        var resp = await Api.AssignProductosClienteAsync(TenantId, _clienteSeleccionado!.Id,
+            new AssignProductsRequest { Productos = _clienteAsignaciones });
+        if (resp.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Productos actualizados.", Severity.Success);
+            await CargarClientes();
+            _clientePanelMode = ClientePanelMode.None;
+        }
+        else Snackbar.Add("Error al guardar los productos.", Severity.Error);
+    }
+}

@@ -12,4 +12,5 @@ public class Product
     public decimal PrecioPorUnidad { get; set; }
     public bool IsActive { get; set; } = true;
     public ICollection<CustomerProduct> CustomerProducts { get; set; } = new List<CustomerProduct>();
+    public ICollection<PriceTier> PriceTiers { get; set; } = new List<PriceTier>();
 }

@@ -80,4 +80,75 @@ public class NegociosController : ControllerBase
         await _ctx.SaveChangesAsync();
         return NoContent();
     }
+
+    // ── Usuarios del negocio ──────────────────────────────────────
+
+    [HttpGet("{id}/usuarios")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
+    public async Task<ActionResult<List<UsuarioNegocioDto>>> GetUsuarios(int id)
+    {
+        var relaciones = await _ctx.UsuarioNegocios
+            .Include(un => un.User)
+            .Where(un => un.TenantId == id && un.User!.IsActive)
+            .OrderBy(un => un.User!.FullName)
+            .ToListAsync();
+
+        return Ok(relaciones.Select(un => new UsuarioNegocioDto
+        {
+            UserId = un.UserId,
+            FullName = un.User!.FullName,
+            Username = un.User.Username,
+            Rol = un.User.Rol,
+            IsActive = un.User.IsActive,
+            EsPrincipal = un.EsPrincipal
+        }));
+    }
+
+    [HttpPost("{id}/usuarios")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
+    public async Task<IActionResult> AsignarUsuario(int id, [FromBody] AsignarUsuarioRequest req)
+    {
+        if (!await _ctx.Tenants.AnyAsync(t => t.Id == id)) return NotFound("Negocio no encontrado.");
+        if (!await _ctx.Users.AnyAsync(u => u.Id == req.UserId)) return NotFound("Usuario no encontrado.");
+        if (await _ctx.UsuarioNegocios.AnyAsync(un => un.UserId == req.UserId && un.TenantId == id))
+            return Conflict("El usuario ya está asignado a este negocio.");
+
+        _ctx.UsuarioNegocios.Add(new UsuarioNegocio { UserId = req.UserId, TenantId = id });
+        await _ctx.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id}/usuarios/nuevo")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
+    public async Task<IActionResult> CrearYAsignarUsuario(int id, [FromBody] CrearUsuarioNegocioRequest req)
+    {
+        if (!await _ctx.Tenants.AnyAsync(t => t.Id == id)) return NotFound("Negocio no encontrado.");
+        if (await _ctx.Users.AnyAsync(u => u.Username == req.Username))
+            return Conflict("El nombre de usuario ya existe.");
+
+        var user = new AppUser
+        {
+            Username = req.Username,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password),
+            FullName = req.FullName,
+            Rol = req.Rol
+        };
+        _ctx.Users.Add(user);
+        await _ctx.SaveChangesAsync();
+
+        _ctx.UsuarioNegocios.Add(new UsuarioNegocio { UserId = user.Id, TenantId = id });
+        await _ctx.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpDelete("{id}/usuarios/{userId}")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
+    public async Task<IActionResult> RemoverUsuario(int id, int userId)
+    {
+        var rel = await _ctx.UsuarioNegocios.FirstOrDefaultAsync(un => un.TenantId == id && un.UserId == userId);
+        if (rel == null) return NotFound();
+        _ctx.UsuarioNegocios.Remove(rel);
+        await _ctx.SaveChangesAsync();
+        return NoContent();
+    }
 }

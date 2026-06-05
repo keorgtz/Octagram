@@ -30,3 +30,26 @@ public class UpdateUserRequest
     public List<int> NegocioIds { get; set; } = new();
     public string? NewPassword { get; set; }
 }
+
+public class UsuarioNegocioDto
+{
+    public int UserId { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public string Username { get; set; } = string.Empty;
+    public UserRole Rol { get; set; }
+    public bool IsActive { get; set; }
+    public bool EsPrincipal { get; set; }
+}
+
+public class AsignarUsuarioRequest
+{
+    public int UserId { get; set; }
+}
+
+public class CrearUsuarioNegocioRequest
+{
+    public string Username { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
+    public UserRole Rol { get; set; } = UserRole.Repartidor;
+}

@@ -63,6 +63,32 @@ public class ApiService
     public Task<HttpResponseMessage> DeleteProductoAsync(int negocioId, int id)
         => _http.DeleteAsync($"api/negocios/{negocioId}/productos/{id}");
 
+    // ── Perfiles de precio ────────────────────────────────────────
+    public Task<List<PriceTierDto>?> GetPerfilesProductoAsync(int negocioId, int productoId)
+        => _http.GetFromJsonAsync<List<PriceTierDto>>($"api/negocios/{negocioId}/productos/{productoId}/perfiles");
+
+    public Task<HttpResponseMessage> CreatePerfilAsync(int negocioId, int productoId, UpsertPriceTierRequest req)
+        => _http.PostAsJsonAsync($"api/negocios/{negocioId}/productos/{productoId}/perfiles", req);
+
+    public Task<HttpResponseMessage> UpdatePerfilAsync(int negocioId, int productoId, int id, UpsertPriceTierRequest req)
+        => _http.PutAsJsonAsync($"api/negocios/{negocioId}/productos/{productoId}/perfiles/{id}", req);
+
+    public Task<HttpResponseMessage> DeletePerfilAsync(int negocioId, int productoId, int id)
+        => _http.DeleteAsync($"api/negocios/{negocioId}/productos/{productoId}/perfiles/{id}");
+
+    // ── Usuarios por negocio ──────────────────────────────────────
+    public Task<List<UsuarioNegocioDto>?> GetUsuariosNegocioAsync(int negocioId)
+        => _http.GetFromJsonAsync<List<UsuarioNegocioDto>>($"api/negocios/{negocioId}/usuarios");
+
+    public Task<HttpResponseMessage> AsignarUsuarioNegocioAsync(int negocioId, AsignarUsuarioRequest req)
+        => _http.PostAsJsonAsync($"api/negocios/{negocioId}/usuarios", req);
+
+    public Task<HttpResponseMessage> CrearUsuarioNegocioAsync(int negocioId, CrearUsuarioNegocioRequest req)
+        => _http.PostAsJsonAsync($"api/negocios/{negocioId}/usuarios/nuevo", req);
+
+    public Task<HttpResponseMessage> RemoverUsuarioNegocioAsync(int negocioId, int userId)
+        => _http.DeleteAsync($"api/negocios/{negocioId}/usuarios/{userId}");
+
     // ── Jornadas ──────────────────────────────────────────────────
     public Task<JornadaDto?> GetJornadaHoyAsync(int negocioId)
         => _http.GetFromJsonAsync<JornadaDto>($"api/jornadas/hoy?negocioId={negocioId}");
