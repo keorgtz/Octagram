@@ -35,7 +35,7 @@
                     <MudTh>Dirección</MudTh>
                     <MudTh Style="text-align:center;">Repartidores</MudTh>
                     <MudTh Style="text-align:center;">Estado</MudTh>
-                    <MudTh Style="width:80px;"></MudTh>
+                    <MudTh Style="width:72px;text-align:center;">Acciones</MudTh>
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd><span class="fw-600">@context.Nombre</span></MudTd>
@@ -50,20 +50,22 @@
                             @(context.IsActive ? "Activo" : "Inactivo")
                         </MudChip>
                     </MudTd>
-                    <MudTd Style="text-align:right;">
-                        <MudIconButton Icon="@Icons.Material.Rounded.Edit"
-                                       Size="Size.Small" Color="Color.Primary"
-                                       title="Editar"
-                                       OnClick="@(() => AbrirEditar(context))" />
-                        <MudIconButton Icon="@Icons.Material.Rounded.Delete"
-                                       Size="Size.Small" Color="Color.Error"
-                                       title="Desactivar"
-                                       OnClick="@(() => Eliminar(context))" />
+                    <MudTd Style="text-align:center;">
+                        <div style="display:inline-flex;gap:2px;align-items:center;">
+                            <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                                           Size="Size.Small" Color="Color.Default"
+                                           title="Editar"
+                                           OnClick="@(() => AbrirEditar(context))" />
+                            <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                           Size="Size.Small" Color="Color.Default"
+                                           title="Desactivar"
+                                           OnClick="@(() => Eliminar(context))" />
+                        </div>
                     </MudTd>
                 </RowTemplate>
                 <NoRecordsContent>
                     <div class="empty-state">
-                        <span class="material-symbols-rounded">store_off</span>
+                        <span class="material-symbols-rounded">storefront</span>
                         <p>No hay negocios registrados aún.</p>
                     </div>
                 </NoRecordsContent>

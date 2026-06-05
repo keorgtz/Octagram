@@ -45,7 +45,7 @@
                     <MudTh Style="text-align:center;">Rol</MudTh>
                     <MudTh>Negocios</MudTh>
                     <MudTh Style="text-align:center;">Estado</MudTh>
-                    <MudTh Style="width:80px;"></MudTh>
+                    <MudTh Style="width:72px;text-align:center;">Acciones</MudTh>
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd>
@@ -70,15 +70,17 @@
                             @(context.IsActive ? "Activo" : "Inactivo")
                         </MudChip>
                     </MudTd>
-                    <MudTd Style="text-align:right;">
-                        <MudIconButton Icon="@Icons.Material.Rounded.Edit"
-                                       Size="Size.Small" Color="Color.Primary"
-                                       title="Editar"
-                                       OnClick="@(() => AbrirEditar(context))" />
-                        <MudIconButton Icon="@Icons.Material.Rounded.PersonOff"
-                                       Size="Size.Small" Color="Color.Warning"
-                                       title="Desactivar"
-                                       OnClick="@(() => Desactivar(context))" />
+                    <MudTd Style="text-align:center;">
+                        <div style="display:inline-flex;gap:2px;align-items:center;">
+                            <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                                           Size="Size.Small" Color="Color.Default"
+                                           title="Editar"
+                                           OnClick="@(() => AbrirEditar(context))" />
+                            <MudIconButton Icon="@Icons.Material.Rounded.PersonOff"
+                                           Size="Size.Small" Color="Color.Default"
+                                           title="Desactivar"
+                                           OnClick="@(() => Desactivar(context))" />
+                        </div>
                     </MudTd>
                 </RowTemplate>
                 <NoRecordsContent>
