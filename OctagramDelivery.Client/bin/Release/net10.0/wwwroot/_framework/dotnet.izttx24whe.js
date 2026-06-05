@@ -5,7 +5,7 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
   "mainAssemblyName": "OctagramDelivery.Client",
   "applicationEnvironment": "Development",
   "resources": {
-    "hash": "sha256-J/yBRO7q9qQGMifGxPBsCi0nUaGvpnoxtNIXlZmfAHw=",
+    "hash": "sha256-kVVbeQEGvClLwJQtgJN3Th27jpXhftm0DkrglmrPg1o=",
     "jsModuleNative": [
       {
         "name": "dotnet.native.rjbmzc4jpg.js"
@@ -1314,48 +1314,48 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
       },
       {
         "virtualPath": "OctagramDelivery.Application.wasm",
-        "name": "OctagramDelivery.Application.ej0y222ovi.wasm",
-        "hash": "sha256-xh70bZjuypyn3nE4BMjtRsmuWA0KxytcrcWI2L8Ld14=",
+        "name": "OctagramDelivery.Application.zf3nxahy74.wasm",
+        "hash": "sha256-0dXrszz6TZO6D1heIbBWWguSxsXUKfnkRN+ZagbtJl0=",
         "cache": "force-cache"
       },
       {
         "virtualPath": "OctagramDelivery.Domain.wasm",
-        "name": "OctagramDelivery.Domain.7a38usv1fu.wasm",
-        "hash": "sha256-n8DoJACt+NtoIhfek4VXQdDw8+TLu4hmdYgUcnstHLI=",
+        "name": "OctagramDelivery.Domain.95t1gavd4g.wasm",
+        "hash": "sha256-zfF1ZsFiutsuVWl3dewc0Mu3VUY7ID0hBHnuWLHwGG4=",
         "cache": "force-cache"
       },
       {
         "virtualPath": "OctagramDelivery.Client.wasm",
-        "name": "OctagramDelivery.Client.ir5d07b3ol.wasm",
-        "hash": "sha256-krUve0hgDryXvTW55sWRNvmvIqzzGl117JolQ6zv984=",
+        "name": "OctagramDelivery.Client.pgzt7m4gcu.wasm",
+        "hash": "sha256-N+j41/C331eD6cfcx3qBLbm0t8OzO2h7raWgkA6OMfY=",
         "cache": "force-cache"
       }
     ],
     "pdb": [
       {
         "virtualPath": "OctagramDelivery.Application.pdb",
-        "name": "OctagramDelivery.Application.n5b83wa7n1.pdb",
-        "hash": "sha256-hVKzsouvTxyh/B+19sc0dvZV/9lKIBJpREik/iYhn1g=",
+        "name": "OctagramDelivery.Application.w24smiull0.pdb",
+        "hash": "sha256-WH4UShR14KaX7FIN1lr7HnLRzzEZCvO17v67Dt7KZjY=",
         "cache": "force-cache"
       },
       {
         "virtualPath": "OctagramDelivery.Domain.pdb",
-        "name": "OctagramDelivery.Domain.7o1o8bq5uv.pdb",
-        "hash": "sha256-ie2zHIuLbfmaQcBni61T9SQB2pAnzgHvokuH5fNPPmU=",
+        "name": "OctagramDelivery.Domain.91vcwrrv5p.pdb",
+        "hash": "sha256-4/sZcmu97HHFkuzOKN7FZMNeq4DMrPo95UUOHBm4VZE=",
         "cache": "force-cache"
       },
       {
         "virtualPath": "OctagramDelivery.Client.pdb",
-        "name": "OctagramDelivery.Client.mfu824ue6t.pdb",
-        "hash": "sha256-En6JX3uEvxkYhCSXFUamuY5nYZC+rRBG2JHNzx848q8=",
+        "name": "OctagramDelivery.Client.opzsc92pvp.pdb",
+        "hash": "sha256-zFP9gzLBc1BV5+ZOW+ZmWmKudb2TKjSxnG3QksaYA/Q=",
         "cache": "force-cache"
       }
     ]
   },
   "debugLevel": -1,
   "appsettings": [
-    "../appsettings.Development.json",
-    "../appsettings.json"
+    "../appsettings.json",
+    "../appsettings.Development.json"
   ],
   "globalizationMode": "sharded",
   "extensions": {
