@@ -1487,204 +1487,9 @@ body,
         border-bottom: none !important;
     }
 
-    /* Barra de búsqueda (ToolBarContent) mantiene fondo */
-    .mud-table-toolbar {
-        background: var(--white, #fff) !important;
-        border-radius: 14px !important;
-        margin-bottom: 8px !important;
-        box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06) !important;
-        padding: 10px 14px !important;
-    }
-
-    /* Convertir estructura de tabla HTML a bloques */
-    .mud-table-container,
-    .mud-table-root,
-    .mud-table-body  { display: block !important; width: 100% !important; overflow: visible !important; }
-
-    /* Ocultar cabecera de columnas */
-    .mud-table-head  { display: none !important; }
-
-    /* Cada fila de datos → tarjeta independiente */
-    .mud-table-body .mud-table-row:not(.mud-table-row-expended) {
-        display: block !important;
-        background: var(--white, #fff) !important;
-        border-radius: 14px !important;
-        box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06) !important;
-        margin-bottom: 10px !important;
-        overflow: hidden !important;
-        border: none !important;
-        transition: none !important;
-    }
-
-    /* Cada celda → fila dentro de la tarjeta */
-    .mud-table-body .mud-table-row:not(.mud-table-row-expended) .mud-table-cell {
-        display: flex !important;
-        align-items: center !important;
-        padding: 10px 14px !important;
-        border-bottom: 1px solid var(--gray-line, #E5E7EB) !important;
-        white-space: normal !important;
-        background: transparent !important;
-        min-height: unset !important;
-        text-align: left !important;
-    }
-
-    .mud-table-body .mud-table-row:not(.mud-table-row-expended) .mud-table-cell:last-child {
-        border-bottom: none !important;
-    }
-
-    /* Primera celda más prominente (nombre / campo principal) */
-    .mud-table-body .mud-table-row:not(.mud-table-row-expended) .mud-table-cell:first-child {
-        padding-top: 12px !important;
-        padding-bottom: 10px !important;
-        font-size: 14px !important;
-    }
-
-    /* Celda de checkbox (MultiSelection) compacta al inicio */
-    .mud-table-body .mud-table-row .mud-table-cell-checkbox {
-        padding: 8px 14px !important;
-        justify-content: flex-start !important;
-        font-size: unset !important;
-    }
-
-    /* Sin hover en mobile */
-    .mud-table-body .mud-table-row:hover .mud-table-cell { background: transparent !important; }
-
-    /* Filas expandidas (GestionProductos) → visualmente conectadas bajo el card padre */
-    .mud-table-body .mud-table-row-expended {
-        display: block !important;
-        background: var(--page-bg, #F2F3F7) !important;
-        border-radius: 0 0 14px 14px !important;
-        box-shadow: none !important;
-        margin-top: -10px !important;
-        margin-bottom: 10px !important;
-        overflow: hidden !important;
-    }
-    .mud-table-body .mud-table-row-expended .mud-table-cell {
-        display: flex !important;
-        background: var(--page-bg, #F2F3F7) !important;
-        padding: 10px 14px !important;
-        border-bottom: 1px solid rgba(0,0,0,.06) !important;
-        white-space: normal !important;
-    }
-    .mud-table-body .mud-table-row-expended .mud-table-cell:last-child {
-        border-bottom: none !important;
-    }
-
-    /* Paginación mantiene fondo */
-    .mud-table-pagination {
-        background: var(--white, #fff) !important;
-        border-radius: 14px !important;
-        box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06) !important;
-        padding: 4px 8px !important;
-        margin-top: 8px !important;
-    }
-
     /* Renderizado dual: ocultar tabla desktop, mostrar cards mobile */
     .desk-only { display: none !important; }
-    .mob-cards { display: flex; flex-direction: column; }
-
-    /* Tarjetas de repartidor (dashboard mobile) */
-    .mob-rep-card {
-        padding: 12px 16px;
-        border-bottom: 1px solid var(--gray-line, #E5E7EB);
-    }
-    .mob-rep-card:last-child { border-bottom: none; }
-    .mob-rep-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 8px;
-    }
-    .mob-rep-stats {
-        display: flex;
-        gap: 16px;
-        flex-wrap: wrap;
-    }
-    .mob-rep-stat {
-        display: flex;
-        flex-direction: column;
-        gap: 1px;
-    }
-    .mob-stat-label {
-        font-size: 10px;
-        color: var(--gray-muted, #6B7280);
-        text-transform: uppercase;
-        letter-spacing: .04em;
-        font-weight: 600;
-    }
-
-    /* Tarjetas de lista para catálogos (mob-list-card) */
-    .mob-list-card {
-        background: #fff;
-        border-radius: 12px;
-        padding: 12px 14px;
-        box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06);
-        margin-bottom: 8px;
-    }
-    .mob-list-card:last-child { margin-bottom: 0; }
-    .mob-list-card-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 8px;
-    }
-    .mob-list-card-info { flex: 1; min-width: 0; }
-    .mob-list-card-title {
-        font-weight: 600;
-        font-size: 14px;
-        color: var(--gray-dark, #1C1E26);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .mob-list-card-sub {
-        font-size: 12px;
-        color: var(--gray-muted, #6B7280);
-        margin-top: 2px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .mob-list-card-meta {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-top: 8px;
-    }
-    .mob-list-card-meta-item {
-        font-size: 11px;
-        color: var(--gray-muted, #6B7280);
-        display: flex;
-        align-items: center;
-        gap: 3px;
-    }
-    .mob-list-card-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 0;
-        padding-top: 6px;
-        margin-top: 6px;
-        border-top: 1px solid var(--gray-line, #E5E7EB);
-    }
-    .mob-list-card-expand {
-        background: var(--page-bg, #F2F3F7);
-        border-radius: 0 0 10px 10px;
-        padding: 10px 14px;
-        margin: 8px -14px -12px;
-        font-size: 12px;
-    }
-    .mob-search-bar {
-        background: #fff;
-        border-radius: 10px;
-        padding: 8px 12px;
-        box-shadow: 0 1px 3px rgba(0,0,0,.07);
-        margin-bottom: 10px;
-    }
-    .mob-card-selected {
-        outline: 2px solid var(--primary, #1EB980);
-        outline-offset: -1px;
-    }
+    .mob-cards { display: flex; flex-direction: column; padding: 4px 0; }
 
     /* Grid clientes → columna única */
     .neg-clientes-grid   { grid-template-columns: 1fr; min-height: unset; }
@@ -1745,6 +1550,246 @@ body,
 /* ── Renderizado dual desktop/mobile ── */
 .desk-only { display: block; }
 .mob-cards  { display: none; }
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE LIST CARDS — sistema de tarjetas para vistas móviles
+   Ocultas en desktop via .mob-cards { display:none }.
+   Se definen aquí (fuera del media query) para máxima fiabilidad.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Tarjeta contenedor */
+.mob-lc {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px 16px 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06);
+    margin-bottom: 10px;
+}
+.mob-lc:last-child { margin-bottom: 0; }
+
+/* Fila superior: nombre (izquierda) + badge (derecha) */
+.mob-lc-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 2px;
+}
+.mob-lc-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gray-dark, #1C1E26);
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Subtítulo */
+.mob-lc-sub {
+    font-size: 12px;
+    color: var(--gray-muted, #6B7280);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+}
+.mob-lc-sub2 {
+    font-size: 12px;
+    font-family: monospace;
+    color: var(--primary, #1EB980);
+    margin-bottom: 4px;
+}
+
+/* Badges de estado / rol — HTML puro, sin MudBlazor */
+.mob-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    flex-shrink: 0;
+    white-space: nowrap;
+    line-height: 1.4;
+}
+.mob-badge-green  { background: #D1FAE5; color: #065F46; }
+.mob-badge-gray   { background: #F3F4F6; color: #6B7280; }
+.mob-badge-red    { background: #FEE2E2; color: #991B1B; }
+.mob-badge-blue   { background: #DBEAFE; color: #1E40AF; }
+.mob-badge-amber  { background: #FEF3C7; color: #92400E; }
+.mob-badge-violet { background: #EDE9FE; color: #5B21B6; }
+.mob-badge-or     { background: #FED7AA; color: #9A3412; }
+.mob-badge-em     { background: #FEF3C7; color: #78350F; }
+
+/* Grid de estadísticas: label arriba, valor abajo */
+.mob-lc-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 8px 0 4px;
+    border-top: 1px solid var(--gray-line, #E5E7EB);
+    margin-top: 6px;
+}
+.mob-lc-stat { display: flex; flex-direction: column; gap: 1px; }
+.mob-lc-key {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    font-weight: 600;
+    color: var(--gray-muted, #6B7280);
+}
+.mob-lc-val {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-dark, #1C1E26);
+}
+.mob-lc-val.em     { color: var(--em,  #F59E0B); }
+.mob-lc-val.vi     { color: var(--vi,  #6366F1); }
+.mob-lc-val.in     { color: var(--in,  #10B981); }
+.mob-lc-val.or     { color: var(--or,  #F97316); }
+.mob-lc-val.primary{ color: var(--primary, #1EB980); }
+
+/* Etiquetas de metadatos pequeños */
+.mob-lc-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 6px 0 2px;
+}
+.mob-lc-tag {
+    background: var(--page-bg, #F2F3F7);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 11px;
+    color: var(--gray-muted, #6B7280);
+    font-weight: 500;
+}
+
+/* Fila de acciones — botones HTML nativos */
+.mob-lc-acts {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0;
+    padding-top: 6px;
+    margin-top: 6px;
+    border-top: 1px solid var(--gray-line, #E5E7EB);
+}
+.mob-act-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 6px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-dark, #1C1E26);
+    font-family: inherit;
+    transition: background 120ms;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    line-height: 1;
+}
+.mob-act-btn:active { background: var(--gray-line, #E5E7EB); }
+.mob-act-btn .material-symbols-rounded { font-size: 19px; }
+.mob-act-btn.mob-act-primary { color: var(--primary, #1EB980); }
+.mob-act-btn.mob-act-danger  { color: #EF4444; }
+
+/* Sección expandible (ej. perfiles de producto) */
+.mob-lc-expand {
+    background: var(--page-bg, #F2F3F7);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 8px;
+}
+.mob-lc-expand-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.mob-lc-expand-row:last-child { border-bottom: none; }
+
+/* Modo selección (clientes) */
+.mob-lc.mob-lc-selected {
+    outline: 2px solid var(--primary, #1EB980);
+    outline-offset: -1px;
+}
+.mob-lc-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 2px solid var(--gray-line, #E5E7EB);
+    background: #fff;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 120ms;
+    margin-right: 10px;
+}
+.mob-lc-check.on {
+    border-color: var(--primary, #1EB980);
+    background: var(--primary, #1EB980);
+}
+.mob-lc-check.on::after {
+    content: '';
+    width: 11px;
+    height: 7px;
+    border-left: 2px solid #fff;
+    border-bottom: 2px solid #fff;
+    transform: rotate(-45deg) translate(1px, -1px);
+    display: block;
+}
+
+/* Input de búsqueda en versión móvil */
+.mob-search-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 0 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.07), 0 0 0 .5px rgba(0,0,0,.05);
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+/* Rep-card dentro de MudCardContent (dashboard) */
+.mob-rep-row {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--gray-line, #E5E7EB);
+}
+.mob-rep-row:last-child { border-bottom: none; }
+.mob-rep-row-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+.mob-rep-row-name {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--gray-dark, #1C1E26);
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.mob-rep-row-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+}
 
 /* ── Selección masiva – actionbar ── */
 .seleccion-actionbar {

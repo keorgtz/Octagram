@@ -125,35 +125,30 @@
                 }
                 @foreach (var r in _data.Repartidores)
                 {
-                    <div class="mob-list-card">
-                        <div class="mob-list-card-header">
-                            <div class="mob-list-card-info">
-                                <div class="mob-list-card-title">@r.FullName</div>
-                                <div class="mob-list-card-sub" style="color:var(--gray-muted);">
-                                    @r.ClientesAtendidos/@r.TotalClientes clientes
-                                </div>
-                            </div>
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
-                                     Color="@(r.Estado == JornadaEstado.Abierta ? Color.Success : Color.Default)">
+                    <div class="mob-lc">
+                        <div class="mob-lc-top">
+                            <span class="mob-lc-name">@r.FullName</span>
+                            <span class="mob-badge @(r.Estado == JornadaEstado.Abierta ? "mob-badge-green" : "mob-badge-gray")">
                                 @(r.Estado == JornadaEstado.Abierta ? "Activo" : "Cerrado")
-                            </MudChip>
+                            </span>
                         </div>
-                        <div class="mob-rep-stats" style="margin-top:8px;">
-                            <div class="mob-rep-stat">
-                                <span class="mob-stat-label">Entregado</span>
-                                <span class="tabnum text-em">@r.TotalEntregado.ToString("C0", _mx)</span>
+                        <div class="mob-lc-sub">@r.ClientesAtendidos/@r.TotalClientes clientes atendidos</div>
+                        <div class="mob-lc-stats">
+                            <div class="mob-lc-stat">
+                                <span class="mob-lc-key">Entregado</span>
+                                <span class="mob-lc-val em tabnum">@r.TotalEntregado.ToString("C0", _mx)</span>
                             </div>
-                            <div class="mob-rep-stat">
-                                <span class="mob-stat-label">Devuelto</span>
-                                <span class="tabnum text-or">@r.TotalDevuelto.ToString("C0", _mx)</span>
+                            <div class="mob-lc-stat">
+                                <span class="mob-lc-key">Devuelto</span>
+                                <span class="mob-lc-val or tabnum">@r.TotalDevuelto.ToString("C0", _mx)</span>
                             </div>
-                            <div class="mob-rep-stat">
-                                <span class="mob-stat-label">Neto</span>
-                                <span class="tabnum text-vi fw-600">@r.TotalNeto.ToString("C0", _mx)</span>
+                            <div class="mob-lc-stat">
+                                <span class="mob-lc-key">Neto</span>
+                                <span class="mob-lc-val vi tabnum fw-600">@r.TotalNeto.ToString("C0", _mx)</span>
                             </div>
-                            <div class="mob-rep-stat">
-                                <span class="mob-stat-label">Efectivo</span>
-                                <span class="tabnum text-in fw-700">@r.TotalEfectivo.ToString("C0", _mx)</span>
+                            <div class="mob-lc-stat">
+                                <span class="mob-lc-key">Efectivo</span>
+                                <span class="mob-lc-val in tabnum fw-700">@r.TotalEfectivo.ToString("C0", _mx)</span>
                             </div>
                         </div>
                     </div>

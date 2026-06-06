@@ -46,8 +46,7 @@
                             <span class="fw-600 text-primary">@context.TotalRepartidores</span>
                         </MudTd>
                         <MudTd Style="text-align:center;">
-                            <MudChip T="string"
-                                     Color="@(context.IsActive ? Color.Success : Color.Default)"
+                            <MudChip T="string" Color="@(context.IsActive ? Color.Success : Color.Default)"
                                      Size="Size.Small" Variant="Variant.Filled">
                                 @(context.IsActive ? "Activo" : "Inactivo")
                             </MudChip>
@@ -55,16 +54,13 @@
                         <MudTd Style="text-align:center;">
                             <div style="display:inline-flex;gap:2px;align-items:center;">
                                 <MudIconButton Icon="@Icons.Material.Rounded.ManageAccounts"
-                                               Size="Size.Small" Color="Color.Primary"
-                                               title="Gestionar negocio"
+                                               Size="Size.Small" Color="Color.Primary" title="Gestionar"
                                                OnClick="@(() => AbrirGestionar(context))" />
                                 <MudIconButton Icon="@Icons.Material.Rounded.Edit"
-                                               Size="Size.Small" Color="Color.Default"
-                                               title="Editar"
+                                               Size="Size.Small" Color="Color.Default" title="Editar"
                                                OnClick="@(() => AbrirEditar(context))" />
                                 <MudIconButton Icon="@Icons.Material.Rounded.Delete"
-                                               Size="Size.Small" Color="Color.Default"
-                                               title="Desactivar"
+                                               Size="Size.Small" Color="Color.Default" title="Desactivar"
                                                OnClick="@(() => Eliminar(context))" />
                             </div>
                         </MudTd>
@@ -88,34 +84,31 @@
                 }
                 @foreach (var t in _negocios)
                 {
-                    <div class="mob-list-card">
-                        <div class="mob-list-card-header">
-                            <div class="mob-list-card-info">
-                                <div class="mob-list-card-title">@t.Nombre</div>
-                                <div class="mob-list-card-sub">@(t.Direccion ?? "Sin dirección")</div>
-                            </div>
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
-                                     Color="@(t.IsActive ? Color.Success : Color.Default)">
+                    <div class="mob-lc">
+                        <div class="mob-lc-top">
+                            <span class="mob-lc-name">@t.Nombre</span>
+                            <span class="mob-badge @(t.IsActive ? "mob-badge-green" : "mob-badge-gray")">
                                 @(t.IsActive ? "Activo" : "Inactivo")
-                            </MudChip>
-                        </div>
-                        <div class="mob-list-card-meta">
-                            <span class="mob-list-card-meta-item">
-                                <span class="material-symbols-rounded" style="font-size:14px;">delivery_dining</span>
-                                <span class="fw-600 text-primary">@t.TotalRepartidores</span>
-                                repartidores
                             </span>
                         </div>
-                        <div class="mob-list-card-actions">
-                            <MudIconButton Icon="@Icons.Material.Rounded.ManageAccounts"
-                                           Size="Size.Small" Color="Color.Primary"
-                                           title="Gestionar" OnClick="@(() => AbrirGestionar(t))" />
-                            <MudIconButton Icon="@Icons.Material.Rounded.Edit"
-                                           Size="Size.Small" Color="Color.Default"
-                                           title="Editar" OnClick="@(() => AbrirEditar(t))" />
-                            <MudIconButton Icon="@Icons.Material.Rounded.Delete"
-                                           Size="Size.Small" Color="Color.Default"
-                                           title="Desactivar" OnClick="@(() => Eliminar(t))" />
+                        <div class="mob-lc-sub">@(t.Direccion ?? "Sin dirección registrada")</div>
+                        <div class="mob-lc-stats">
+                            <div class="mob-lc-stat">
+                                <span class="mob-lc-key">Repartidores</span>
+                                <span class="mob-lc-val primary">@t.TotalRepartidores</span>
+                            </div>
+                        </div>
+                        <div class="mob-lc-acts">
+                            <button class="mob-act-btn mob-act-primary" @onclick="@(() => AbrirGestionar(t))">
+                                <span class="material-symbols-rounded">manage_accounts</span>
+                                Gestionar
+                            </button>
+                            <button class="mob-act-btn" @onclick="@(() => AbrirEditar(t))">
+                                <span class="material-symbols-rounded">edit</span>
+                            </button>
+                            <button class="mob-act-btn mob-act-danger" @onclick="@(() => Eliminar(t))">
+                                <span class="material-symbols-rounded">delete</span>
+                            </button>
                         </div>
                     </div>
                 }

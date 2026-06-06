@@ -204,40 +204,34 @@
                 @foreach (var p in _productos)
                 {
                     var expandido = _expandedIds.Contains(p.Id);
-                    <div class="mob-list-card">
-                        <div class="mob-list-card-header">
-                            <div class="mob-list-card-info">
-                                <div class="mob-list-card-title">@p.Nombre</div>
-                                <div class="mob-list-card-sub">
-                                    @p.PrecioPorUnidad.ToString("C", _mx)
-                                    @if (p.TipoMedida == TipoMedida.Gramaje)
-                                    { <span> / KG</span> }
-                                </div>
-                            </div>
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
-                                     Color="@(p.TipoMedida == TipoMedida.Gramaje ? Color.Info : Color.Default)">
+                    <div class="mob-lc">
+                        <div class="mob-lc-top">
+                            <span class="mob-lc-name">@p.Nombre</span>
+                            <span class="mob-badge @(p.TipoMedida == TipoMedida.Gramaje ? "mob-badge-blue" : "mob-badge-gray")">
                                 @(p.TipoMedida == TipoMedida.Gramaje ? "Gramaje" : "Pieza")
-                            </MudChip>
+                            </span>
                         </div>
-                        <div class="mob-list-card-meta">
-                            @if (p.Perfiles.Count > 0)
-                            {
-                                <span class="mob-list-card-meta-item">
-                                    <span class="material-symbols-rounded" style="font-size:13px;">price_change</span>
-                                    <span class="fw-600 text-primary">@p.Perfiles.Count</span> perfiles de precio
+                        <div class="mob-lc-stats">
+                            <div class="mob-lc-stat">
+                                <span class="mob-lc-key">Precio base</span>
+                                <span class="mob-lc-val">
+                                    @p.PrecioPorUnidad.ToString("C", _mx)
+                                    @if (p.TipoMedida == TipoMedida.Gramaje) { <span style="font-size:10px;color:var(--gray-muted);"> /KG</span> }
                                 </span>
-                            }
-                            else
-                            {
-                                <span class="mob-list-card-meta-item">Sin perfiles — precio base para todos</span>
-                            }
+                            </div>
+                            <div class="mob-lc-stat">
+                                <span class="mob-lc-key">Perfiles</span>
+                                <span class="mob-lc-val @(p.Perfiles.Count > 0 ? "primary" : "")">
+                                    @(p.Perfiles.Count > 0 ? p.Perfiles.Count.ToString() : "—")
+                                </span>
+                            </div>
                         </div>
-                        @if (expandido)
+                        @if (expandido && p.Perfiles.Any())
                         {
-                            <div class="mob-list-card-expand">
+                            <div class="mob-lc-expand">
                                 @foreach (var tier in p.Perfiles.OrderBy(t => t.Numero))
                                 {
-                                    <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--gray-line);">
+                                    <div class="mob-lc-expand-row">
                                         <span>
                                             <span class="fw-700 text-primary" style="margin-right:6px;">@tier.Numero</span>
                                             <span class="text-muted">@(tier.Etiqueta ?? "—")</span>
@@ -254,16 +248,27 @@
                                 </div>
                             </div>
                         }
-                        <div class="mob-list-card-actions">
-                            <MudIconButton Icon="@(expandido ? Icons.Material.Rounded.ExpandLess : Icons.Material.Rounded.ExpandMore)"
-                                           Size="Size.Small" Color="Color.Default"
-                                           title="Ver perfiles" OnClick="@(() => ToggleExpand(p.Id))" />
-                            <MudIconButton Icon="@Icons.Material.Rounded.Edit"
-                                           Size="Size.Small" Color="Color.Default"
-                                           title="Editar" OnClick="@(() => AbrirEditar(p))" />
-                            <MudIconButton Icon="@Icons.Material.Rounded.Delete"
-                                           Size="Size.Small" Color="Color.Default"
-                                           title="Desactivar" OnClick="@(() => Eliminar(p))" />
+                        <div class="mob-lc-acts">
+                            @if (p.Perfiles.Any())
+                            {
+                                <button class="mob-act-btn" @onclick="@(() => ToggleExpand(p.Id))">
+                                    <span class="material-symbols-rounded">@(expandido ? "expand_less" : "price_change")</span>
+                                    @(expandido ? "Ocultar" : "Perfiles")
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="mob-act-btn mob-act-primary" @onclick="@(() => AbrirCrearTier(p))">
+                                    <span class="material-symbols-rounded">add</span>
+                                    Perfil
+                                </button>
+                            }
+                            <button class="mob-act-btn" @onclick="@(() => AbrirEditar(p))">
+                                <span class="material-symbols-rounded">edit</span>
+                            </button>
+                            <button class="mob-act-btn mob-act-danger" @onclick="@(() => Eliminar(p))">
+                                <span class="material-symbols-rounded">delete</span>
+                            </button>
                         </div>
                     </div>
                 }

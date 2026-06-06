@@ -95,7 +95,7 @@
             </div>
             <!-- Móvil -->
             <div class="mob-cards">
-                <div class="mob-search-bar">
+                <div class="mob-search-box">
                     <MudTextField @bind-Value="_busqueda"
                                   Placeholder="Buscar por usuario o nombre..."
                                   Adornment="Adornment.Start"
@@ -114,36 +114,31 @@
                 }
                 @foreach (var u in usuariosFiltrados)
                 {
-                    <div class="mob-list-card">
-                        <div class="mob-list-card-header">
-                            <div class="mob-list-card-info">
-                                <div class="mob-list-card-title">@u.FullName</div>
-                                <div class="mob-list-card-sub" style="font-family:monospace;color:var(--primary);">@u.Username</div>
-                            </div>
-                            <MudChip T="string" Color="@GetRolColor(u.Rol)" Size="Size.Small" Variant="Variant.Filled">
-                                @u.Rol
-                            </MudChip>
+                    <div class="mob-lc">
+                        <div class="mob-lc-top">
+                            <span class="mob-lc-name">@u.FullName</span>
+                            <span class="mob-badge @GetRolBadge(u.Rol)">@u.Rol</span>
                         </div>
-                        <div class="mob-list-card-meta">
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
-                                     Color="@(u.IsActive ? Color.Success : Color.Default)">
+                        <div class="mob-lc-sub2">@u.Username</div>
+                        <div class="mob-lc-tags">
+                            <span class="mob-badge @(u.IsActive ? "mob-badge-green" : "mob-badge-gray")">
                                 @(u.IsActive ? "Activo" : "Inactivo")
-                            </MudChip>
+                            </span>
                             @if (u.NegocioNombres.Any())
                             {
-                                <span class="mob-list-card-meta-item">
-                                    <span class="material-symbols-rounded" style="font-size:13px;">store</span>
+                                <span class="mob-lc-tag">
                                     @string.Join(", ", u.NegocioNombres.Take(2))
                                 </span>
                             }
                         </div>
-                        <div class="mob-list-card-actions">
-                            <MudIconButton Icon="@Icons.Material.Rounded.Edit"
-                                           Size="Size.Small" Color="Color.Default"
-                                           title="Editar" OnClick="@(() => AbrirEditar(u))" />
-                            <MudIconButton Icon="@Icons.Material.Rounded.PersonOff"
-                                           Size="Size.Small" Color="Color.Default"
-                                           title="Desactivar" OnClick="@(() => Desactivar(u))" />
+                        <div class="mob-lc-acts">
+                            <button class="mob-act-btn" @onclick="@(() => AbrirEditar(u))">
+                                <span class="material-symbols-rounded">edit</span>
+                                Editar
+                            </button>
+                            <button class="mob-act-btn mob-act-danger" @onclick="@(() => Desactivar(u))">
+                                <span class="material-symbols-rounded">person_off</span>
+                            </button>
                         </div>
                     </div>
                 }
@@ -296,5 +291,13 @@
         UserRole.Gerente    => Color.Warning,
         UserRole.Supervisor => Color.Info,
         _                   => Color.Success
+    };
+
+    private static string GetRolBadge(UserRole r) => r switch
+    {
+        UserRole.Admin      => "mob-badge-red",
+        UserRole.Gerente    => "mob-badge-amber",
+        UserRole.Supervisor => "mob-badge-blue",
+        _                   => "mob-badge-green"
     };
 }

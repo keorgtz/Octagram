@@ -94,28 +94,27 @@
                 }
                 @foreach (var j in _jornadas)
                 {
-                    <div class="mob-list-card">
-                        <div class="mob-list-card-header">
-                            <div class="mob-list-card-info">
-                                <div class="mob-list-card-title">@j.RepartidorNombre</div>
-                                <div class="mob-list-card-sub">@j.NegocioNombre · @j.Fecha.ToString("dd/MM/yyyy")</div>
-                            </div>
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
-                                     Color="@(j.Estado == JornadaEstado.Revisada ? Color.Success : Color.Default)">
+                    <div class="mob-lc">
+                        <div class="mob-lc-top">
+                            <span class="mob-lc-name">@j.RepartidorNombre</span>
+                            <span class="mob-badge @(j.Estado == JornadaEstado.Revisada ? "mob-badge-green" : "mob-badge-gray")">
                                 @(j.Estado == JornadaEstado.Cerrada ? "Cerrada" : "Revisada")
-                            </MudChip>
-                        </div>
-                        <div class="mob-list-card-meta">
-                            <span class="tabnum fw-700 text-vi" style="font-size:16px;">
-                                @j.TotalNeto.ToString("C", _mx)
                             </span>
                         </div>
-                        <div class="mob-list-card-actions">
-                            <MudButton StartIcon="@Icons.Material.Rounded.Assessment"
-                                       Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
-                                       OnClick="@(() => Nav.NavigateTo($"/reporte/{j.Id}"))">
+                        <div class="mob-lc-sub">@j.NegocioNombre · @j.Fecha.ToString("dd MMM yyyy", _mx)</div>
+                        <div class="mob-lc-stats">
+                            <div class="mob-lc-stat">
+                                <span class="mob-lc-key">Total Neto</span>
+                                <span class="mob-lc-val vi tabnum fw-700" style="font-size:16px;">
+                                    @j.TotalNeto.ToString("C", _mx)
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mob-lc-acts">
+                            <button class="mob-act-btn mob-act-primary" @onclick="@(() => Nav.NavigateTo($"/reporte/{j.Id}"))">
+                                <span class="material-symbols-rounded">assessment</span>
                                 Ver reporte
-                            </MudButton>
+                            </button>
                         </div>
                     </div>
                 }

@@ -127,7 +127,7 @@
             </div>
             <!-- Móvil -->
             <div class="mob-cards">
-                <div class="mob-search-bar">
+                <div class="mob-search-box">
                     <MudTextField @bind-Value="_busqueda"
                                   Placeholder="Buscar cliente..."
                                   Adornment="Adornment.Start"
@@ -147,56 +147,51 @@
                 @foreach (var c in clientesFiltrados)
                 {
                     var seleccionado = _seleccionados.Contains(c);
-                    <div class="mob-list-card @(seleccionado ? "mob-card-selected" : "")"
+                    <div class="mob-lc @(seleccionado ? "mob-lc-selected" : "")"
                          @onclick="@(() => { if (_modoSeleccion) ToggleSeleccion(c); })">
-                        <div class="mob-list-card-header">
+                        <div class="mob-lc-top">
                             @if (_modoSeleccion)
                             {
-                                <MudCheckBox T="bool" Value="seleccionado" Class="mr-1"
-                                             Color="Color.Primary"
-                                             ValueChanged="@(_ => ToggleSeleccion(c))" />
+                                <div class="mob-lc-check @(seleccionado ? "on" : "")"></div>
                             }
-                            <div class="mob-list-card-info">
-                                <div class="mob-list-card-title">@c.Nombre</div>
-                                @if (!string.IsNullOrEmpty(c.Direccion))
-                                {
-                                    <div class="mob-list-card-sub">@c.Direccion</div>
-                                }
-                                else if (!string.IsNullOrEmpty(c.Telefono))
-                                {
-                                    <div class="mob-list-card-sub">@c.Telefono</div>
-                                }
-                            </div>
-                            <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
-                                     Color="@(c.IsActive ? Color.Success : Color.Default)">
+                            <span class="mob-lc-name">@c.Nombre</span>
+                            <span class="mob-badge @(c.IsActive ? "mob-badge-green" : "mob-badge-gray")">
                                 @(c.IsActive ? "Activo" : "Inactivo")
-                            </MudChip>
-                        </div>
-                        <div class="mob-list-card-meta">
-                            @if (c.Productos.Count > 0)
-                            {
-                                <span class="mob-list-card-meta-item">
-                                    <span class="material-symbols-rounded" style="font-size:13px;">inventory_2</span>
-                                    <span class="fw-600 text-primary">@c.Productos.Count</span> productos
-                                </span>
-                            }
-                            <span class="mob-list-card-meta-item">
-                                <span class="material-symbols-rounded" style="font-size:13px;">calendar_today</span>
-                                @FormatDias(c.DiasEntrega)
                             </span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(c.Direccion))
+                        {
+                            <div class="mob-lc-sub">@c.Direccion</div>
+                        }
+                        else if (!string.IsNullOrEmpty(c.Telefono))
+                        {
+                            <div class="mob-lc-sub">@c.Telefono</div>
+                        }
+                        <div class="mob-lc-stats">
+                            <div class="mob-lc-stat">
+                                <span class="mob-lc-key">Productos</span>
+                                <span class="mob-lc-val @(c.Productos.Count > 0 ? "primary" : "")">
+                                    @(c.Productos.Count > 0 ? c.Productos.Count.ToString() : "—")
+                                </span>
+                            </div>
+                            <div class="mob-lc-stat">
+                                <span class="mob-lc-key">Días entrega</span>
+                                <span class="mob-lc-val" style="font-size:12px;">@FormatDias(c.DiasEntrega)</span>
+                            </div>
                         </div>
                         @if (!_modoSeleccion)
                         {
-                            <div class="mob-list-card-actions">
-                                <MudIconButton Icon="@Icons.Material.Rounded.Edit"
-                                               Size="Size.Small" Color="Color.Default"
-                                               title="Editar" OnClick="@(() => AbrirEditar(c))" />
-                                <MudIconButton Icon="@Icons.Material.Rounded.Inventory"
-                                               Size="Size.Small" Color="Color.Default"
-                                               title="Asignar productos" OnClick="@(() => AbrirProductos(c))" />
-                                <MudIconButton Icon="@Icons.Material.Rounded.Delete"
-                                               Size="Size.Small" Color="Color.Default"
-                                               title="Desactivar" OnClick="@(() => Eliminar(c))" />
+                            <div class="mob-lc-acts">
+                                <button class="mob-act-btn" @onclick:stopPropagation="true" @onclick="@(() => AbrirEditar(c))">
+                                    <span class="material-symbols-rounded">edit</span>
+                                </button>
+                                <button class="mob-act-btn mob-act-primary" @onclick:stopPropagation="true" @onclick="@(() => AbrirProductos(c))">
+                                    <span class="material-symbols-rounded">inventory_2</span>
+                                    Productos
+                                </button>
+                                <button class="mob-act-btn mob-act-danger" @onclick:stopPropagation="true" @onclick="@(() => Eliminar(c))">
+                                    <span class="material-symbols-rounded">delete</span>
+                                </button>
                             </div>
                         }
                     </div>

@@ -52,8 +52,28 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cR2VzdGlvblVzdWFyaW9zLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Pages/Admin/HistorialJornadas.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cSGlzdG9yaWFsSm9ybmFkYXMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Pages/Admin/NegocioDetailDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cTmVnb2Npb0RldGFpbERpYWxvZy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Pages/Gerente/DashboardGerente.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcR2VyZW50ZVxEYXNoYm9hcmRHZXJlbnRlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Pages/Gerente/GestionClientes.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcR2VyZW50ZVxHZXN0aW9uQ2xpZW50ZXMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Pages/Gerente/GestionProductos.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcR2VyZW50ZVxHZXN0aW9uUHJvZHVjdG9zLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Pages/Gerente/JornadasActivasPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcR2VyZW50ZVxKb3JuYWRhc0FjdGl2YXNQYWdlLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Pages/Home.razor]
@@ -68,8 +88,20 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTm90Rm91bmQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Pages/Repartidor/ClienteJornadaPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVwYXJ0aWRvclxDbGllbnRlSm9ybmFkYVBhZ2UucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Pages/Repartidor/HistorialRepartidor.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVwYXJ0aWRvclxIaXN0b3JpYWxSZXBhcnRpZG9yLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Pages/Repartidor/JornadaPage.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVwYXJ0aWRvclxKb3JuYWRhUGFnZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Pages/ReporteJornada.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVwb3J0ZUpvcm5hZGEucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Pages/Supervisor/DashboardSupervisor.razor]
@@ -80,8 +112,16 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEFncmVnYXJSb25kYURpYWxvZy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Shared/BottomNav.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEJvdHRvbU5hdi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Shared/ExclusionDialog.razor]
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEV4Y2x1c2lvbkRpYWxvZy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Shared/NumpadDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE51bXBhZERpYWxvZy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Shared/RedirectToLogin.razor]
