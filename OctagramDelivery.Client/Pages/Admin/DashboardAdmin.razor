@@ -81,32 +81,68 @@
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent Style="padding:0;">
-                    <MudTable Items="neg.Repartidores" Hover="true" Dense="true" Striped="false">
-                        <HeaderContent>
-                            <MudTh>Repartidor</MudTh>
-                            <MudTh Style="text-align:center;">Clientes</MudTh>
-                            <MudTh Style="text-align:right;">Entregado</MudTh>
-                            <MudTh Style="text-align:right;">Neto</MudTh>
-                            <MudTh Style="text-align:right;">Efectivo</MudTh>
-                            <MudTh Style="text-align:center;">Estado</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd><span class="fw-500">@context.FullName</span></MudTd>
-                            <MudTd Style="text-align:center;color:var(--gray-muted);">
-                                @context.ClientesAtendidos<span style="opacity:.5;">/</span>@context.TotalClientes
-                            </MudTd>
-                            <MudTd Style="text-align:right;" Class="tabnum text-em">@context.TotalEntregado.ToString("C0", _mx)</MudTd>
-                            <MudTd Style="text-align:right;" Class="tabnum text-vi fw-600">@context.TotalNeto.ToString("C0", _mx)</MudTd>
-                            <MudTd Style="text-align:right;" Class="tabnum text-in fw-700">@context.TotalEfectivo.ToString("C0", _mx)</MudTd>
-                            <MudTd Style="text-align:center;">
-                                <MudChip T="string"
-                                         Color="@(context.Estado == JornadaEstado.Abierta ? Color.Success : Color.Default)"
-                                         Size="Size.Small" Variant="Variant.Filled">
-                                    @(context.Estado == JornadaEstado.Abierta ? "Activo" : "Cerrado")
-                                </MudChip>
-                            </MudTd>
-                        </RowTemplate>
-                    </MudTable>
+                    <!-- Desktop: tabla -->
+                    <div class="desk-only">
+                        <MudTable Items="neg.Repartidores" Hover="true" Dense="true" Striped="false">
+                            <HeaderContent>
+                                <MudTh>Repartidor</MudTh>
+                                <MudTh Style="text-align:center;">Clientes</MudTh>
+                                <MudTh Style="text-align:right;">Entregado</MudTh>
+                                <MudTh Style="text-align:right;">Neto</MudTh>
+                                <MudTh Style="text-align:right;">Efectivo</MudTh>
+                                <MudTh Style="text-align:center;">Estado</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd><span class="fw-500">@context.FullName</span></MudTd>
+                                <MudTd Style="text-align:center;color:var(--gray-muted);">
+                                    @context.ClientesAtendidos<span style="opacity:.5;">/</span>@context.TotalClientes
+                                </MudTd>
+                                <MudTd Style="text-align:right;" Class="tabnum text-em">@context.TotalEntregado.ToString("C0", _mx)</MudTd>
+                                <MudTd Style="text-align:right;" Class="tabnum text-vi fw-600">@context.TotalNeto.ToString("C0", _mx)</MudTd>
+                                <MudTd Style="text-align:right;" Class="tabnum text-in fw-700">@context.TotalEfectivo.ToString("C0", _mx)</MudTd>
+                                <MudTd Style="text-align:center;">
+                                    <MudChip T="string"
+                                             Color="@(context.Estado == JornadaEstado.Abierta ? Color.Success : Color.Default)"
+                                             Size="Size.Small" Variant="Variant.Filled">
+                                        @(context.Estado == JornadaEstado.Abierta ? "Activo" : "Cerrado")
+                                    </MudChip>
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </div>
+                    <!-- Móvil: tarjetas por repartidor -->
+                    <div class="mob-cards">
+                        @foreach (var r in neg.Repartidores)
+                        {
+                            <div class="mob-rep-card">
+                                <div class="mob-rep-header">
+                                    <span class="fw-600">@r.FullName</span>
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                                             Color="@(r.Estado == JornadaEstado.Abierta ? Color.Success : Color.Default)">
+                                        @(r.Estado == JornadaEstado.Abierta ? "Activo" : "Cerrado")
+                                    </MudChip>
+                                </div>
+                                <div class="mob-rep-stats">
+                                    <div class="mob-rep-stat">
+                                        <span class="mob-stat-label">Clientes</span>
+                                        <span style="color:var(--gray-muted);">@r.ClientesAtendidos/@r.TotalClientes</span>
+                                    </div>
+                                    <div class="mob-rep-stat">
+                                        <span class="mob-stat-label">Entregado</span>
+                                        <span class="tabnum text-em">@r.TotalEntregado.ToString("C0", _mx)</span>
+                                    </div>
+                                    <div class="mob-rep-stat">
+                                        <span class="mob-stat-label">Neto</span>
+                                        <span class="tabnum text-vi fw-600">@r.TotalNeto.ToString("C0", _mx)</span>
+                                    </div>
+                                    <div class="mob-rep-stat">
+                                        <span class="mob-stat-label">Efectivo</span>
+                                        <span class="tabnum text-in fw-700">@r.TotalEfectivo.ToString("C0", _mx)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
                 </MudCardContent>
             </MudCard>
         }

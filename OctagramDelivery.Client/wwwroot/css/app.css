@@ -1470,16 +1470,16 @@ body,
        Tablas → Tarjetas en móvil
        ═══════════════════════════════════════════════════ */
 
-    /* Data-card que contiene tabla se vuelve transparente */
-    .data-card:has(.mud-table-root) {
+    /* Data-card con tabla: fondo transparente, las row-cards proveen el visual */
+    .data-card-table {
         background: transparent !important;
         box-shadow: none !important;
         border-radius: 0 !important;
         overflow: visible !important;
     }
 
-    /* Encabezado de data-card (título + filtros) mantiene fondo */
-    .data-card:has(.mud-table-root) .data-card-header {
+    /* Encabezado del data-card-table mantiene fondo de tarjeta */
+    .data-card-table .data-card-header {
         background: var(--white, #fff) !important;
         border-radius: 14px !important;
         margin-bottom: 8px !important;
@@ -1579,9 +1579,39 @@ body,
         margin-top: 8px !important;
     }
 
-    /* MudCard que contiene tabla (dashboards): overflow visible para que las row-cards no se corten */
-    .mud-paper:has(.mud-table-root),
-    .mud-card-content:has(.mud-table-root) { overflow: visible !important; }
+    /* Renderizado dual: ocultar tabla desktop, mostrar cards mobile */
+    .desk-only { display: none !important; }
+    .mob-cards { display: flex; flex-direction: column; }
+
+    /* Tarjetas de repartidor (dashboard mobile) */
+    .mob-rep-card {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--gray-line, #E5E7EB);
+    }
+    .mob-rep-card:last-child { border-bottom: none; }
+    .mob-rep-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+    .mob-rep-stats {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .mob-rep-stat {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
+    .mob-stat-label {
+        font-size: 10px;
+        color: var(--gray-muted, #6B7280);
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        font-weight: 600;
+    }
 
     /* Grid clientes → columna única */
     .neg-clientes-grid   { grid-template-columns: 1fr; min-height: unset; }
@@ -1638,6 +1668,10 @@ body,
     .numpad-panel         { top: 50%; max-height: 94vh; overflow-y: auto; padding: 10px 14px; }
     .numpad-key           { min-height: 46px; }
 }
+
+/* ── Renderizado dual desktop/mobile ── */
+.desk-only { display: block; }
+.mob-cards  { display: none; }
 
 /* ── Selección masiva – actionbar ── */
 .seleccion-actionbar {
