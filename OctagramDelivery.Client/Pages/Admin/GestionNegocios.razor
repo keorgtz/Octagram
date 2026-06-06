@@ -75,14 +75,30 @@
             </div>
             <!-- Móvil -->
             <div class="mob-cards">
-                @if (!_negocios.Any())
+                <div class="mob-search-box">
+                    <span class="material-symbols-rounded" style="color:var(--gray-muted);font-size:20px;flex-shrink:0;">search</span>
+                    <input type="search" class="mob-srch-input" placeholder="Buscar negocio..."
+                           @bind="_busquedaNeg" @bind:event="oninput" />
+                    @if (!string.IsNullOrEmpty(_busquedaNeg))
+                    {
+                        <button class="mob-srch-clear" @onclick="() => _busquedaNeg = string.Empty">
+                            <span class="material-symbols-rounded">close</span>
+                        </button>
+                    }
+                </div>
+                @{
+                    var negociosFiltrados = _negocios
+                        .Where(n => string.IsNullOrEmpty(_busquedaNeg) || n.Nombre.Contains(_busquedaNeg, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+                @if (!negociosFiltrados.Any())
                 {
                     <div class="empty-state">
                         <span class="material-symbols-rounded">storefront</span>
                         <p>No hay negocios registrados aún.</p>
                     </div>
                 }
-                @foreach (var t in _negocios)
+                @foreach (var t in negociosFiltrados)
                 {
                     <div class="mob-lc">
                         <div class="mob-lc-top">
@@ -147,8 +163,9 @@
 
 @code {
     private List<TenantDto> _negocios = new();
-    private bool _cargando = true;
-    private bool _dialogOpen;
+    private bool   _cargando = true;
+    private bool   _dialogOpen;
+    private string _busquedaNeg = "";
     private TenantDto? _editando;
 
     protected override async Task OnInitializedAsync() => await Cargar();

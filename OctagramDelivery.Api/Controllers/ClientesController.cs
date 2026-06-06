@@ -38,7 +38,8 @@ public class ClientesController : ControllerBase
             Direccion = req.Direccion,
             Telefono = req.Telefono,
             DiasEntrega = req.DiasEntrega,
-            HoraAproximada = req.HoraAproximada
+            HoraAproximada = req.HoraAproximada,
+            Grupo = req.Grupo
         };
         _ctx.Customers.Add(c);
         await _ctx.SaveChangesAsync();
@@ -55,6 +56,7 @@ public class ClientesController : ControllerBase
         c.Telefono = req.Telefono;
         c.DiasEntrega = req.DiasEntrega;
         c.HoraAproximada = req.HoraAproximada;
+        c.Grupo = req.Grupo;
         await _ctx.SaveChangesAsync();
         return NoContent();
     }
@@ -99,6 +101,7 @@ public class ClientesController : ControllerBase
         DiasEntrega = c.DiasEntrega,
         HoraAproximada = c.HoraAproximada,
         IsActive = c.IsActive,
+        Grupo = c.Grupo,
         Productos = c.CustomerProducts.Select(cp => new CustomerProductDto
         {
             Id               = cp.Id,

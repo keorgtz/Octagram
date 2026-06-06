@@ -194,14 +194,30 @@
             </div>
             <!-- Móvil -->
             <div class="mob-cards">
-                @if (!_productos.Any())
+                <div class="mob-search-box">
+                    <span class="material-symbols-rounded" style="color:var(--gray-muted);font-size:20px;flex-shrink:0;">search</span>
+                    <input type="search" class="mob-srch-input" placeholder="Buscar producto..."
+                           @bind="_busquedaProd" @bind:event="oninput" />
+                    @if (!string.IsNullOrEmpty(_busquedaProd))
+                    {
+                        <button class="mob-srch-clear" @onclick="() => _busquedaProd = string.Empty">
+                            <span class="material-symbols-rounded">close</span>
+                        </button>
+                    }
+                </div>
+                @{
+                    var productosFiltrados = _productos
+                        .Where(p => string.IsNullOrEmpty(_busquedaProd) || p.Nombre.Contains(_busquedaProd, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+                @if (!productosFiltrados.Any())
                 {
                     <div class="empty-state">
                         <span class="material-symbols-rounded">inventory_2</span>
                         <p>No hay productos registrados para este negocio.</p>
                     </div>
                 }
-                @foreach (var p in _productos)
+                @foreach (var p in productosFiltrados)
                 {
                     var expandido = _expandedIds.Contains(p.Id);
                     <div class="mob-lc">
@@ -312,9 +328,10 @@
 
     private List<ProductDto>  _productos   = new();
     private List<TenantDto>   _misNegocios = new();
-    private bool _cargando = true;
-    private bool _esGerente;
-    private int  _negocioActivo;
+    private bool   _cargando = true;
+    private bool   _esGerente;
+    private int    _negocioActivo;
+    private string _busquedaProd = "";
 
     // Expand state for tiers
     private HashSet<int> _expandedIds = new();

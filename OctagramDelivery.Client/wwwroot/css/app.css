@@ -1814,14 +1814,123 @@ body,
     display: block;
 }
 
-/* Input de búsqueda en versión móvil */
+/* Input de búsqueda en versión móvil — flex container con input nativo */
 .mob-search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     background: #fff;
     border-radius: 12px;
-    padding: 0 4px;
-    box-shadow: 0 1px 4px rgba(0,0,0,.07), 0 0 0 .5px rgba(0,0,0,.05);
+    padding: 0 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06);
+    height: 44px;
     margin-bottom: 10px;
-    overflow: hidden;
+}
+.mob-search-box .material-symbols-rounded {
+    font-size: 18px;
+    color: var(--gray-muted);
+    flex-shrink: 0;
+    line-height: 1;
+}
+.mob-srch-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--gray-dark, #1C1E26);
+    background: transparent;
+    min-width: 0;
+    -webkit-appearance: none;
+}
+.mob-srch-input::placeholder { color: var(--gray-muted, #6B7280); }
+.mob-srch-input::-webkit-search-cancel-button { display: none; }
+.mob-srch-clear {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    display: inline-flex;
+    align-items: center;
+    color: var(--gray-muted);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+}
+.mob-srch-clear .material-symbols-rounded { font-size: 18px; }
+
+/* Chips de grupo — catálogos (GestionClientes) */
+.mob-grupo-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+.mob-grupo-chip {
+    background: var(--page-bg, #F2F3F7);
+    border: 1.5px solid var(--gray-line, #E5E7EB);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-muted, #6B7280);
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    line-height: 1.4;
+    transition: background 120ms, border-color 120ms, color 120ms;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-appearance: none;
+}
+.mob-grupo-chip.active {
+    background: var(--primary, #1EB980);
+    border-color: var(--primary, #1EB980);
+    color: #fff;
+}
+
+/* Chips de grupo — jornada */
+.jornada-grupo-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 0 16px 8px;
+}
+.jornada-grupo-chip {
+    background: var(--page-bg, #F2F3F7);
+    border: 1.5px solid var(--gray-line, #E5E7EB);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-muted, #6B7280);
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    line-height: 1.4;
+    transition: background 120ms, border-color 120ms, color 120ms;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-appearance: none;
+}
+.jornada-grupo-chip.on {
+    background: var(--primary, #1EB980);
+    border-color: var(--primary, #1EB980);
+    color: #fff;
+}
+
+/* Banner de resumen cuando se filtra por grupo en la jornada */
+.jornada-grupo-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #ECFDF5;
+    border-radius: 10px;
+    padding: 8px 14px;
+    margin: 0 16px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary, #1EB980);
 }
 
 /* Rep-card dentro de MudCardContent (dashboard) */

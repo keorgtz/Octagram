@@ -12,6 +12,7 @@ public class CustomerDto
     public int DiasEntrega { get; set; }
     public TimeSpan? HoraAproximada { get; set; }
     public bool IsActive { get; set; }
+    public string? Grupo { get; set; }
     public List<CustomerProductDto> Productos { get; set; } = new();
 }
 
@@ -34,6 +35,7 @@ public class CreateCustomerRequest
     public string? Telefono { get; set; }
     public int DiasEntrega { get; set; }
     public TimeSpan? HoraAproximada { get; set; }
+    public string? Grupo { get; set; }
 }
 
 public class AssignProductsRequest

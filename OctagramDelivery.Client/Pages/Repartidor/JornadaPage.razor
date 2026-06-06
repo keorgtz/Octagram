@@ -189,6 +189,34 @@ else
         }
     </div>
 
+    @if (Estado.Clientes.Any(c => !string.IsNullOrEmpty(c.Grupo)))
+    {
+        var gruposJornada = Estado.Clientes
+            .Where(c => !string.IsNullOrEmpty(c.Grupo))
+            .Select(c => c.Grupo!).Distinct().OrderBy(g => g).ToList();
+        <div class="jornada-grupo-chips">
+            <button class="jornada-grupo-chip @(_grupoFiltro == null ? "on" : "")"
+                    @onclick="() => _grupoFiltro = null">Todos</button>
+            @foreach (var g in gruposJornada)
+            {
+                var gLocal = g;
+                <button class="jornada-grupo-chip @(_grupoFiltro == gLocal ? "on" : "")"
+                        @onclick="() => _grupoFiltro = (_grupoFiltro == gLocal ? null : gLocal)">@g</button>
+            }
+        </div>
+    }
+    @if (_grupoFiltro != null)
+    {
+        var clientesGrupo = Estado.Clientes.Where(c => c.Grupo == _grupoFiltro).ToList();
+        decimal netoGrupo = 0;
+        foreach (var cg in clientesGrupo) { var (n, _) = Estado.TotalesCliente(cg.Id); netoGrupo += n; }
+        <div class="jornada-grupo-banner">
+            <span class="material-symbols-rounded" style="font-size:18px;">group</span>
+            <span>@_grupoFiltro · @clientesGrupo.Count cliente@(clientesGrupo.Count == 1 ? "" : "s")</span>
+            <span style="margin-left:auto;font-size:13px;">@netoGrupo.ToString("C", _mx)</span>
+        </div>
+    }
+
     <div class="jornada-client-list">
         @{
             var clientesFiltrados = ClientesFiltrados.ToList();
@@ -257,13 +285,14 @@ else
     private int    _negocioId;
     private string _saveText       = "Guardado ✓";
     private string _saveClass      = "save-ok";
-    private string _busquedaCliente = string.Empty;
-    private bool   _mostrarDinero  = true;
+    private string  _busquedaCliente = string.Empty;
+    private bool    _mostrarDinero   = true;
+    private string? _grupoFiltro;
 
     private IEnumerable<CustomerDto> ClientesFiltrados =>
-        string.IsNullOrWhiteSpace(_busquedaCliente)
-            ? Estado.Clientes
-            : Estado.Clientes.Where(c => c.Nombre.Contains(_busquedaCliente, StringComparison.OrdinalIgnoreCase));
+        Estado.Clientes
+            .Where(c => string.IsNullOrWhiteSpace(_busquedaCliente) || c.Nombre.Contains(_busquedaCliente, StringComparison.OrdinalIgnoreCase))
+            .Where(c => _grupoFiltro == null || c.Grupo == _grupoFiltro);
 
     private record ProductTotal(string Nombre, decimal Total, bool EsGramaje);
 

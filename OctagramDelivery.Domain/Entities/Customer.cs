@@ -12,5 +12,6 @@ public class Customer
     public int DiasEntrega { get; set; }
     public TimeSpan? HoraAproximada { get; set; }
     public bool IsActive { get; set; } = true;
+    public string? Grupo { get; set; }
     public ICollection<CustomerProduct> CustomerProducts { get; set; } = new List<CustomerProduct>();
 }

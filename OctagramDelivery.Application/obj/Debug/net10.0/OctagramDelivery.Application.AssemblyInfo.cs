@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OctagramDelivery.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1c54eff183e289f039e53ae299d42f174b14f4df")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a24d46cc7e1017e711ffc3cb35b35a01fd4801c5")]
 [assembly: System.Reflection.AssemblyProductAttribute("OctagramDelivery.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OctagramDelivery.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

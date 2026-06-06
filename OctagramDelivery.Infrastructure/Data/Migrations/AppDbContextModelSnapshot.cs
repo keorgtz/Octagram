@@ -70,6 +70,9 @@ namespace OctagramDelivery.Infrastructure.Data.Migrations
                     b.Property<string>("Direccion")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Grupo")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<TimeSpan?>("HoraAproximada")
                         .HasColumnType("time");
 

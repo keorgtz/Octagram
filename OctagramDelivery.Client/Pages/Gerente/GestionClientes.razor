@@ -128,12 +128,34 @@
             <!-- Móvil -->
             <div class="mob-cards">
                 <div class="mob-search-box">
-                    <MudTextField @bind-Value="_busqueda"
-                                  Placeholder="Buscar cliente..."
-                                  Adornment="Adornment.Start"
-                                  AdornmentIcon="@Icons.Material.Rounded.Search"
-                                  FullWidth="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    <span class="material-symbols-rounded" style="color:var(--gray-muted);font-size:20px;flex-shrink:0;">search</span>
+                    <input type="search" class="mob-srch-input" placeholder="Buscar cliente..."
+                           @bind="_busqueda" @bind:event="oninput" />
+                    @if (!string.IsNullOrEmpty(_busqueda))
+                    {
+                        <button class="mob-srch-clear" @onclick="() => _busqueda = string.Empty">
+                            <span class="material-symbols-rounded">close</span>
+                        </button>
+                    }
                 </div>
+                @{
+                    var grupos = _clientes
+                        .Where(c => !string.IsNullOrEmpty(c.Grupo))
+                        .Select(c => c.Grupo!).Distinct().OrderBy(g => g).ToList();
+                }
+                @if (grupos.Count > 0)
+                {
+                    <div class="mob-grupo-chips">
+                        <button class="mob-grupo-chip @(_filtroGrupo == null ? "active" : "")"
+                                @onclick="() => _filtroGrupo = null">Todos</button>
+                        @foreach (var g in grupos)
+                        {
+                            var gLocal = g;
+                            <button class="mob-grupo-chip @(_filtroGrupo == gLocal ? "active" : "")"
+                                    @onclick="() => _filtroGrupo = (_filtroGrupo == gLocal ? null : gLocal)">@g</button>
+                        }
+                    </div>
+                }
                 @{
                     var clientesFiltrados = _clientes.Where(FiltrarCliente).ToList();
                 }
@@ -159,13 +181,12 @@
                                 @(c.IsActive ? "Activo" : "Inactivo")
                             </span>
                         </div>
-                        @if (!string.IsNullOrEmpty(c.Direccion))
-                        {
-                            <div class="mob-lc-sub">@c.Direccion</div>
+                        @{
+                            var infoSub = string.Join(" · ", new[] { c.Grupo, c.Direccion ?? c.Telefono }.Where(s => !string.IsNullOrEmpty(s)));
                         }
-                        else if (!string.IsNullOrEmpty(c.Telefono))
+                        @if (!string.IsNullOrEmpty(infoSub))
                         {
-                            <div class="mob-lc-sub">@c.Telefono</div>
+                            <div class="mob-lc-sub">@infoSub</div>
                         }
                         <div class="mob-lc-stats">
                             <div class="mob-lc-stat">
@@ -219,6 +240,9 @@
         <MudTextField @bind-Value="_telefono" Label="Teléfono"
                       Variant="Variant.Outlined" FullWidth="true" Class="mb-3"
                       Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Phone" />
+        <MudTextField @bind-Value="_grupo" Label="Grupo (opcional)"
+                      Variant="Variant.Outlined" FullWidth="true" Class="mb-3"
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Group" />
         <MudTimePicker @bind-Time="_horaAprox" Label="Hora aproximada de entrega"
                        Variant="Variant.Outlined" Style="width:100%;" Class="mb-3"
                        AmPm="false" />
@@ -379,7 +403,8 @@
     private bool _cargando = true;
     private bool _esGerente;
     private int  _negocioActivo;
-    private string _busqueda = "";
+    private string  _busqueda    = "";
+    private string? _filtroGrupo;
 
     // Dialog datos del cliente
     private bool     _dialogDatos;
@@ -388,6 +413,7 @@
     private string   _nombre    = "";
     private string?  _direccion;
     private string?  _telefono;
+    private string?  _grupo;
     private TimeSpan? _horaAprox;
     private int      _diasEntrega;
 
@@ -438,8 +464,8 @@
     }
 
     private bool FiltrarCliente(CustomerDto c) =>
-        string.IsNullOrEmpty(_busqueda) ||
-        c.Nombre.Contains(_busqueda, StringComparison.OrdinalIgnoreCase);
+        (string.IsNullOrEmpty(_busqueda) || c.Nombre.Contains(_busqueda, StringComparison.OrdinalIgnoreCase)) &&
+        (_filtroGrupo == null || c.Grupo == _filtroGrupo);
 
     // ── Selección masiva ──────────────────────────────────────────
     private void ToggleModo()
@@ -493,7 +519,7 @@
     {
         _esCrear = true; _editId = 0;
         _nombre = ""; _direccion = null; _telefono = null;
-        _horaAprox = null; _diasEntrega = 0;
+        _horaAprox = null; _diasEntrega = 0; _grupo = null;
         _dialogDatos = true;
     }
 
@@ -501,7 +527,7 @@
     {
         _esCrear = false; _editId = c.Id;
         _nombre = c.Nombre; _direccion = c.Direccion; _telefono = c.Telefono;
-        _horaAprox = c.HoraAproximada; _diasEntrega = c.DiasEntrega;
+        _horaAprox = c.HoraAproximada; _diasEntrega = c.DiasEntrega; _grupo = c.Grupo;
         _dialogDatos = true;
     }
 
@@ -515,7 +541,7 @@
         var req = new CreateCustomerRequest
         {
             Nombre = _nombre, Direccion = _direccion, Telefono = _telefono,
-            DiasEntrega = _diasEntrega, HoraAproximada = _horaAprox
+            DiasEntrega = _diasEntrega, HoraAproximada = _horaAprox, Grupo = _grupo
         };
         var resp = _esCrear
             ? await Api.CreateClienteAsync(_negocioActivo, req)
