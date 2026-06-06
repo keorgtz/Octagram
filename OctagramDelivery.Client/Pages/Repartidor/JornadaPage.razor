@@ -8,8 +8,17 @@
 @inject IDialogService Dialog
 @inject NavigationManager Nav
 @inject JornadaStateService Estado
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 
 <PageTitle>Jornada · TortiCloud</PageTitle>
+
+@if (_loadedFromCache)
+{
+    <div style="background:#FEF3C7;border-bottom:1px solid #FDE68A;padding:8px 16px;display:flex;align-items:center;gap:8px;font-size:12px;color:#92400E;">
+        <span class="material-symbols-rounded" style="font-size:16px;">wifi_off</span>
+        Modo sin conexión — mostrando datos guardados localmente.
+    </div>
+}
 
 @if (_cargando)
 {
@@ -231,6 +240,8 @@ else
         }
     }
 
+    private bool _loadedFromCache;
+
     private async Task CargarJornada()
     {
         try
@@ -251,8 +262,39 @@ else
             var clientes  = (await Api.GetClientesAsync(_negocioId) ?? new())
                             .Where(c => JornadaId.HasValue || TieneEntregaHoy(c)).ToList();
             Estado.Cargar(jornada, productos, clientes);
+            _loadedFromCache = false;
+
+            if (!JornadaId.HasValue)
+            {
+                await LocalStorage.SetItemAsync($"tc_j_{_negocioId}",
+                    new JornadaCacheDto { Jornada = jornada, Productos = productos, Clientes = clientes });
+            }
+        }
+        catch
+        {
+            if (!JornadaId.HasValue) await IntentarCargarDesdeCache();
+        }
+    }
+
+    private async Task IntentarCargarDesdeCache()
+    {
+        try
+        {
+            var cached = await LocalStorage.GetItemAsync<JornadaCacheDto>($"tc_j_{_negocioId}");
+            if (cached?.Jornada == null) return;
+            if (cached.Jornada.Fecha != DateOnly.FromDateTime(DateTime.Today)) return;
+            var clientes = (cached.Clientes ?? new()).Where(TieneEntregaHoy).ToList();
+            Estado.Cargar(cached.Jornada, cached.Productos ?? new(), clientes);
+            _loadedFromCache = true;
         }
         catch { }
+    }
+
+    private class JornadaCacheDto
+    {
+        public JornadaDto? Jornada { get; set; }
+        public List<ProductDto> Productos { get; set; } = new();
+        public List<CustomerDto> Clientes { get; set; } = new();
     }
 
     private bool TieneEntregaHoy(CustomerDto c)

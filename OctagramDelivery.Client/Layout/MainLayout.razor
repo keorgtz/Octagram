@@ -1,7 +1,9 @@
 @inherits LayoutComponentBase
+@implements IDisposable
 @inject AuthService AuthSvc
 @inject NavigationManager Nav
 @inject IJSRuntime JS
+@inject OfflineSyncService OfflineSync
 
 <MudThemeProvider Theme="_theme" />
 <MudPopoverProvider />
@@ -41,7 +43,14 @@ else if (_user.Rol == UserRole.Repartidor)
         </div>
         <div class="rep-content">@Body</div>
         <div class="status-bar">
-            <span><span class="status-dot"></span>Conectado</span>
+            @if (!_isOnline)
+            {
+                <span><span class="status-dot" style="background:#EF4444;"></span><span style="color:#EF4444;">Sin conexión</span></span>
+            }
+            else
+            {
+                <span><span class="status-dot"></span>Conectado</span>
+            }
             <span>TortiCloud · @DateTime.Now.ToString("ddd d MMM", new System.Globalization.CultureInfo("es-MX"))</span>
         </div>
     </div>
@@ -60,6 +69,13 @@ else
                 <span class="titlebar-brand-sub">Repartos</span>
             </div>
             <div class="titlebar-spacer"></div>
+            @if (!_isOnline)
+            {
+                <span class="offline-badge">
+                    <span class="material-symbols-rounded" style="font-size:12px;">wifi_off</span>
+                    Sin conexión
+                </span>
+            }
             <div class="titlebar-user hide-mobile">
                 <div class="user-avatar">@GetInitials(_user.FullName)</div>
                 <span class="titlebar-username">@_user.FullName</span>
@@ -86,6 +102,7 @@ else
     private UserInfo? _user;
     private bool _loading = true;
     private bool _sidebarOpen = true;
+    private bool _isOnline = true;
 
     private MudTheme _theme = new()
     {
@@ -127,7 +144,19 @@ else
             }
             catch { _sidebarOpen = true; }
         }
+
+        OfflineSync.OnConnectivityChanged += OnConnectivityChanged;
+        await OfflineSync.InitAsync();
+        _isOnline = OfflineSync.IsOnline;
     }
+
+    private void OnConnectivityChanged()
+    {
+        _isOnline = OfflineSync.IsOnline;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => OfflineSync.OnConnectivityChanged -= OnConnectivityChanged;
 
     private void ToggleSidebar() => _sidebarOpen = !_sidebarOpen;
     private void CloseSidebar()  => _sidebarOpen = false;

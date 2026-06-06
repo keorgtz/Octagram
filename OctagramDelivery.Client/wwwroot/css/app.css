@@ -1321,7 +1321,8 @@ body,
 .bottom-nav-icon { font-size: 22px; line-height: 1; }
 
 /* ── Bottom Nav — menú "Más" ─────────────────────────────────── */
-.bottom-nav-more-btn { background: none; border: none; cursor: pointer; }
+.bottom-nav-item { touch-action: manipulation; }
+.bottom-nav-more-btn { background: none; border: none; cursor: pointer; touch-action: manipulation; }
 
 .bottom-nav-more-backdrop {
     position: fixed;
@@ -1471,9 +1472,13 @@ body,
         -webkit-overflow-scrolling: touch;
     }
     .mud-table,
-    .mud-table-container { overflow-x: visible !important; }
+    .mud-table-container {
+        overflow-x: visible !important;
+        width: auto !important;
+        min-width: 100%;
+    }
     .mud-table td,
-    .mud-table th        { white-space: nowrap; }
+    .mud-table th { white-space: nowrap; }
 
     /* Grid clientes → columna única */
     .neg-clientes-grid   { grid-template-columns: 1fr; min-height: unset; }
@@ -1529,6 +1534,46 @@ body,
     .jornada-mini-value   { font-size: 12px; }
     .numpad-panel         { top: 50%; max-height: 94vh; overflow-y: auto; padding: 10px 14px; }
     .numpad-key           { min-height: 46px; }
+}
+
+/* ── Selección masiva – actionbar ── */
+.seleccion-actionbar {
+    position: fixed;
+    left: var(--sidebar-w, 220px);
+    right: 0;
+    bottom: 0;
+    background: #fff;
+    border-top: 1px solid var(--gray-line, #E5E7EB);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 350;
+    box-shadow: 0 -4px 16px rgba(0,0,0,.08);
+    gap: 12px;
+}
+.seleccion-count {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-dark, #1C1E26);
+}
+@media (max-width: 640px) {
+    .seleccion-actionbar { left: 0; bottom: 56px; padding: 10px 14px 12px; }
+}
+
+/* ── Offline badge ── */
+.offline-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #EF4444;
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    border-radius: 20px;
+    padding: 3px 10px;
+    white-space: nowrap;
 }
 
 /* ── Badge solo-lectura ── */

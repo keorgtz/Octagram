@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>OctagramDelivery</title>
+    <title>TortiCloud</title>
     <base href="/" />
 
     <!-- 0. Fuentes -->
@@ -35,12 +35,12 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <link href="_framework/dotnet.izttx24whe.js" rel="preload" as="script" fetchpriority="high" crossorigin="anonymous" integrity="sha256-DoZltTnY1VtbIHBZmhdY267UqdlOfH0hDFwT64POeBI=" />
+    <link href="_framework/dotnet.dfjw09g2dw.js" rel="preload" as="script" fetchpriority="high" crossorigin="anonymous" integrity="sha256-WW6RdbgU5c4dAdZ6Nye0YDKYvN8ynz9vRTkArWdoKQA=" />
     <script type="importmap">{
   "imports": {
     "./_content/MudBlazor/MudBlazor.min.js": "./_content/MudBlazor/MudBlazor.min.jrqzp895hu.js",
     "./_framework/blazor.webassembly.js": "./_framework/blazor.webassembly.958z1vx7fr.js",
-    "./_framework/dotnet.js": "./_framework/dotnet.izttx24whe.js",
+    "./_framework/dotnet.js": "./_framework/dotnet.dfjw09g2dw.js",
     "./_framework/dotnet.native.js": "./_framework/dotnet.native.rjbmzc4jpg.js",
     "./_framework/dotnet.runtime.js": "./_framework/dotnet.runtime.r2kbxkuujc.js",
     "./lib/bootstrap/dist/js/bootstrap.bundle.js": "./lib/bootstrap/dist/js/bootstrap.bundle.bttiqhxyvj.js",
@@ -56,8 +56,8 @@
     "./_content/MudBlazor/MudBlazor.min.js": "sha256-weSY1+xC2IWsc4ncUHtQhWp3H5eek/LVHZEDlWdgryY=",
     "./_framework/blazor.webassembly.958z1vx7fr.js": "sha256-A59Tr9HqEhHMu8kU7kruLI9ayw5MRS6Lvc6z7jCbghk=",
     "./_framework/blazor.webassembly.js": "sha256-A59Tr9HqEhHMu8kU7kruLI9ayw5MRS6Lvc6z7jCbghk=",
-    "./_framework/dotnet.izttx24whe.js": "sha256-DoZltTnY1VtbIHBZmhdY267UqdlOfH0hDFwT64POeBI=",
-    "./_framework/dotnet.js": "sha256-DoZltTnY1VtbIHBZmhdY267UqdlOfH0hDFwT64POeBI=",
+    "./_framework/dotnet.dfjw09g2dw.js": "sha256-WW6RdbgU5c4dAdZ6Nye0YDKYvN8ynz9vRTkArWdoKQA=",
+    "./_framework/dotnet.js": "sha256-WW6RdbgU5c4dAdZ6Nye0YDKYvN8ynz9vRTkArWdoKQA=",
     "./_framework/dotnet.native.js": "sha256-95bE510j3EADMNW2OKa/DMBhu8N632dl5HGeBfXNEf4=",
     "./_framework/dotnet.native.rjbmzc4jpg.js": "sha256-95bE510j3EADMNW2OKa/DMBhu8N632dl5HGeBfXNEf4=",
     "./_framework/dotnet.runtime.js": "sha256-YyudibIWETMKrLb+nAZdJ+xDY7HY6BWf6s32UAdcvCU=",
@@ -82,8 +82,8 @@
     <div id="app">
         <div style="display:flex;height:100vh;align-items:center;justify-content:center;background:#F2F3F7;">
             <div style="text-align:center;">
-                <img src="favicon.png" style="width:64px;height:64px;border-radius:16px;margin-bottom:12px;" alt="Octagram" />
-                <div style="font-size:20px;font-weight:700;color:#1EB980;letter-spacing:-0.5px;">Octagram</div>
+                <img src="favicon.png" style="width:64px;height:64px;border-radius:16px;margin-bottom:12px;" alt="TortiCloud" />
+                <div style="font-size:20px;font-weight:700;color:#1EB980;letter-spacing:-0.5px;">TortiCloud</div>
                 <div style="font-size:13px;color:#6B7280;margin-top:4px;">Cargando...</div>
             </div>
         </div>
@@ -100,6 +100,17 @@
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' });
         }
+    </script>
+    <script>
+        window.offlineSync = {
+            _ref: null,
+            init: function (ref) {
+                this._ref = ref;
+                window.addEventListener('online',  () => { if (this._ref) this._ref.invokeMethodAsync('NotifyOnline'); });
+                window.addEventListener('offline', () => { if (this._ref) this._ref.invokeMethodAsync('NotifyOffline'); });
+            },
+            isOnline: function () { return navigator.onLine; }
+        };
     </script>
 </body>
 

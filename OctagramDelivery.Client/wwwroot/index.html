@@ -62,6 +62,17 @@
             navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' });
         }
     </script>
+    <script>
+        window.offlineSync = {
+            _ref: null,
+            init: function (ref) {
+                this._ref = ref;
+                window.addEventListener('online',  () => { if (this._ref) this._ref.invokeMethodAsync('NotifyOnline'); });
+                window.addEventListener('offline', () => { if (this._ref) this._ref.invokeMethodAsync('NotifyOffline'); });
+            },
+            isOnline: function () { return navigator.onLine; }
+        };
+    </script>
 </body>
 
 </html>

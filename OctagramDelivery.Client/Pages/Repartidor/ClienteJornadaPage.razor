@@ -7,6 +7,7 @@
 @inject IDialogService Dialog
 @inject NavigationManager Nav
 @inject JornadaStateService Estado
+@inject OfflineSyncService OfflineSync
 
 <PageTitle>Cliente · TortiCloud</PageTitle>
 
@@ -173,6 +174,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         Estado.OnChange += StateHasChanged;
+        OfflineSync.OnSynced += OnSynced;
 
         var currentUser = await AuthSvc.GetCurrentUser();
         _soloLectura = currentUser?.Rol == UserRole.Supervisor;
@@ -236,7 +238,8 @@ else
     private async Task GuardarAsync()
     {
         if (Estado.Jornada == null) return;
-        bool ok = true;
+        bool allOk = true;
+        bool sinConexion = false;
         foreach (var ronda in Estado.Jornada.Rondas)
         {
             var detalles = _productosDelCliente.Select(p =>
@@ -253,13 +256,47 @@ else
                 };
             }).ToList();
 
-            var resp = await Api.BulkSaveDetallesAsync(ronda.Id, new BulkSaveRondaRequest { Detalles = detalles });
-            if (!resp.IsSuccessStatusCode) ok = false;
+            try
+            {
+                var resp = await Api.BulkSaveDetallesAsync(ronda.Id, new BulkSaveRondaRequest { Detalles = detalles });
+                if (!resp.IsSuccessStatusCode)
+                {
+                    allOk = false;
+                    await OfflineSync.EnqueueSaveAsync(ronda.Id, detalles);
+                }
+            }
+            catch (HttpRequestException)
+            {
+                allOk = false;
+                sinConexion = true;
+                await OfflineSync.EnqueueSaveAsync(ronda.Id, detalles);
+            }
         }
-        _saveText  = ok ? "Guardado ✓" : "Error al guardar";
-        _saveClass = ok ? "save-ok"    : "save-error";
-        Estado.HayCambiosPendientes = false;
+
+        if (allOk)
+        {
+            _saveText  = "Guardado ✓";
+            _saveClass = "save-ok";
+            Estado.HayCambiosPendientes = false;
+        }
+        else if (sinConexion || !OfflineSync.IsOnline)
+        {
+            _saveText  = "En cola · sin conexión";
+            _saveClass = "save-error";
+        }
+        else
+        {
+            _saveText  = "Error al guardar";
+            _saveClass = "save-error";
+        }
         await InvokeAsync(StateHasChanged);
+    }
+
+    private void OnSynced()
+    {
+        _saveText  = "Sincronizado ✓";
+        _saveClass = "save-ok";
+        InvokeAsync(StateHasChanged);
     }
 
     private async Task ToggleExclusion(bool excluido)
@@ -332,6 +369,7 @@ else
     public void Dispose()
     {
         Estado.OnChange -= StateHasChanged;
+        OfflineSync.OnSynced -= OnSynced;
         _saveTimer?.Dispose();
     }
 }
