@@ -56,9 +56,11 @@ else
     <div class="cj-productos">
         @foreach (var prod in _productosDelCliente)
         {
-            var celda = Estado.GetOrCreate(_rondaActivaId, ClienteId, prod.ProductId);
-            var esGramaje = prod.TipoMedida == TipoMedida.Gramaje;
-            var subtotal = (celda.Entregado - celda.Devuelto) * celda.Precio;
+            var celda      = Estado.GetOrCreate(_rondaActivaId, ClienteId, prod.ProductId);
+            var subtotal   = (celda.Entregado - celda.Devuelto) * celda.Precio;
+            var titEnt     = "Entregado — " + prod.ProductNombre;
+            var titDev     = "Devuelto — "  + prod.ProductNombre;
+            var tipo       = prod.TipoMedida;
 
             <div class="cj-producto-card">
                 <div class="cj-producto-header">
@@ -70,10 +72,10 @@ else
                 <div class="cj-qty-row">
                     <span class="cj-qty-label entregado">Entregado</span>
                     <div style="display:flex;align-items:center;gap:8px;">
-                        <span class="cj-qty-display">@FormatQty(celda.Entregado, prod.TipoMedida)</span>
+                        <span class="cj-qty-display">@FormatQty(celda.Entregado, tipo)</span>
                         <button class="cj-qty-btn"
                                 disabled="@(Estado.Jornada?.Estado != JornadaEstado.Abierta)"
-                                @onclick="() => AbrirNumpad(celda, true, prod.TipoMedida, $"Entregado — {prod.ProductNombre}")">
+                                @onclick="() => AbrirNumpad(celda, true, tipo, titEnt)">
                             <span class="material-symbols-rounded">edit</span>
                         </button>
                     </div>
@@ -83,10 +85,10 @@ else
                 <div class="cj-qty-row">
                     <span class="cj-qty-label devuelto">Devuelto</span>
                     <div style="display:flex;align-items:center;gap:8px;">
-                        <span class="cj-qty-display">@FormatQty(celda.Devuelto, prod.TipoMedida)</span>
+                        <span class="cj-qty-display">@FormatQty(celda.Devuelto, tipo)</span>
                         <button class="cj-qty-btn"
                                 disabled="@(Estado.Jornada?.Estado != JornadaEstado.Abierta)"
-                                @onclick="() => AbrirNumpad(celda, false, prod.TipoMedida, $"Devuelto — {prod.ProductNombre}")">
+                                @onclick="() => AbrirNumpad(celda, false, tipo, titDev)">
                             <span class="material-symbols-rounded">edit</span>
                         </button>
                     </div>
@@ -113,7 +115,6 @@ else
                              ToggledChanged="ToggleExclusion"
                              Icon="@Icons.Material.Rounded.AttachMoney"
                              ToggledIcon="@Icons.Material.Rounded.MoneyOff"
-                             Title="@(_excluido ? "Incluir en efectivo" : "Excluir del efectivo")"
                              Color="Color.Success"
                              ToggledColor="Color.Warning"
                              Disabled="@(Estado.Jornada?.Estado != JornadaEstado.Abierta)" />
