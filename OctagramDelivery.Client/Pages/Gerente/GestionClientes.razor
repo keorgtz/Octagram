@@ -26,6 +26,11 @@
                     }
                 </MudSelect>
             }
+            <MudButton StartIcon="@Icons.Material.Rounded.GroupWork"
+                       Variant="Variant.Text" Color="Color.Default"
+                       Href="/gerente/grupos">
+                Grupos
+            </MudButton>
             <MudButton StartIcon="@(_modoSeleccion ? Icons.Material.Rounded.Close : Icons.Material.Rounded.Checklist)"
                        Variant="@(_modoSeleccion ? Variant.Outlined : Variant.Text)"
                        Color="Color.Default" OnClick="ToggleModo"

@@ -50,6 +50,19 @@ public class ApiService
     public Task<HttpResponseMessage> AssignProductosClienteAsync(int negocioId, int clienteId, AssignProductsRequest req)
         => _http.PostAsJsonAsync($"api/negocios/{negocioId}/clientes/{clienteId}/productos", req);
 
+    // ── Grupos de clientes ────────────────────────────────────────
+    public Task<List<GrupoDto>?> GetGruposAsync(int negocioId)
+        => _http.GetFromJsonAsync<List<GrupoDto>>($"api/negocios/{negocioId}/clientes/grupos");
+
+    public Task<HttpResponseMessage> SetClientesGrupoAsync(int negocioId, string nombre, AsignarClientesGrupoRequest req)
+        => _http.PutAsJsonAsync($"api/negocios/{negocioId}/clientes/grupos/{Uri.EscapeDataString(nombre)}/clientes", req);
+
+    public Task<HttpResponseMessage> RenombrarGrupoAsync(int negocioId, string nombre, RenombrarGrupoRequest req)
+        => _http.PatchAsJsonAsync($"api/negocios/{negocioId}/clientes/grupos/{Uri.EscapeDataString(nombre)}", req);
+
+    public Task<HttpResponseMessage> DeleteGrupoAsync(int negocioId, string nombre)
+        => _http.DeleteAsync($"api/negocios/{negocioId}/clientes/grupos/{Uri.EscapeDataString(nombre)}");
+
     // ── Productos ─────────────────────────────────────────────────
     public Task<List<ProductDto>?> GetProductosAsync(int negocioId)
         => _http.GetFromJsonAsync<List<ProductDto>>($"api/negocios/{negocioId}/productos");

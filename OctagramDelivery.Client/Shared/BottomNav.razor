@@ -95,8 +95,17 @@
         UserRole.Admin => [
             new("/admin/usuarios",    "manage_accounts", "Usuarios",  "/admin/usuarios"),
             new("/gerente/clientes",  "people",          "Clientes",  "/gerente/clientes"),
+            new("/gerente/grupos",    "group_work",      "Grupos",    "/gerente/grupos"),
             new("/gerente/productos", "inventory_2",     "Productos", "/gerente/productos"),
             new("/admin/historial",   "history",         "Historial", "/admin/historial"),
+        ],
+        UserRole.Gerente => [
+            new("/gerente/grupos",    "group_work",      "Grupos",    "/gerente/grupos"),
+            new("/gerente/productos", "inventory_2",     "Productos", "/gerente/productos"),
+        ],
+        UserRole.Supervisor => [
+            new("/gerente/grupos",    "group_work",      "Grupos",    "/gerente/grupos"),
+            new("/gerente/productos", "inventory_2",     "Productos", "/gerente/productos"),
         ],
         _ => []
     };

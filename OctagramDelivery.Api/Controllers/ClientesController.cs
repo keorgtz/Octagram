@@ -91,6 +91,67 @@ public class ClientesController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("grupos")]
+    public async Task<ActionResult<List<GrupoDto>>> GetGrupos(int negocioId)
+    {
+        var grupos = await _ctx.Customers
+            .Where(c => c.TenantId == negocioId && c.IsActive && c.Grupo != null)
+            .GroupBy(c => c.Grupo!)
+            .Select(g => new GrupoDto
+            {
+                Nombre = g.Key,
+                ClienteCount = g.Count(),
+                ClienteIds = g.Select(c => c.Id).ToList()
+            })
+            .OrderBy(g => g.Nombre)
+            .ToListAsync();
+        return Ok(grupos);
+    }
+
+    [HttpPut("grupos/{nombre}/clientes")]
+    public async Task<IActionResult> SetClientesGrupo(int negocioId, string nombre, [FromBody] AsignarClientesGrupoRequest req)
+    {
+        var clientesActuales = await _ctx.Customers
+            .Where(c => c.TenantId == negocioId && c.IsActive && c.Grupo == nombre)
+            .ToListAsync();
+        foreach (var c in clientesActuales)
+            if (!req.ClienteIds.Contains(c.Id))
+                c.Grupo = null;
+
+        var clientesNuevos = await _ctx.Customers
+            .Where(c => c.TenantId == negocioId && c.IsActive && req.ClienteIds.Contains(c.Id))
+            .ToListAsync();
+        foreach (var c in clientesNuevos)
+            c.Grupo = nombre;
+
+        await _ctx.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPatch("grupos/{nombre}")]
+    public async Task<IActionResult> RenombrarGrupo(int negocioId, string nombre, [FromBody] RenombrarGrupoRequest req)
+    {
+        var clientes = await _ctx.Customers
+            .Where(c => c.TenantId == negocioId && c.IsActive && c.Grupo == nombre)
+            .ToListAsync();
+        foreach (var c in clientes)
+            c.Grupo = req.NuevoNombre.Trim();
+        await _ctx.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpDelete("grupos/{nombre}")]
+    public async Task<IActionResult> DeleteGrupo(int negocioId, string nombre)
+    {
+        var clientes = await _ctx.Customers
+            .Where(c => c.TenantId == negocioId && c.IsActive && c.Grupo == nombre)
+            .ToListAsync();
+        foreach (var c in clientes)
+            c.Grupo = null;
+        await _ctx.SaveChangesAsync();
+        return NoContent();
+    }
+
     private static CustomerDto MapCustomer(Customer c) => new()
     {
         Id = c.Id,

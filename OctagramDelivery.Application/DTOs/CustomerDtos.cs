@@ -43,6 +43,23 @@ public class AssignProductsRequest
     public List<ProductAssignItem> Productos { get; set; } = new();
 }
 
+public class GrupoDto
+{
+    public string Nombre { get; set; } = string.Empty;
+    public int ClienteCount { get; set; }
+    public List<int> ClienteIds { get; set; } = new();
+}
+
+public class AsignarClientesGrupoRequest
+{
+    public List<int> ClienteIds { get; set; } = new();
+}
+
+public class RenombrarGrupoRequest
+{
+    public string NuevoNombre { get; set; } = string.Empty;
+}
+
 public class ProductAssignItem
 {
     public int ProductId { get; set; }

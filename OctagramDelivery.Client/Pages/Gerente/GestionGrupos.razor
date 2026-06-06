@@ -1,0 +1,355 @@
+@page "/gerente/grupos"
+@page "/supervisor/grupos"
+@attribute [Authorize(Roles = $"{nameof(UserRole.Gerente)},{nameof(UserRole.Supervisor)},{nameof(UserRole.Admin)}")]
+@inject ApiService Api
+@inject AuthService AuthSvc
+@inject ISnackbar Snackbar
+@inject IDialogService Dialog
+
+<PageTitle>Grupos · TortiCloud</PageTitle>
+
+<div class="page-content">
+    <div class="page-header">
+        <div>
+            <h1 class="h-page-title">Grupos de clientes</h1>
+            <p class="page-subtitle">Organiza tu cartera por grupos para filtrar fácilmente en la jornada</p>
+        </div>
+        <div class="page-header-actions">
+            <MudButton StartIcon="@Icons.Material.Rounded.GroupAdd"
+                       Variant="Variant.Filled" Color="Color.Primary"
+                       OnClick="AbrirCrear" Disabled="_negocioActivo == 0">
+                Nuevo Grupo
+            </MudButton>
+        </div>
+    </div>
+
+    @if (_cargando)
+    {
+        <div class="loading-state"><MudProgressCircular Color="Color.Primary" Indeterminate="true" /></div>
+    }
+    else if (_grupos.Count == 0)
+    {
+        <div class="empty-state" style="margin-top:40px;">
+            <span class="material-symbols-rounded" style="font-size:56px;color:var(--gray-muted);">group_work</span>
+            <p style="font-size:14px;color:var(--gray-muted);text-align:center;max-width:260px;">
+                Sin grupos configurados. Crea un grupo para organizar tus clientes y filtrar la jornada fácilmente.
+            </p>
+            <MudButton StartIcon="@Icons.Material.Rounded.GroupAdd"
+                       Variant="Variant.Filled" Color="Color.Primary"
+                       OnClick="AbrirCrear" Disabled="_negocioActivo == 0">
+                Crear primer grupo
+            </MudButton>
+        </div>
+    }
+    else
+    {
+        <div class="grupos-grid">
+            @foreach (var g in _grupos)
+            {
+                var gLocal = g;
+                <div class="grupo-card">
+                    <div class="grupo-card-top">
+                        <div class="grupo-card-icon">
+                            <span class="material-symbols-rounded">group</span>
+                        </div>
+                        <div class="grupo-card-info">
+                            <div class="grupo-card-nombre">@g.Nombre</div>
+                            <div class="grupo-card-count">@g.ClienteCount cliente@(g.ClienteCount == 1 ? "" : "s")</div>
+                        </div>
+                    </div>
+                    @if (g.ClienteIds.Count > 0)
+                    {
+                        var nombres = _todosLosClientes
+                            .Where(c => g.ClienteIds.Contains(c.Id))
+                            .Select(c => c.Nombre)
+                            .Take(4)
+                            .ToList();
+                        <div class="grupo-card-clientes">
+                            @string.Join(" · ", nombres)
+                            @if (g.ClienteCount > 4) { <span style="color:var(--gray-muted);"> +@(g.ClienteCount - 4) más</span> }
+                        </div>
+                    }
+                    <div class="grupo-card-acts">
+                        <button class="mob-act-btn mob-act-primary" @onclick="@(() => AbrirEditar(gLocal))">
+                            <span class="material-symbols-rounded">people</span>
+                            Clientes
+                        </button>
+                        <button class="mob-act-btn" @onclick="@(() => AbrirRenombrar(gLocal))">
+                            <span class="material-symbols-rounded">edit</span>
+                            Renombrar
+                        </button>
+                        <button class="mob-act-btn mob-act-danger" @onclick="@(() => Eliminar(gLocal))">
+                            <span class="material-symbols-rounded">delete</span>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- Dialog: Nuevo / Editar clientes del grupo -->
+<MudDialog @bind-Visible="_dialogGrupo" Options="@(new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true })">
+    <TitleContent>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <span class="material-symbols-rounded" style="color:var(--primary);font-size:20px;">group</span>
+            <span>@(_esCrear ? "Nuevo Grupo" : $"Clientes · {_grupoNombre}")</span>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        @if (_esCrear)
+        {
+            <MudTextField @bind-Value="_grupoNombreInput"
+                          Label="Nombre del grupo"
+                          Variant="Variant.Outlined" FullWidth="true" Class="mb-4"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Rounded.Group"
+                          Placeholder="Ej: Zona Norte, Mayoristas, Mercado..." />
+        }
+        <div style="font-size:12px;font-weight:600;color:var(--gray-muted);text-transform:uppercase;
+                    letter-spacing:.04em;margin-bottom:8px;">
+            Seleccionar clientes
+        </div>
+        <!-- Buscador dentro del dialog -->
+        <div class="mob-search-box" style="margin-bottom:10px;">
+            <span class="material-symbols-rounded" style="color:var(--gray-muted);font-size:18px;flex-shrink:0;">search</span>
+            <input type="search" class="mob-srch-input" placeholder="Buscar cliente..."
+                   @bind="_busquedaDialog" @bind:event="oninput" style="font-size:13px;" />
+            @if (!string.IsNullOrEmpty(_busquedaDialog))
+            {
+                <button class="mob-srch-clear" @onclick="() => _busquedaDialog = string.Empty">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            }
+        </div>
+        <!-- Resumen de selección -->
+        @if (_seleccionadosDialog.Count > 0)
+        {
+            <div style="font-size:12px;font-weight:600;color:var(--primary);margin-bottom:8px;">
+                @_seleccionadosDialog.Count cliente@(_seleccionadosDialog.Count == 1 ? "" : "s") seleccionado@(_seleccionadosDialog.Count == 1 ? "" : "s")
+            </div>
+        }
+        <!-- Lista de clientes -->
+        <div style="max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;">
+            @{
+                var clientesFiltrados = _todosLosClientes
+                    .Where(c => string.IsNullOrEmpty(_busquedaDialog) ||
+                                c.Nombre.Contains(_busquedaDialog, StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(c => _seleccionadosDialog.Contains(c.Id))
+                    .ThenBy(c => c.Nombre)
+                    .ToList();
+            }
+            @if (!clientesFiltrados.Any())
+            {
+                <div style="text-align:center;padding:20px;color:var(--gray-muted);font-size:13px;">
+                    No se encontraron clientes.
+                </div>
+            }
+            @foreach (var c in clientesFiltrados)
+            {
+                var cLocal = c;
+                var enGrupo = _seleccionadosDialog.Contains(c.Id);
+                <div class="grupo-cliente-row @(enGrupo ? "selected" : "")"
+                     @onclick="@(() => ToggleClienteDialog(cLocal.Id))">
+                    <div class="mob-lc-check @(enGrupo ? "on" : "")"></div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:13px;font-weight:@(enGrupo ? "700" : "500");
+                                    color:@(enGrupo ? "var(--primary)" : "var(--gray-dark)");
+                                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                            @c.Nombre
+                        </div>
+                        @if (!string.IsNullOrEmpty(c.Direccion))
+                        {
+                            <div style="font-size:11px;color:var(--gray-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                @c.Direccion
+                            </div>
+                        }
+                    </div>
+                    @if (!string.IsNullOrEmpty(c.Grupo) && c.Grupo != _grupoNombre)
+                    {
+                        <span class="jornada-card-chip sin-datos" style="font-size:10px;flex-shrink:0;">@c.Grupo</span>
+                    }
+                </div>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="CerrarDialog">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GuardarGrupo"
+                   Disabled="@(_esCrear && string.IsNullOrWhiteSpace(_grupoNombreInput))">
+            Guardar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<!-- Dialog: Renombrar grupo -->
+<MudDialog @bind-Visible="_dialogRenombrar">
+    <TitleContent>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <span class="material-symbols-rounded" style="color:var(--primary);font-size:20px;">edit</span>
+            <span>Renombrar grupo</span>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="_grupoNombreInput"
+                      Label="Nuevo nombre"
+                      Variant="Variant.Outlined" FullWidth="true"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Rounded.Group" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="() => _dialogRenombrar = false">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GuardarRenombrar"
+                   Disabled="string.IsNullOrWhiteSpace(_grupoNombreInput)">
+            Guardar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private List<GrupoDto> _grupos = new();
+    private List<CustomerDto> _todosLosClientes = new();
+    private bool _cargando = true;
+    private int _negocioActivo;
+    private bool _esGerente;
+    private List<TenantDto> _misNegocios = new();
+
+    // Dialog grupo
+    private bool _dialogGrupo;
+    private bool _esCrear;
+    private string _grupoNombre = "";
+    private string _grupoNombreInput = "";
+    private HashSet<int> _seleccionadosDialog = new();
+    private string _busquedaDialog = "";
+
+    // Dialog renombrar
+    private bool _dialogRenombrar;
+    private string _grupoRenombrando = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await AuthSvc.GetCurrentUser();
+        _esGerente = user?.Rol == OctagramDelivery.Domain.Enums.UserRole.Gerente;
+
+        if (_esGerente)
+        {
+            _misNegocios = await Api.GetNegociosAsync() ?? new();
+            _negocioActivo = _misNegocios.FirstOrDefault()?.Id ?? 0;
+        }
+        else
+        {
+            _negocioActivo = user?.NegocioIds.FirstOrDefault() ?? 0;
+        }
+
+        if (_negocioActivo != 0) await Cargar();
+        else _cargando = false;
+    }
+
+    private async Task Cargar()
+    {
+        _cargando = true;
+        _grupos            = await Api.GetGruposAsync(_negocioActivo)   ?? new();
+        _todosLosClientes  = await Api.GetClientesAsync(_negocioActivo) ?? new();
+        _cargando = false;
+    }
+
+    private void AbrirCrear()
+    {
+        _esCrear = true;
+        _grupoNombre = "";
+        _grupoNombreInput = "";
+        _seleccionadosDialog = new();
+        _busquedaDialog = "";
+        _dialogGrupo = true;
+    }
+
+    private void AbrirEditar(GrupoDto g)
+    {
+        _esCrear = false;
+        _grupoNombre = g.Nombre;
+        _grupoNombreInput = g.Nombre;
+        _seleccionadosDialog = g.ClienteIds.ToHashSet();
+        _busquedaDialog = "";
+        _dialogGrupo = true;
+    }
+
+    private void AbrirRenombrar(GrupoDto g)
+    {
+        _grupoRenombrando = g.Nombre;
+        _grupoNombreInput = g.Nombre;
+        _dialogRenombrar = true;
+    }
+
+    private void CerrarDialog()
+    {
+        _dialogGrupo = false;
+        _busquedaDialog = "";
+    }
+
+    private void ToggleClienteDialog(int id)
+    {
+        if (!_seleccionadosDialog.Remove(id))
+            _seleccionadosDialog.Add(id);
+    }
+
+    private async Task GuardarGrupo()
+    {
+        var nombre = _esCrear ? _grupoNombreInput.Trim() : _grupoNombre;
+        if (string.IsNullOrWhiteSpace(nombre)) return;
+
+        var req = new AsignarClientesGrupoRequest { ClienteIds = _seleccionadosDialog.ToList() };
+        var res = await Api.SetClientesGrupoAsync(_negocioActivo, nombre, req);
+        if (res.IsSuccessStatusCode)
+        {
+            Snackbar.Add(_esCrear ? "Grupo creado" : "Grupo actualizado", Severity.Success);
+            _dialogGrupo = false;
+            await Cargar();
+        }
+        else
+        {
+            Snackbar.Add("Error al guardar el grupo", Severity.Error);
+        }
+    }
+
+    private async Task GuardarRenombrar()
+    {
+        var nuevoNombre = _grupoNombreInput.Trim();
+        if (string.IsNullOrWhiteSpace(nuevoNombre) || nuevoNombre == _grupoRenombrando)
+        {
+            _dialogRenombrar = false;
+            return;
+        }
+        var res = await Api.RenombrarGrupoAsync(_negocioActivo, _grupoRenombrando,
+            new RenombrarGrupoRequest { NuevoNombre = nuevoNombre });
+        if (res.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Grupo renombrado", Severity.Success);
+            _dialogRenombrar = false;
+            await Cargar();
+        }
+        else
+        {
+            Snackbar.Add("Error al renombrar", Severity.Error);
+        }
+    }
+
+    private async Task Eliminar(GrupoDto g)
+    {
+        var confirm = await Dialog.ShowMessageBox(
+            "Eliminar grupo",
+            $"¿Eliminar el grupo \"{g.Nombre}\"? Los clientes no se borrarán, solo se les quitará el grupo.",
+            yesText: "Eliminar", cancelText: "Cancelar");
+        if (confirm != true) return;
+
+        var res = await Api.DeleteGrupoAsync(_negocioActivo, g.Nombre);
+        if (res.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Grupo eliminado", Severity.Success);
+            await Cargar();
+        }
+        else
+        {
+            Snackbar.Add("Error al eliminar", Severity.Error);
+        }
+    }
+}
