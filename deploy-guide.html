@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía de Deploy Limpio · OctagramDelivery</title>
+<style>
+  :root {
+    --em: #10B981; --vi: #6366F1; --in: #F59E0B;
+    --danger: #EF4444; --bg: #F2F3F7; --card: #fff;
+    --gray: #6B7280; --dark: #111827; --line: #E5E7EB;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", Inter, sans-serif; background: var(--bg); color: var(--dark); font-size: 14px; line-height: 1.6; }
+  .shell { max-width: 820px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+  .subtitle { color: var(--gray); font-size: 13px; margin-bottom: 32px; }
+
+  /* Section */
+  .section { background: var(--card); border-radius: 14px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .step-num { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; flex-shrink: 0; }
+  .num-em { background: #ECFDF5; color: var(--em); }
+  .num-vi { background: #EEF2FF; color: var(--vi); }
+  .num-in { background: #FFFBEB; color: var(--in); }
+  .num-danger { background: #FEF2F2; color: var(--danger); }
+  .section-title { font-size: 15px; font-weight: 700; }
+  .section-desc { font-size: 12px; color: var(--gray); }
+
+  /* Alert */
+  .alert { border-radius: 10px; padding: 12px 16px; font-size: 13px; margin-bottom: 14px; display: flex; gap: 10px; align-items: flex-start; }
+  .alert-danger { background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; }
+  .alert-warn  { background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; }
+  .alert-info  { background: #EEF2FF; border: 1px solid #C7D2FE; color: #3730A3; }
+  .alert-ok    { background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; }
+  .alert-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* Code block */
+  .cmd-block { background: #0F172A; border-radius: 10px; padding: 16px 18px; margin-bottom: 12px; overflow-x: auto; }
+  .cmd-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #64748B; margin-bottom: 8px; }
+  code { font-family: "Cascadia Code", "Fira Code", Consolas, monospace; font-size: 13px; color: #E2E8F0; display: block; white-space: pre; }
+  code .c { color: #64748B; }
+  code .kw { color: #38BDF8; }
+  code .str { color: #86EFAC; }
+  code .flag { color: #FDA4AF; }
+
+  /* Steps list */
+  ol.steps { padding-left: 0; list-style: none; counter-reset: s; }
+  ol.steps li { counter-increment: s; padding: 10px 0 10px 36px; border-bottom: 1px solid var(--line); position: relative; font-size: 13px; }
+  ol.steps li:last-child { border-bottom: none; }
+  ol.steps li::before { content: counter(s); position: absolute; left: 0; top: 10px; width: 22px; height: 22px; border-radius: 50%; background: var(--em); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  ol.steps li b { display: block; font-weight: 600; margin-bottom: 2px; }
+
+  /* Divider */
+  .divider { height: 1px; background: var(--line); margin: 16px 0; }
+
+  /* Tag */
+  .tag { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; border-radius: 6px; padding: 2px 8px; }
+  .tag-em { background: #ECFDF5; color: var(--em); }
+  .tag-danger { background: #FEF2F2; color: var(--danger); }
+  .tag-in { background: #FFFBEB; color: var(--in); }
+
+  /* Root cause box */
+  .root-cause { border-left: 3px solid var(--danger); padding: 10px 14px; background: #FEF2F2; border-radius: 0 8px 8px 0; margin-bottom: 14px; font-size: 13px; }
+  .root-cause strong { display: block; color: #991B1B; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+
+  /* Browser steps grid */
+  .browser-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) { .browser-grid { grid-template-columns: 1fr; } }
+  .browser-card { border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+  .browser-name { font-weight: 700; font-size: 13px; margin-bottom: 8px; }
+  .browser-steps { font-size: 12px; color: var(--gray); }
+  .browser-steps li { margin-bottom: 4px; list-style: decimal; margin-left: 16px; }
+  kbd { background: #F1F5F9; border: 1px solid #CBD5E1; border-radius: 4px; padding: 1px 6px; font-size: 11px; font-family: inherit; }
+
+  /* Migration special */
+  .migration-box { border: 1.5px dashed #FDE68A; border-radius: 10px; padding: 16px; background: #FFFBEB; }
+  .migration-box h4 { font-size: 13px; font-weight: 700; color: #92400E; margin-bottom: 8px; }
+
+  /* Header icon */
+  .hero-icon { font-size: 36px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="hero-icon">🚀</div>
+  <h1>Guía de Deploy Limpio · OctagramDelivery</h1>
+  <p class="subtitle">Solución completa para ver cambios nuevos tras un deploy con Docker + Blazor PWA</p>
+
+  <!-- DIAGNÓSTICO -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num num-danger">!</div>
+      <div>
+        <div class="section-title">¿Por qué no ves los cambios?</div>
+        <div class="section-desc">Hay 3 causas típicas, ordenadas de más a menos probable</div>
+      </div>
+    </div>
+
+    <div class="root-cause">
+      <strong>Causa #1 — Más común (90%)</strong>
+      Blazor WebAssembly es una PWA con Service Worker. El service worker guarda en caché <em>todos</em> los .wasm, .js y CSS en el navegador. Aunque el servidor tenga el código nuevo, el navegador sigue ejecutando la versión vieja hasta que el service worker se actualice. Esto pasa incluso con F5 normal.
+    </div>
+
+    <div class="root-cause" style="border-color: var(--in); background: #FFFBEB;">
+      <strong>Causa #2 — Docker build cache</strong>
+      <code>docker compose up -d --build</code> reutiliza capas de Docker si detecta que los archivos copiados no cambiaron (por timestamps o por hash). A veces la capa de <code>dotnet publish</code> se reutiliza incluso con código nuevo.
+    </div>
+
+    <div class="root-cause" style="border-color: var(--vi); background: #EEF2FF;">
+      <strong>Causa #3 — Caché del navegador normal</strong>
+      El navegador puede servir CSS/JS viejos desde su caché local sin consultar al servidor.
+    </div>
+  </div>
+
+  <!-- PASO 1: GIT -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num num-em">1</div>
+      <div>
+        <div class="section-title">Verificar que el código está en el servidor</div>
+        <div class="section-desc">Ejecutar en el servidor (SSH)</div>
+      </div>
+    </div>
+
+    <div class="cmd-block">
+      <div class="cmd-label">SSH al servidor</div>
+      <code><span class="c"># Ver qué commit tiene el servidor</span>
+git log --oneline -3
+
+<span class="c"># Debe mostrar el commit más reciente:</span>
+<span class="str"># 2f68d41 Fix Cards & Add Groups  ← este es el último</span>
+
+<span class="c"># Si no coincide, hacer pull:</span>
+git pull origin Master</code>
+    </div>
+
+    <div class="alert alert-ok">
+      <span class="alert-icon">✓</span>
+      <span>El commit <strong>2f68d41 "Fix Cards &amp; Add Groups"</strong> contiene todos los cambios de vistas móviles, buscadores, grupos de clientes y migración de base de datos.</span>
+    </div>
+  </div>
+
+  <!-- PASO 2: DOCKER LIMPIO -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num num-in">2</div>
+      <div>
+        <div class="section-title">Rebuild de Docker sin caché</div>
+        <div class="section-desc">Ejecutar en el servidor. Esto garantiza que se compila el código nuevo.</div>
+      </div>
+    </div>
+
+    <div class="alert alert-warn">
+      <span class="alert-icon">⚠</span>
+      <span><strong>Antes de ejecutar:</strong> <code>docker compose down</code> detiene los contenedores. La app quedará inaccesible por 1–3 minutos mientras reconstruye.</span>
+    </div>
+
+    <div class="cmd-block">
+      <div class="cmd-label">Rebuild completo sin caché de Docker</div>
+      <code><span class="c"># 1. Bajar contenedores</span>
+docker compose down
+
+<span class="c"># 2. Eliminar imágenes viejas del proyecto</span>
+docker compose build <span class="flag">--no-cache</span>
+
+<span class="c"># 3. Levantar contenedores con la imagen nueva</span>
+docker compose up -d
+
+<span class="c"># 4. Verificar que arrancaron correctamente</span>
+docker compose ps
+docker compose logs <span class="flag">--tail=30</span></code>
+    </div>
+
+    <div class="divider"></div>
+
+    <p style="font-size:12px;color:var(--gray);margin-bottom:10px;">Si quieres también limpiar volúmenes y redes huérfanas (más agresivo):</p>
+    <div class="cmd-block">
+      <div class="cmd-label">Limpieza profunda (opcional)</div>
+      <code><span class="c"># Eliminar contenedores + volúmenes anónimos</span>
+docker compose down <span class="flag">-v</span>
+
+<span class="c"># Limpiar imágenes/capas sin usar</span>
+docker system prune <span class="flag">-f</span>
+
+<span class="c"># Rebuild y levantar</span>
+docker compose up <span class="flag">-d --build</span></code>
+    </div>
+
+    <div class="alert alert-info">
+      <span class="alert-icon">ℹ</span>
+      <span><code>docker system prune -f</code> no elimina volúmenes con nombre (tus datos de base de datos están seguros si usan un volumen nombrado).</span>
+    </div>
+  </div>
+
+  <!-- PASO 3: MIGRACIÓN -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num num-in">3</div>
+      <div>
+        <div class="section-title">Aplicar migración de base de datos</div>
+        <div class="section-desc">Solo si usas SQL Server local en el servidor (no en Docker separado)</div>
+      </div>
+    </div>
+
+    <div class="migration-box">
+      <h4>⚠ Migración requerida: AddCustomerGrupo</h4>
+      <p style="font-size:12px;color:#92400E;margin-bottom:10px;">
+        Se agregó la columna <strong>Grupo</strong> a la tabla <code>Customers</code>. Si no aplicas esta migración, la API dará error 500 al consultar clientes.
+      </p>
+      <div class="cmd-block" style="margin-bottom:0;">
+        <div class="cmd-label">Opción A — dotnet ef en el servidor</div>
+        <code>cd /ruta/al/proyecto
+dotnet ef database update \
+  <span class="flag">--project</span> OctagramDelivery.Infrastructure \
+  <span class="flag">--startup-project</span> OctagramDelivery.Api</code>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;" class="cmd-block">
+      <div class="cmd-label">Opción B — Si la API aplica migraciones al iniciar (Program.cs)</div>
+      <code><span class="c"># Si tu app.cs tiene: context.Database.MigrateAsync()</span>
+<span class="c"># entonces la migración se aplica automáticamente al iniciar el contenedor.</span>
+<span class="c"># Verificar en los logs:</span>
+docker compose logs api <span class="flag">--tail=50</span> | grep -i migrat</code>
+    </div>
+  </div>
+
+  <!-- PASO 4: SERVICE WORKER (EL MÁS IMPORTANTE) -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num num-danger">4</div>
+      <div>
+        <div class="section-title">Limpiar el Service Worker en el navegador</div>
+        <div class="section-desc">Este paso es el más importante — sin él, el navegador sigue usando la versión vieja aunque el servidor tenga la nueva</div>
+      </div>
+    </div>
+
+    <div class="alert alert-danger">
+      <span class="alert-icon">🔴</span>
+      <span><strong>Este es el verdadero culpable.</strong> Blazor PWA registra un service worker que guarda en caché todos los archivos .wasm, .js y CSS con hashes únicos. Un F5 normal NO los limpia. Necesitas forzar la actualización.</span>
+    </div>
+
+    <p style="font-weight:600;font-size:13px;margin-bottom:12px;">Método rápido para ti (desarrollador):</p>
+
+    <div class="browser-grid" style="margin-bottom:16px;">
+
+      <div class="browser-card">
+        <div class="browser-name">Chrome / Edge</div>
+        <ul class="browser-steps">
+          <li>Abre la app</li>
+          <li>F12 → pestaña <strong>Application</strong></li>
+          <li>Sidebar → <strong>Service Workers</strong></li>
+          <li>Click <strong>Unregister</strong></li>
+          <li>Sidebar → <strong>Storage</strong> → <strong>Clear site data</strong></li>
+          <li>Recargar la página</li>
+        </ul>
+      </div>
+
+      <div class="browser-card">
+        <div class="browser-name">Firefox</div>
+        <ul class="browser-steps">
+          <li>Abre la app</li>
+          <li>F12 → pestaña <strong>Application</strong></li>
+          <li>Sidebar → <strong>Service Workers</strong></li>
+          <li>Click <strong>Unregister</strong></li>
+          <li>Recargar</li>
+        </ul>
+      </div>
+
+      <div class="browser-card">
+        <div class="browser-name">Hard Refresh (atajo rápido)</div>
+        <ul class="browser-steps">
+          <li>Cierra <em>TODAS</em> las pestañas de la app</li>
+          <li>Reabre la app</li>
+          <li>Presiona <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd></li>
+          <li>Si no funciona, usa el método de DevTools</li>
+        </ul>
+      </div>
+
+      <div class="browser-card">
+        <div class="browser-name">Celular (Chrome Android)</div>
+        <ul class="browser-steps">
+          <li>Ir a <strong>Configuración del sitio</strong> (ícono 🔒 en URL)</li>
+          <li>→ <strong>Almacenamiento</strong></li>
+          <li>→ <strong>Borrar datos</strong></li>
+          <li>Recargar la app</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="alert alert-ok">
+      <span class="alert-icon">✓</span>
+      <span>Para tus usuarios finales: el service worker de Blazor detecta automáticamente que hay una nueva versión (por el hash de <code>service-worker-assets.js</code>). Ellos solo necesitan <strong>cerrar todas las pestañas y volver a abrir la app</strong>. En la próxima visita verán un mensaje "nueva versión disponible" o la actualización se aplica sola.</span>
+    </div>
+  </div>
+
+  <!-- PASO 5: VERIFICACIÓN -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num num-em">5</div>
+      <div>
+        <div class="section-title">Verificar que el deploy fue exitoso</div>
+        <div class="section-desc">Comandos para confirmar que todo funciona</div>
+      </div>
+    </div>
+
+    <div class="cmd-block">
+      <div class="cmd-label">Verificación en el servidor</div>
+      <code><span class="c"># Ver contenedores corriendo</span>
+docker compose ps
+
+<span class="c"># Ver logs recientes del API (buscar errores)</span>
+docker compose logs api <span class="flag">--tail=50</span>
+
+<span class="c"># Ver logs del frontend/nginx</span>
+docker compose logs client <span class="flag">--tail=50</span>
+
+<span class="c"># Confirmar que el commit correcto está desplegado</span>
+git log --oneline -1
+<span class="c"># Debe decir: 2f68d41 Fix Cards & Add Groups</span></code>
+    </div>
+
+    <div class="divider"></div>
+
+    <p style="font-size:13px;font-weight:600;margin-bottom:10px;">Lista de verificación final:</p>
+    <ol class="steps">
+      <li><b>git log muestra el commit correcto</b>El servidor tiene <code>2f68d41 Fix Cards &amp; Add Groups</code></li>
+      <li><b>docker compose ps muestra todos los servicios como "Up"</b>No debe haber servicios en estado "Exit" o "Restarting"</li>
+      <li><b>Migración aplicada</b>La tabla Customers tiene la columna <code>Grupo</code> (nullable varchar)</li>
+      <li><b>Service worker limpio en el navegador</b>DevTools → Application → Service Workers muestra la versión nueva</li>
+      <li><b>La app carga sin errores en consola</b>F12 → Console no tiene errores en rojo de recursos 404 o 500</li>
+    </ol>
+  </div>
+
+  <!-- BONUS: EVITAR EN FUTURO -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num num-vi">→</div>
+      <div>
+        <div class="section-title">Evitar este problema en futuros deploys</div>
+        <div class="section-desc">Mejoras al proceso de deploy</div>
+      </div>
+    </div>
+
+    <div class="cmd-block">
+      <div class="cmd-label">Script de deploy recomendado (guardar como deploy.sh en el servidor)</div>
+      <code><span class="c">#!/bin/bash</span>
+<span class="c"># deploy.sh — ejecutar en el servidor con: bash deploy.sh</span>
+
+echo <span class="str">"[1/4] Pulling latest code..."</span>
+git pull origin Master
+
+echo <span class="str">"[2/4] Stopping containers..."</span>
+docker compose down
+
+echo <span class="str">"[3/4] Building without cache..."</span>
+docker compose build <span class="flag">--no-cache</span>
+
+echo <span class="str">"[4/4] Starting containers..."</span>
+docker compose up <span class="flag">-d</span>
+
+echo <span class="str">"Done! Containers status:"</span>
+docker compose ps</code>
+    </div>
+
+    <div class="alert alert-info">
+      <span class="alert-icon">ℹ</span>
+      <span>Para usuarios finales que usan la PWA instalada en celular: cuando publiques una versión nueva, notifica en tu grupo de WhatsApp que <strong>cierren la app completamente y la vuelvan a abrir</strong>. Blazor PWA se actualiza sola en la siguiente apertura.</span>
+    </div>
+  </div>
+
+  <p style="text-align:center;font-size:11px;color:var(--gray);margin-top:16px;">OctagramDelivery · Guía generada 2026-06-06</p>
+</div>
+</body>
+</html>
