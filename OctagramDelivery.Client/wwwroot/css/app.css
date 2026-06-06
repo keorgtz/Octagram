@@ -1320,6 +1320,47 @@ body,
 }
 .bottom-nav-icon { font-size: 22px; line-height: 1; }
 
+/* ── Bottom Nav — menú "Más" ─────────────────────────────────── */
+.bottom-nav-more-btn { background: none; border: none; cursor: pointer; }
+
+.bottom-nav-more-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 298;
+    background: rgba(0,0,0,.25);
+}
+
+.bottom-nav-more-menu {
+    position: fixed;
+    bottom: 56px;
+    left: 0; right: 0;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 28px rgba(0,0,0,.16);
+    z-index: 299;
+    overflow: hidden;
+}
+
+.bottom-nav-more-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 24px;
+    color: var(--gray-dark, #1C1E26);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    border-bottom: 1px solid var(--gray-line, #E5E7EB);
+    transition: background 120ms;
+}
+.bottom-nav-more-item:last-child { border-bottom: none; }
+.bottom-nav-more-item:active,
+.bottom-nav-more-item:hover      { background: var(--page-bg, #F2F3F7); }
+.bottom-nav-more-item .material-symbols-rounded {
+    font-size: 20px;
+    color: var(--pr-500, #1EB980);
+}
+
 /* ── Jornadas Activas — monitor cards ────────────────────────── */
 .jornadas-activas-grid {
     display: grid;
@@ -1424,9 +1465,15 @@ body,
     .kpi-value { font-size: 20px; }
     .kpi-label { font-size: 10px; }
 
-    /* Tablas: scroll horizontal */
-    .data-card           { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .mud-table-container { overflow-x: auto; }
+    /* Tablas: scroll horizontal real */
+    .data-card {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    .mud-table,
+    .mud-table-container { overflow-x: visible !important; }
+    .mud-table td,
+    .mud-table th        { white-space: nowrap; }
 
     /* Grid clientes → columna única */
     .neg-clientes-grid   { grid-template-columns: 1fr; min-height: unset; }

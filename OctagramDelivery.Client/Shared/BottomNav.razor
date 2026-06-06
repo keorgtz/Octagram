@@ -2,15 +2,39 @@
 
 @if (UserRol != UserRole.Repartidor)
 {
+    @if (_moreOpen)
+    {
+        <div class="bottom-nav-more-backdrop" @onclick="CloseMore"></div>
+        <div class="bottom-nav-more-menu">
+            @foreach (var item in GetMoreItems())
+            {
+                <a href="@item.Href" class="bottom-nav-more-item" @onclick="CloseMore">
+                    <span class="material-symbols-rounded">@item.Icon</span>
+                    @item.Label
+                </a>
+            }
+        </div>
+    }
+
     <nav class="bottom-nav">
-        @foreach (var item in GetNavItems())
+        @foreach (var item in GetMainItems())
         {
             var path = new Uri(Nav.Uri).AbsolutePath;
             var active = path.StartsWith(item.ActivePrefix, StringComparison.OrdinalIgnoreCase);
-            <a href="@item.Href" class="bottom-nav-item @(active ? "bottom-nav-active" : "")">
+            <a href="@item.Href" class="bottom-nav-item @(active ? "bottom-nav-active" : "")"
+               @onclick="CloseMore">
                 <span class="material-symbols-rounded bottom-nav-icon">@item.Icon</span>
                 <span class="bottom-nav-label">@item.Label</span>
             </a>
+        }
+        @if (GetMoreItems().Any())
+        {
+            var moreActive = IsMoreActive();
+            <button class="bottom-nav-item bottom-nav-more-btn @(moreActive || _moreOpen ? "bottom-nav-active" : "")"
+                    @onclick="ToggleMore">
+                <span class="material-symbols-rounded bottom-nav-icon">@(_moreOpen ? "close" : "more_horiz")</span>
+                <span class="bottom-nav-label">Más</span>
+            </button>
         }
     </nav>
 }
@@ -18,15 +42,26 @@
 @code {
     [Parameter] public UserRole UserRol { get; set; }
 
+    private bool _moreOpen;
+
     private record NavItem(string Href, string Icon, string Label, string ActivePrefix);
 
-    private IEnumerable<NavItem> GetNavItems() => UserRol switch
+    private void ToggleMore() => _moreOpen = !_moreOpen;
+    private void CloseMore()  => _moreOpen = false;
+
+    private bool IsMoreActive()
+    {
+        var path = new Uri(Nav.Uri).AbsolutePath;
+        return GetMoreItems().Any(item =>
+            path.StartsWith(item.ActivePrefix, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private IEnumerable<NavItem> GetMainItems() => UserRol switch
     {
         UserRole.Admin => [
-            new("/admin/dashboard",   "dashboard",       "Inicio",    "/admin/dashboard"),
-            new("/gerente/jornadas",  "delivery_dining", "Jornadas",  "/gerente/jornada"),
-            new("/admin/negocios",    "store",           "Negocios",  "/admin/negocios"),
-            new("/admin/historial",   "history",         "Historial", "/admin/historial"),
+            new("/admin/dashboard",  "dashboard",       "Inicio",   "/admin/dashboard"),
+            new("/gerente/jornadas", "delivery_dining", "Jornadas", "/gerente/jornada"),
+            new("/admin/negocios",   "store",           "Negocios", "/admin/negocios"),
         ],
         UserRole.Gerente => [
             new("/gerente/dashboard", "dashboard",       "Inicio",    "/gerente/dashboard"),
@@ -39,6 +74,17 @@
             new("/gerente/jornadas",  "delivery_dining", "Jornadas",  "/gerente/jornada"),
             new("/gerente/clientes",  "people",          "Clientes",  "/gerente/clientes"),
             new("/gerente/historial", "history",         "Historial", "/gerente/historial"),
+        ],
+        _ => []
+    };
+
+    private IEnumerable<NavItem> GetMoreItems() => UserRol switch
+    {
+        UserRole.Admin => [
+            new("/admin/usuarios",    "manage_accounts", "Usuarios",  "/admin/usuarios"),
+            new("/gerente/clientes",  "people",          "Clientes",  "/gerente/clientes"),
+            new("/gerente/productos", "inventory_2",     "Productos", "/gerente/productos"),
+            new("/admin/historial",   "history",         "Historial", "/admin/historial"),
         ],
         _ => []
     };
