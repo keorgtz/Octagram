@@ -95,12 +95,13 @@ public class NegociosController : ControllerBase
 
         return Ok(relaciones.Select(un => new UsuarioNegocioDto
         {
-            UserId = un.UserId,
-            FullName = un.User!.FullName,
-            Username = un.User.Username,
-            Rol = un.User.Rol,
-            IsActive = un.User.IsActive,
-            EsPrincipal = un.EsPrincipal
+            UserId       = un.UserId,
+            FullName     = un.User!.FullName,
+            Username     = un.User.Username,
+            Rol          = un.User.Rol,
+            IsActive     = un.User.IsActive,
+            EsPrincipal  = un.EsPrincipal,
+            PermisosFlags = un.PermisosFlags
         }));
     }
 
@@ -148,6 +149,17 @@ public class NegociosController : ControllerBase
         var rel = await _ctx.UsuarioNegocios.FirstOrDefaultAsync(un => un.TenantId == id && un.UserId == userId);
         if (rel == null) return NotFound();
         _ctx.UsuarioNegocios.Remove(rel);
+        await _ctx.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPut("{id}/usuarios/{userId}/permisos")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
+    public async Task<IActionResult> SetPermisos(int id, int userId, [FromBody] SetPermisosRequest req)
+    {
+        var rel = await _ctx.UsuarioNegocios.FirstOrDefaultAsync(un => un.TenantId == id && un.UserId == userId);
+        if (rel == null) return NotFound();
+        rel.PermisosFlags = req.PermisosFlags;
         await _ctx.SaveChangesAsync();
         return NoContent();
     }

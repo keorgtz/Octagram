@@ -29,6 +29,7 @@ builder.Services.AddScoped<AuthenticationStateProvider>(p => p.GetRequiredServic
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<ApiService>();
 builder.Services.AddScoped<MigrationService>();
+builder.Services.AddSingleton<JornadaStateService>();
 builder.Services.AddTransient(sp => new HubService(
     sp.GetRequiredService<AuthService>(),
     apiBaseUrl.TrimEnd('/') + "/hubs/jornada"

@@ -1,6 +1,6 @@
 @page "/gerente/clientes"
 @page "/supervisor/clientes"
-@attribute [Authorize(Roles = $"{nameof(UserRole.Gerente)},{nameof(UserRole.Supervisor)}")]
+@attribute [Authorize(Roles = $"{nameof(UserRole.Gerente)},{nameof(UserRole.Supervisor)},{nameof(UserRole.Admin)}")]
 @inject ApiService Api
 @inject AuthService AuthSvc
 @inject ISnackbar Snackbar

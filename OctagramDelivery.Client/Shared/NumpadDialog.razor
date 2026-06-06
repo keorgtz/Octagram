@@ -1,0 +1,77 @@
+@if (Visible)
+{
+    <div class="numpad-backdrop" @onclick="Cancelar"></div>
+    <div class="numpad-panel" @onclick:stopPropagation="true">
+        <div class="numpad-titulo">@Titulo</div>
+        <div class="numpad-display">@(_buffer == "" ? "0" : _buffer)</div>
+        <div class="numpad-grid">
+            @foreach (var k in new[] { "7","8","9","4","5","6","1","2","3","⌫","0","." })
+            {
+                var key = k;
+                <button class="numpad-key @(key == "⌫" ? "numpad-key-del" : "") @(key == "." && !PermiteDecimal ? "numpad-key-dis" : "")"
+                        type="button"
+                        disabled="@(key == "." && !PermiteDecimal)"
+                        @onclick="() => PulsarTecla(key)">
+                    @key
+                </button>
+            }
+        </div>
+        <div class="numpad-footer">
+            <button class="numpad-btn numpad-btn-cancel" type="button" @onclick="Cancelar">Cancelar</button>
+            <button class="numpad-btn numpad-btn-ok" type="button" @onclick="Confirmar">Confirmar</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public string Titulo { get; set; } = "Ingresar valor";
+    [Parameter] public decimal? ValorInicial { get; set; }
+    [Parameter] public bool PermiteDecimal { get; set; } = true;
+    [Parameter] public EventCallback<decimal> OnConfirmar { get; set; }
+
+    private string _buffer = "0";
+
+    protected override void OnParametersSet()
+    {
+        if (Visible && ValorInicial.HasValue)
+            _buffer = ValorInicial.Value > 0
+                ? ValorInicial.Value.ToString("G29", System.Globalization.CultureInfo.InvariantCulture)
+                : "0";
+    }
+
+    private void PulsarTecla(string tecla)
+    {
+        switch (tecla)
+        {
+            case "⌫":
+                _buffer = _buffer.Length > 1 ? _buffer[..^1] : "0";
+                break;
+            case ".":
+                if (PermiteDecimal && !_buffer.Contains('.'))
+                    _buffer += ".";
+                break;
+            default:
+                if (_buffer == "0") _buffer = tecla;
+                else if (_buffer.Length < 10) _buffer += tecla;
+                break;
+        }
+    }
+
+    private async Task Confirmar()
+    {
+        if (decimal.TryParse(_buffer, System.Globalization.NumberStyles.Any,
+            System.Globalization.CultureInfo.InvariantCulture, out var val))
+            await OnConfirmar.InvokeAsync(Math.Max(0, val));
+        await Cerrar();
+    }
+
+    private async Task Cancelar() => await Cerrar();
+
+    private async Task Cerrar()
+    {
+        _buffer = "0";
+        await VisibleChanged.InvokeAsync(false);
+    }
+}

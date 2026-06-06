@@ -472,6 +472,57 @@
                     </div>
                 </div>
             </MudTabPanel>
+
+            <!-- ══════════════════════════════ TAB PERMISOS ══════════════════════════════ -->
+            <MudTabPanel Text="Permisos" Icon="@Icons.Material.Rounded.AdminPanelSettings">
+                <div style="padding:16px 0;">
+                    @if (_cargandoUsuarios)
+                    {
+                        <div class="loading-state" style="padding:40px;"><MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" /></div>
+                    }
+                    else if (!_usuarios.Any())
+                    {
+                        <div class="empty-state" style="padding:40px;">
+                            <span class="material-symbols-rounded">group_off</span>
+                            <p>Sin usuarios asignados a este negocio.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted" style="font-size:12px;margin-bottom:16px;">
+                            Activa los permisos por usuario. Los cambios se guardan inmediatamente al hacer clic en Guardar.
+                        </p>
+                        <div style="display:flex;flex-direction:column;gap:12px;">
+                            @foreach (var u in _usuarios)
+                            {
+                                var flags = _permisosPorUsuario.TryGetValue(u.UserId, out var f) ? f : u.PermisosFlags;
+                                <div class="data-card" style="padding:14px 16px;">
+                                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                                        <span class="fw-600">@u.FullName</span>
+                                        <span class="text-muted" style="font-size:11px;">@u.Rol</span>
+                                    </div>
+                                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-bottom:12px;">
+                                        @foreach (var (perm, label) in _permisosDisp)
+                                        {
+                                            var activo = (flags & (int)perm) != 0;
+                                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+                                                <MudCheckBox T="bool" Value="activo"
+                                                             ValueChanged="@(v => TogglePermiso(u.UserId, perm, u.PermisosFlags, v))"
+                                                             Color="Color.Primary" Size="Size.Small" />
+                                                @label
+                                            </label>
+                                        }
+                                    </div>
+                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                               OnClick="@(() => GuardarPermisos(u.UserId))">
+                                        Guardar permisos
+                                    </MudButton>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </MudTabPanel>
         </MudTabs>
     </DialogContent>
     <DialogActions>
@@ -512,6 +563,38 @@
     private int     _tierNumero = 1;
     private string? _tierEtiqueta;
     private decimal _tierPrecio;
+
+    // ── Permisos ──────────────────────────────────────────────────
+    private Dictionary<int, int> _permisosPorUsuario = new();
+
+    private static readonly (Permiso Perm, string Label)[] _permisosDisp =
+    {
+        (Permiso.VerDashboard,     "Ver Dashboard"),
+        (Permiso.VerReportes,      "Ver Reportes"),
+        (Permiso.GestionClientes,  "Gestión Clientes"),
+        (Permiso.GestionProductos, "Gestión Productos"),
+    };
+
+    private void TogglePermiso(int userId, Permiso permiso, int baseFlags, bool activo)
+    {
+        var actual = _permisosPorUsuario.TryGetValue(userId, out var f) ? f : baseFlags;
+        _permisosPorUsuario[userId] = activo ? actual | (int)permiso : actual & ~(int)permiso;
+    }
+
+    private async Task GuardarPermisos(int userId)
+    {
+        var flags = _permisosPorUsuario.TryGetValue(userId, out var f)
+            ? f
+            : _usuarios.FirstOrDefault(u => u.UserId == userId)?.PermisosFlags ?? 0;
+        var resp = await Api.SetPermisosAsync(TenantId, userId, new SetPermisosRequest { PermisosFlags = flags });
+        if (resp.IsSuccessStatusCode)
+        {
+            var u = _usuarios.FirstOrDefault(u => u.UserId == userId);
+            if (u != null) u.PermisosFlags = flags;
+            Snackbar.Add("Permisos actualizados.", Severity.Success);
+        }
+        else Snackbar.Add("Error al actualizar los permisos.", Severity.Error);
+    }
 
     // ── Clientes ──────────────────────────────────────────────────
     private List<CustomerDto> _clientes        = new();

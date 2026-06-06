@@ -1,7 +1,7 @@
 @page "/repartidor/historial"
-@attribute [Authorize(Roles = nameof(UserRole.Repartidor))]
 @inject ApiService Api
 @inject NavigationManager Nav
+@attribute [Authorize(Roles = $"{nameof(UserRole.Repartidor)},{nameof(UserRole.Admin)}")]
 
 <PageTitle>Historial · OctagramDelivery</PageTitle>
 
@@ -28,6 +28,7 @@
                     <MudTh>Fecha</MudTh>
                     <MudTh Style="text-align:center;">Estado</MudTh>
                     <MudTh Style="text-align:right;">Total Neto</MudTh>
+                    <MudTh></MudTh>
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd>
@@ -45,6 +46,11 @@
                         <span class="fw-700 tabnum text-vi">
                             @context.TotalNeto.ToString("C", _mx)
                         </span>
+                    </MudTd>
+                    <MudTd Style="text-align:center;">
+                        <MudIconButton Icon="@Icons.Material.Rounded.Assessment" Size="Size.Small"
+                                       Color="Color.Primary" title="Ver Reporte"
+                                       OnClick="@(() => Nav.NavigateTo($"/reporte/{context.Id}"))" />
                     </MudTd>
                 </RowTemplate>
                 <NoRecordsContent>

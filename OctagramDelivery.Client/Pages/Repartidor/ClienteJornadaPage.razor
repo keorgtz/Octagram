@@ -1,0 +1,318 @@
+@page "/repartidor/jornada/cliente/{ClienteId:int}"
+@attribute [Authorize(Roles = $"{nameof(UserRole.Repartidor)},{nameof(UserRole.Admin)}")]
+@implements IDisposable
+@inject ApiService Api
+@inject AuthService AuthSvc
+@inject ISnackbar Snackbar
+@inject IDialogService Dialog
+@inject NavigationManager Nav
+@inject JornadaStateService Estado
+
+<PageTitle>Cliente · OctagramDelivery</PageTitle>
+
+@if (_cargando)
+{
+    <div style="display:flex;height:60vh;align-items:center;justify-content:center;">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+    </div>
+}
+else if (_cliente == null)
+{
+    <div class="empty-state">
+        <span class="material-symbols-rounded">person_off</span>
+        <p>Cliente no encontrado.</p>
+        <MudButton Variant="Variant.Text" OnClick="Regresar">Regresar</MudButton>
+    </div>
+}
+else
+{
+    <!-- Header sticky -->
+    <div class="cj-header">
+        <button class="icon-btn" @onclick="Regresar">
+            <span class="material-symbols-rounded">arrow_back</span>
+        </button>
+        <span class="cj-header-title">@_cliente.Nombre</span>
+        <span class="save-indicator @_saveClass" style="font-size:11px;">@_saveText</span>
+    </div>
+
+    <!-- Vuelta tabs -->
+    <div class="cj-vuelta-bar">
+        @foreach (var ronda in Estado.Jornada?.Rondas ?? new())
+        {
+            <button class="cj-vuelta-tab @(_rondaActivaId == ronda.Id ? "active" : "")"
+                    @onclick="() => _rondaActivaId = ronda.Id">
+                @ronda.Etiqueta
+            </button>
+        }
+        @if (Estado.Jornada?.Estado == JornadaEstado.Abierta)
+        {
+            <button class="cj-vuelta-tab add" @onclick="AgregarRonda">
+                <span class="material-symbols-rounded" style="font-size:16px;">add</span>
+            </button>
+        }
+    </div>
+
+    <!-- Productos -->
+    <div class="cj-productos">
+        @foreach (var prod in _productosDelCliente)
+        {
+            var celda = Estado.GetOrCreate(_rondaActivaId, ClienteId, prod.ProductId);
+            var esGramaje = prod.TipoMedida == TipoMedida.Gramaje;
+            var subtotal = (celda.Entregado - celda.Devuelto) * celda.Precio;
+
+            <div class="cj-producto-card">
+                <div class="cj-producto-header">
+                    <span class="cj-producto-nombre">@prod.ProductNombre</span>
+                    <span class="cj-producto-subtotal">@subtotal.ToString("C", _mx)</span>
+                </div>
+
+                <!-- Entregado -->
+                <div class="cj-qty-row">
+                    <span class="cj-qty-label entregado">Entregado</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span class="cj-qty-display">@FormatQty(celda.Entregado, prod.TipoMedida)</span>
+                        <button class="cj-qty-btn"
+                                disabled="@(Estado.Jornada?.Estado != JornadaEstado.Abierta)"
+                                @onclick="() => AbrirNumpad(celda, true, prod.TipoMedida, $"Entregado — {prod.ProductNombre}")">
+                            <span class="material-symbols-rounded">edit</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Devuelto -->
+                <div class="cj-qty-row">
+                    <span class="cj-qty-label devuelto">Devuelto</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span class="cj-qty-display">@FormatQty(celda.Devuelto, prod.TipoMedida)</span>
+                        <button class="cj-qty-btn"
+                                disabled="@(Estado.Jornada?.Estado != JornadaEstado.Abierta)"
+                                @onclick="() => AbrirNumpad(celda, false, prod.TipoMedida, $"Devuelto — {prod.ProductNombre}")">
+                            <span class="material-symbols-rounded">edit</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (_productosDelCliente.Count == 0)
+        {
+            <div class="empty-state">
+                <span class="material-symbols-rounded">inventory_2</span>
+                <p>Este cliente no tiene productos asignados.</p>
+            </div>
+        }
+    </div>
+
+    <!-- Footer -->
+    <div class="cj-footer">
+        <div class="cj-footer-total">
+            <span class="cj-footer-label">Total a cobrar</span>
+            <span class="cj-footer-amount">@GetTotalCliente().ToString("C", _mx)</span>
+        </div>
+        <MudToggleIconButton Toggled="_excluido"
+                             ToggledChanged="ToggleExclusion"
+                             Icon="@Icons.Material.Rounded.AttachMoney"
+                             ToggledIcon="@Icons.Material.Rounded.MoneyOff"
+                             Title="@(_excluido ? "Incluir en efectivo" : "Excluir del efectivo")"
+                             Color="Color.Success"
+                             ToggledColor="Color.Warning"
+                             Disabled="@(Estado.Jornada?.Estado != JornadaEstado.Abierta)" />
+    </div>
+}
+
+<!-- Numpad flotante -->
+<NumpadDialog @bind-Visible="_numpadVisible"
+              Titulo="@_numpadTitulo"
+              ValorInicial="@_numpadValorInicial"
+              PermiteDecimal="@_numpadDecimal"
+              OnConfirmar="OnNumpadConfirmar" />
+
+@code {
+    [Parameter] public int ClienteId { get; set; }
+
+    private static readonly System.Globalization.CultureInfo _mx =
+        System.Globalization.CultureInfo.GetCultureInfo("es-MX");
+
+    private bool         _cargando = true;
+    private CustomerDto? _cliente;
+    private List<CustomerProductDto> _productosDelCliente = new();
+    private int          _rondaActivaId;
+    private bool         _excluido;
+
+    private string _saveText  = "Guardado ✓";
+    private string _saveClass = "save-ok";
+
+    // Numpad state
+    private bool             _numpadVisible;
+    private string           _numpadTitulo = "";
+    private decimal?         _numpadValorInicial;
+    private bool             _numpadDecimal;
+    private JornadaStateService.CeldaState? _numpadCelda;
+    private bool             _numpadEsEntregado;
+
+    // Auto-save
+    private System.Threading.Timer? _saveTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Estado.OnChange += StateHasChanged;
+
+        if (!Estado.Cargado)
+        {
+            var user = await AuthSvc.GetCurrentUser();
+            var negocioId = user?.NegocioIds.FirstOrDefault() ?? 0;
+            if (negocioId > 0)
+            {
+                var jornada   = await Api.GetJornadaHoyAsync(negocioId);
+                var productos = await Api.GetProductosAsync(negocioId) ?? new();
+                var clientes  = (await Api.GetClientesAsync(negocioId) ?? new())
+                                .Where(c => { var d = (int)DateTime.Today.DayOfWeek; int b = d == 0 ? 64 : (1 << (d - 1)); return (c.DiasEntrega & b) != 0 || c.DiasEntrega == 0; })
+                                .ToList();
+                if (jornada != null)
+                    Estado.Cargar(jornada, productos, clientes);
+            }
+        }
+
+        _cliente = Estado.Clientes.FirstOrDefault(c => c.Id == ClienteId);
+        _productosDelCliente = _cliente?.Productos ?? new();
+        _rondaActivaId = Estado.Jornada?.Rondas.FirstOrDefault()?.Id ?? 0;
+        _excluido = Estado.Exclusiones.TryGetValue(ClienteId, out var ex) && ex.ExcluidoDeEfectivo;
+
+        _cargando = false;
+    }
+
+    private void AbrirNumpad(JornadaStateService.CeldaState celda, bool esEntregado,
+                              TipoMedida tipo, string titulo)
+    {
+        _numpadCelda       = celda;
+        _numpadEsEntregado = esEntregado;
+        _numpadTitulo      = titulo;
+        _numpadValorInicial = esEntregado ? celda.Entregado : celda.Devuelto;
+        _numpadDecimal     = tipo == TipoMedida.Gramaje;
+        _numpadVisible     = true;
+    }
+
+    private void OnNumpadConfirmar(decimal valor)
+    {
+        if (_numpadCelda == null) return;
+        if (_numpadEsEntregado) _numpadCelda.Entregado = valor;
+        else                    _numpadCelda.Devuelto  = Math.Min(valor, _numpadCelda.Entregado);
+        Estado.HayCambiosPendientes = true;
+        Estado.Notificar();
+        ProgramarGuardado();
+    }
+
+    private void ProgramarGuardado()
+    {
+        _saveText  = "Guardando…";
+        _saveClass = "save-pending";
+        StateHasChanged();
+        _saveTimer?.Dispose();
+        _saveTimer = new System.Threading.Timer(async _ =>
+        {
+            await InvokeAsync(GuardarAsync);
+        }, null, 2000, System.Threading.Timeout.Infinite);
+    }
+
+    private async Task GuardarAsync()
+    {
+        if (Estado.Jornada == null) return;
+        bool ok = true;
+        foreach (var ronda in Estado.Jornada.Rondas)
+        {
+            var detalles = _productosDelCliente.Select(p =>
+            {
+                var c = Estado.GetOrCreate(ronda.Id, ClienteId, p.ProductId);
+                return new DetalleUpsertItem
+                {
+                    ClienteId         = ClienteId,
+                    ProductoId        = p.ProductId,
+                    CantidadEntregada = c.Entregado,
+                    CantidadDevuelta  = c.Devuelto,
+                    PrecioUnitario    = c.Precio,
+                    GramajePreset     = c.GramajePreset
+                };
+            }).ToList();
+
+            var resp = await Api.BulkSaveDetallesAsync(ronda.Id, new BulkSaveRondaRequest { Detalles = detalles });
+            if (!resp.IsSuccessStatusCode) ok = false;
+        }
+        _saveText  = ok ? "Guardado ✓" : "Error al guardar";
+        _saveClass = ok ? "save-ok"    : "save-error";
+        Estado.HayCambiosPendientes = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ToggleExclusion(bool excluido)
+    {
+        if (Estado.Jornada == null) return;
+        _excluido = excluido;
+        var req = new ToggleExclusionRequest
+        {
+            ExcluidoDeEfectivo    = excluido,
+            MetodoPagoAlternativo = excluido ? MetodoPago.Transferencia : MetodoPago.Efectivo
+        };
+        var resp = await Api.ToggleExclusionAsync(Estado.Jornada.Id, ClienteId, req);
+        if (resp.IsSuccessStatusCode)
+        {
+            if (Estado.Exclusiones.TryGetValue(ClienteId, out var ex))
+            {
+                ex.ExcluidoDeEfectivo    = excluido;
+                ex.MetodoPagoAlternativo = req.MetodoPagoAlternativo;
+            }
+            else
+            {
+                Estado.Exclusiones[ClienteId] = new ClienteJornadaDto
+                {
+                    ClienteId             = ClienteId,
+                    ExcluidoDeEfectivo    = excluido,
+                    MetodoPagoAlternativo = req.MetodoPagoAlternativo
+                };
+            }
+            Estado.Notificar();
+        }
+        else
+        {
+            _excluido = !excluido;
+            Snackbar.Add("No se pudo actualizar la exclusión", Severity.Error);
+        }
+    }
+
+    private async Task AgregarRonda()
+    {
+        var dialog = await Dialog.ShowAsync<AgregarRondaDialog>("Nueva Vuelta");
+        var result = await dialog.Result;
+        if (result is { Canceled: false } && result.Data is string etiqueta)
+        {
+            var resp = await Api.AddRondaAsync(Estado.Jornada!.Id, new AddRondaRequest { Etiqueta = etiqueta });
+            if (resp.IsSuccessStatusCode)
+            {
+                var nueva = await resp.Content.ReadFromJsonAsync<RondaDto>();
+                if (nueva != null)
+                {
+                    Estado.Jornada!.Rondas.Add(nueva);
+                    _rondaActivaId = nueva.Id;
+                    Estado.Notificar();
+                }
+                Snackbar.Add("Vuelta agregada", Severity.Success);
+            }
+        }
+    }
+
+    private decimal GetTotalCliente()
+    {
+        var (neto, _) = Estado.TotalesCliente(ClienteId);
+        return neto;
+    }
+
+    private static string FormatQty(decimal qty, TipoMedida tipo)
+        => tipo == TipoMedida.Gramaje ? qty.ToString("0.##") : ((int)qty).ToString();
+
+    private void Regresar() => Nav.NavigateTo("/repartidor/jornada");
+
+    public void Dispose()
+    {
+        Estado.OnChange -= StateHasChanged;
+        _saveTimer?.Dispose();
+    }
+}

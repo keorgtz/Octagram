@@ -27,14 +27,17 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
         var user = await _context.Users
-            .Include(u => u.UsuarioNegocios)
+            .Include(u => u.UsuarioNegocios).ThenInclude(un => un.Tenant)
             .FirstOrDefaultAsync(u => u.Username == request.Username && u.IsActive);
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             return Unauthorized("Usuario o contraseña incorrectos.");
 
         var negocioIds = user.UsuarioNegocios.Select(un => un.TenantId).ToList();
-        var token = GenerateToken(user, negocioIds);
+        var permisosPorNegocio = user.UsuarioNegocios.ToDictionary(
+            un => un.TenantId.ToString(),
+            un => un.PermisosFlags);
+        var token = GenerateToken(user, negocioIds, permisosPorNegocio);
 
         return Ok(new LoginResponse
         {
@@ -46,9 +49,12 @@ public class AuthController : ControllerBase
         });
     }
 
-    private string GenerateToken(OctagramDelivery.Domain.Entities.AppUser user, List<int> negocioIds)
+    private string GenerateToken(
+        OctagramDelivery.Domain.Entities.AppUser user,
+        List<int> negocioIds,
+        Dictionary<string, int>? permisosPorNegocio = null)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+        var key   = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new List<Claim>
@@ -63,11 +69,15 @@ public class AuthController : ControllerBase
         foreach (var nid in negocioIds)
             claims.Add(new Claim("negocioId", nid.ToString()));
 
+        if (permisosPorNegocio is { Count: > 0 })
+            claims.Add(new Claim("permisos",
+                System.Text.Json.JsonSerializer.Serialize(permisosPorNegocio)));
+
         var token = new JwtSecurityToken(
-            issuer: _config["Jwt:Issuer"],
-            audience: _config["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.UtcNow.AddHours(10),
+            issuer:            _config["Jwt:Issuer"],
+            audience:          _config["Jwt:Audience"],
+            claims:            claims,
+            expires:           DateTime.UtcNow.AddHours(10),
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

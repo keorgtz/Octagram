@@ -130,3 +130,62 @@ public class JornadaResumenDto
     public JornadaEstado Estado { get; set; }
     public decimal TotalNeto { get; set; }
 }
+
+// ── Reporte de jornada ─────────────────────────────────────────────
+public class ReporteJornadaDto
+{
+    public int JornadaId { get; set; }
+    public DateOnly Fecha { get; set; }
+    public string NegocioNombre { get; set; } = "";
+    public string RepartidorNombre { get; set; } = "";
+    public JornadaEstado Estado { get; set; }
+    public decimal TotalBruto { get; set; }
+    public decimal TotalDevuelto { get; set; }
+    public decimal TotalNeto { get; set; }
+    public decimal TotalEfectivo { get; set; }
+    public decimal TotalExcluido { get; set; }
+    public List<ReporteClienteDto> Clientes { get; set; } = new();
+    public List<ReporteTotalProductoDto> TotalesPorProducto { get; set; } = new();
+}
+
+public class ReporteClienteDto
+{
+    public int ClienteId { get; set; }
+    public string Nombre { get; set; } = "";
+    public bool ExcluidoDeEfectivo { get; set; }
+    public MetodoPago MetodoPago { get; set; }
+    public decimal TotalBruto { get; set; }
+    public decimal TotalDevuelto { get; set; }
+    public decimal TotalNeto { get; set; }
+    public List<ReporteProductoDto> Productos { get; set; } = new();
+}
+
+public class ReporteProductoDto
+{
+    public int ProductoId { get; set; }
+    public string Nombre { get; set; } = "";
+    public TipoMedida TipoMedida { get; set; }
+    public decimal CantidadEntregada { get; set; }
+    public decimal CantidadDevuelta { get; set; }
+    public decimal PrecioUnitario { get; set; }
+    public decimal Subtotal { get; set; }
+    public List<ReporteVueltaDto> Vueltas { get; set; } = new();
+}
+
+public class ReporteVueltaDto
+{
+    public int NumeroVuelta { get; set; }
+    public string Etiqueta { get; set; } = "";
+    public decimal Entregado { get; set; }
+    public decimal Devuelto { get; set; }
+}
+
+public class ReporteTotalProductoDto
+{
+    public int ProductoId { get; set; }
+    public string Nombre { get; set; } = "";
+    public decimal CantidadEntregada { get; set; }
+    public decimal CantidadDevuelta { get; set; }
+    public decimal TotalBruto { get; set; }
+    public decimal TotalNeto { get; set; }
+}

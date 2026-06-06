@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.Authorization;
 using OctagramDelivery.Application.DTOs;
 using OctagramDelivery.Domain.Enums;
@@ -54,12 +55,28 @@ public class AuthService
         var rolStr = user.FindFirst(ClaimTypes.Role)?.Value ?? "";
         Enum.TryParse<UserRole>(rolStr, out var rol);
 
+        var permisosNegocio = new Dictionary<int, Permiso>();
+        var permisosJson = user.FindFirst("permisos")?.Value;
+        if (!string.IsNullOrEmpty(permisosJson))
+        {
+            try
+            {
+                var raw = JsonSerializer.Deserialize<Dictionary<string, int>>(permisosJson);
+                if (raw != null)
+                    foreach (var kv in raw)
+                        if (int.TryParse(kv.Key, out var nid))
+                            permisosNegocio[nid] = (Permiso)kv.Value;
+            }
+            catch { }
+        }
+
         return new UserInfo
         {
             Id = int.Parse(user.FindFirst("id")?.Value ?? "0"),
             FullName = user.FindFirst("fullName")?.Value ?? "",
             Rol = rol,
-            NegocioIds = user.FindAll("negocioId").Select(c => int.Parse(c.Value)).ToList()
+            NegocioIds = user.FindAll("negocioId").Select(c => int.Parse(c.Value)).ToList(),
+            PermisosNegocio = permisosNegocio
         };
     }
 }
@@ -70,4 +87,8 @@ public class UserInfo
     public string FullName { get; set; } = string.Empty;
     public UserRole Rol { get; set; }
     public List<int> NegocioIds { get; set; } = new();
+    public Dictionary<int, Permiso> PermisosNegocio { get; set; } = new();
+
+    public bool TienePermiso(Permiso permiso, int negocioId)
+        => PermisosNegocio.TryGetValue(negocioId, out var flags) && flags.HasFlag(permiso);
 }

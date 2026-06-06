@@ -367,6 +367,9 @@ namespace OctagramDelivery.Infrastructure.Data.Migrations
                     b.Property<bool>("EsPrincipal")
                         .HasColumnType("bit");
 
+                    b.Property<int>("PermisosFlags")
+                        .HasColumnType("int");
+
                     b.Property<int>("TenantId")
                         .HasColumnType("int");
 

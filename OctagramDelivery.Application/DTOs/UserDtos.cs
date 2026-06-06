@@ -39,7 +39,10 @@ public class UsuarioNegocioDto
     public UserRole Rol { get; set; }
     public bool IsActive { get; set; }
     public bool EsPrincipal { get; set; }
+    public int PermisosFlags { get; set; }
 }
+
+public class SetPermisosRequest { public int PermisosFlags { get; set; } }
 
 public class AsignarUsuarioRequest
 {

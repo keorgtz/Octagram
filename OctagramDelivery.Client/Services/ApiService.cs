@@ -126,6 +126,14 @@ public class ApiService
         return _http.GetFromJsonAsync<List<JornadaResumenDto>>(q.ToString());
     }
 
+    // ── Reportes ─────────────────────────────────────────────────
+    public Task<ReporteJornadaDto?> GetReporteJornadaAsync(int jornadaId)
+        => _http.GetFromJsonAsync<ReporteJornadaDto>($"api/reportes/{jornadaId}");
+
+    // ── Permisos por negocio ──────────────────────────────────────
+    public Task<HttpResponseMessage> SetPermisosAsync(int negocioId, int userId, SetPermisosRequest req)
+        => _http.PutAsJsonAsync($"api/negocios/{negocioId}/usuarios/{userId}/permisos", req);
+
     // ── Dashboard ─────────────────────────────────────────────────
     public Task<DashboardNegocioDto?> GetDashboardSupervisorAsync(int negocioId, DateOnly? fecha = null)
     {

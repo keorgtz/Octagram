@@ -8,4 +8,5 @@ public class UsuarioNegocio
     public int TenantId { get; set; }
     public Tenant? Tenant { get; set; }
     public bool EsPrincipal { get; set; }
+    public int PermisosFlags { get; set; }
 }

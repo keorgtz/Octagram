@@ -1,0 +1,166 @@
+@page "/reporte/{JornadaId:int}"
+@attribute [Authorize]
+@inject ApiService Api
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<PageTitle>Reporte · OctagramDelivery</PageTitle>
+
+@if (_cargando)
+{
+    <div style="display:flex;height:60vh;align-items:center;justify-content:center;">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+    </div>
+}
+else if (_reporte == null)
+{
+    <div class="empty-state">
+        <span class="material-symbols-rounded">report_off</span>
+        <p>No se encontró el reporte.</p>
+        <MudButton Variant="Variant.Text" OnClick="Regresar">Regresar</MudButton>
+    </div>
+}
+else
+{
+    <div class="page-content">
+        <!-- Header -->
+        <div class="page-header" style="margin-bottom:8px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <button class="icon-btn" @onclick="Regresar">
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
+                <div>
+                    <h1 class="h-page-title">Reporte de Jornada</h1>
+                    <p class="page-subtitle">
+                        @_reporte.NegocioNombre · @_reporte.RepartidorNombre ·
+                        @_reporte.Fecha.ToString("dddd d 'de' MMMM yyyy", _mx)
+                    </p>
+                </div>
+            </div>
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                     Color="@(_reporte.Estado == JornadaEstado.Revisada ? Color.Success : Color.Default)">
+                @(_reporte.Estado == JornadaEstado.Cerrada ? "Cerrada" : "Revisada")
+            </MudChip>
+        </div>
+
+        <!-- KPI bar -->
+        <div class="reporte-kpi-bar">
+            <div class="kpi-card">
+                <span class="kpi-label">Bruto</span>
+                <span class="kpi-value text-em tabnum">@_reporte.TotalBruto.ToString("C", _mx)</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Devuelto</span>
+                <span class="kpi-value text-or tabnum">@_reporte.TotalDevuelto.ToString("C", _mx)</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Neto</span>
+                <span class="kpi-value text-vi tabnum">@_reporte.TotalNeto.ToString("C", _mx)</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Efectivo</span>
+                <span class="kpi-value text-in tabnum">@_reporte.TotalEfectivo.ToString("C", _mx)</span>
+            </div>
+            @if (_reporte.TotalExcluido > 0)
+            {
+                <div class="kpi-card">
+                    <span class="kpi-label">Excluido</span>
+                    <span class="kpi-value text-am tabnum">@_reporte.TotalExcluido.ToString("C", _mx)</span>
+                </div>
+            }
+        </div>
+
+        <!-- Totales por producto -->
+        @if (_reporte.TotalesPorProducto.Count > 0)
+        {
+            <div class="data-card" style="margin-bottom:20px;">
+                <div class="data-card-header">
+                    <h3 class="data-card-title">Resumen por Producto</h3>
+                </div>
+                <MudTable Items="_reporte.TotalesPorProducto" Hover="true" Dense="true" Elevation="0">
+                    <HeaderContent>
+                        <MudTh>Producto</MudTh>
+                        <MudTh Style="text-align:right;">Entregado</MudTh>
+                        <MudTh Style="text-align:right;">Devuelto</MudTh>
+                        <MudTh Style="text-align:right;">Bruto</MudTh>
+                        <MudTh Style="text-align:right;">Neto</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd><span class="fw-500">@context.Nombre</span></MudTd>
+                        <MudTd Style="text-align:right;" class="tabnum">@context.CantidadEntregada.ToString("0.##")</MudTd>
+                        <MudTd Style="text-align:right;" class="tabnum text-or">@context.CantidadDevuelta.ToString("0.##")</MudTd>
+                        <MudTd Style="text-align:right;" class="tabnum text-em">@context.TotalBruto.ToString("C", _mx)</MudTd>
+                        <MudTd Style="text-align:right;" class="tabnum text-vi fw-700">@context.TotalNeto.ToString("C", _mx)</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </div>
+        }
+
+        <!-- Detalle por cliente -->
+        <h3 class="data-card-title" style="margin-bottom:12px;">Detalle por Cliente</h3>
+        @foreach (var cliente in _reporte.Clientes)
+        {
+            <div class="reporte-cliente-section">
+                <div class="reporte-cliente-header">
+                    <span class="reporte-cliente-nombre">@cliente.Nombre</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        @if (cliente.ExcluidoDeEfectivo)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Warning">
+                                @GetMetodoPagoLabel(cliente.MetodoPago)
+                            </MudChip>
+                        }
+                        <span class="fw-700 tabnum text-vi">@cliente.TotalNeto.ToString("C", _mx)</span>
+                    </div>
+                </div>
+
+                @foreach (var prod in cliente.Productos)
+                {
+                    <div class="reporte-producto-row">
+                        <span class="reporte-prod-nombre">@prod.Nombre</span>
+                        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+                            @foreach (var vuelta in prod.Vueltas.Where(v => v.Entregado > 0 || v.Devuelto > 0))
+                            {
+                                <span class="reporte-prod-num text-muted" style="font-size:11px;">
+                                    @vuelta.Etiqueta: <strong>@vuelta.Entregado.ToString("0.##")</strong>
+                                    @if (vuelta.Devuelto > 0)
+                                    {
+                                        <span class="text-or"> −@vuelta.Devuelto.ToString("0.##")</span>
+                                    }
+                                </span>
+                            }
+                            <span class="reporte-prod-num tabnum">@prod.Subtotal.ToString("C", _mx)</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public int JornadaId { get; set; }
+
+    private static readonly System.Globalization.CultureInfo _mx =
+        System.Globalization.CultureInfo.GetCultureInfo("es-MX");
+
+    private ReporteJornadaDto? _reporte;
+    private bool               _cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try   { _reporte = await Api.GetReporteJornadaAsync(JornadaId); }
+        catch { }
+        _cargando = false;
+    }
+
+    private static string GetMetodoPagoLabel(MetodoPago mp) => mp switch
+    {
+        MetodoPago.TarjetaCredito => "T. CRÉDITO",
+        MetodoPago.TarjetaDebito  => "T. DÉBITO",
+        MetodoPago.Transferencia  => "TRANSF.",
+        _                         => "OTRO"
+    };
+
+    private void Regresar() => JS.InvokeVoidAsync("history.go", -1);
+}

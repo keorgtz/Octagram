@@ -5,6 +5,7 @@
 @inject ApiService Api
 @inject AuthService AuthSvc
 @inject IJSRuntime JS
+@inject NavigationManager Nav
 
 <PageTitle>Historial · OctagramDelivery</PageTitle>
 
@@ -46,6 +47,7 @@
                     <MudTh>Negocio</MudTh>
                     <MudTh Style="text-align:center;">Estado</MudTh>
                     <MudTh Style="text-align:right;">Total Neto</MudTh>
+                    <MudTh></MudTh>
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd>@context.Fecha.ToString("dd/MM/yyyy")</MudTd>
@@ -61,6 +63,11 @@
                         <span class="fw-700 tabnum text-vi">
                             @context.TotalNeto.ToString("C", _mx)
                         </span>
+                    </MudTd>
+                    <MudTd Style="text-align:center;">
+                        <MudIconButton Icon="@Icons.Material.Rounded.Assessment" Size="Size.Small"
+                                       Color="Color.Primary" title="Ver Reporte"
+                                       OnClick="@(() => Nav.NavigateTo($"/reporte/{context.Id}"))" />
                     </MudTd>
                 </RowTemplate>
                 <NoRecordsContent>
