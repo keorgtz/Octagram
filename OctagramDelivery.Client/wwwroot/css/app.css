@@ -1466,19 +1466,122 @@ body,
     .kpi-value { font-size: 20px; }
     .kpi-label { font-size: 10px; }
 
-    /* Tablas: scroll horizontal real */
-    .data-card {
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch;
+    /* ═══════════════════════════════════════════════════
+       Tablas → Tarjetas en móvil
+       ═══════════════════════════════════════════════════ */
+
+    /* Data-card que contiene tabla se vuelve transparente */
+    .data-card:has(.mud-table-root) {
+        background: transparent !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        overflow: visible !important;
     }
-    .mud-table,
-    .mud-table-container {
-        overflow-x: visible !important;
-        width: auto !important;
-        min-width: 100%;
+
+    /* Encabezado de data-card (título + filtros) mantiene fondo */
+    .data-card:has(.mud-table-root) .data-card-header {
+        background: var(--white, #fff) !important;
+        border-radius: 14px !important;
+        margin-bottom: 8px !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06) !important;
+        border-bottom: none !important;
     }
-    .mud-table td,
-    .mud-table th { white-space: nowrap; }
+
+    /* Barra de búsqueda (ToolBarContent) mantiene fondo */
+    .mud-table-toolbar {
+        background: var(--white, #fff) !important;
+        border-radius: 14px !important;
+        margin-bottom: 8px !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06) !important;
+        padding: 10px 14px !important;
+    }
+
+    /* Convertir estructura de tabla HTML a bloques */
+    .mud-table-container,
+    .mud-table-root,
+    .mud-table-body  { display: block !important; width: 100% !important; overflow: visible !important; }
+
+    /* Ocultar cabecera de columnas */
+    .mud-table-head  { display: none !important; }
+
+    /* Cada fila de datos → tarjeta independiente */
+    .mud-table-body .mud-table-row:not(.mud-table-row-expended) {
+        display: block !important;
+        background: var(--white, #fff) !important;
+        border-radius: 14px !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06) !important;
+        margin-bottom: 10px !important;
+        overflow: hidden !important;
+        border: none !important;
+        transition: none !important;
+    }
+
+    /* Cada celda → fila dentro de la tarjeta */
+    .mud-table-body .mud-table-row:not(.mud-table-row-expended) .mud-table-cell {
+        display: flex !important;
+        align-items: center !important;
+        padding: 10px 14px !important;
+        border-bottom: 1px solid var(--gray-line, #E5E7EB) !important;
+        white-space: normal !important;
+        background: transparent !important;
+        min-height: unset !important;
+        text-align: left !important;
+    }
+
+    .mud-table-body .mud-table-row:not(.mud-table-row-expended) .mud-table-cell:last-child {
+        border-bottom: none !important;
+    }
+
+    /* Primera celda más prominente (nombre / campo principal) */
+    .mud-table-body .mud-table-row:not(.mud-table-row-expended) .mud-table-cell:first-child {
+        padding-top: 12px !important;
+        padding-bottom: 10px !important;
+        font-size: 14px !important;
+    }
+
+    /* Celda de checkbox (MultiSelection) compacta al inicio */
+    .mud-table-body .mud-table-row .mud-table-cell-checkbox {
+        padding: 8px 14px !important;
+        justify-content: flex-start !important;
+        font-size: unset !important;
+    }
+
+    /* Sin hover en mobile */
+    .mud-table-body .mud-table-row:hover .mud-table-cell { background: transparent !important; }
+
+    /* Filas expandidas (GestionProductos) → visualmente conectadas bajo el card padre */
+    .mud-table-body .mud-table-row-expended {
+        display: block !important;
+        background: var(--page-bg, #F2F3F7) !important;
+        border-radius: 0 0 14px 14px !important;
+        box-shadow: none !important;
+        margin-top: -10px !important;
+        margin-bottom: 10px !important;
+        overflow: hidden !important;
+    }
+    .mud-table-body .mud-table-row-expended .mud-table-cell {
+        display: flex !important;
+        background: var(--page-bg, #F2F3F7) !important;
+        padding: 10px 14px !important;
+        border-bottom: 1px solid rgba(0,0,0,.06) !important;
+        white-space: normal !important;
+    }
+    .mud-table-body .mud-table-row-expended .mud-table-cell:last-child {
+        border-bottom: none !important;
+    }
+
+    /* Paginación mantiene fondo */
+    .mud-table-pagination {
+        background: var(--white, #fff) !important;
+        border-radius: 14px !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06) !important;
+        padding: 4px 8px !important;
+        margin-top: 8px !important;
+    }
+
+    /* MudCard que contiene tabla (dashboards): overflow visible para que las row-cards no se corten */
+    .mud-paper:has(.mud-table-root),
+    .mud-card-content:has(.mud-table-root) { overflow: visible !important; }
 
     /* Grid clientes → columna única */
     .neg-clientes-grid   { grid-template-columns: 1fr; min-height: unset; }
