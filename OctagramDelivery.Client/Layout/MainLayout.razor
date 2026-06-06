@@ -51,7 +51,7 @@ else
     <div class="app-shell @(_sidebarOpen ? "" : "sidebar-collapsed")">
 
         <header class="titlebar">
-            <button class="icon-btn" @onclick="ToggleSidebar" title="Menú">
+            <button class="icon-btn titlebar-menu-btn" @onclick="ToggleSidebar" title="Menú">
                 <span class="material-symbols-rounded">menu</span>
             </button>
             <div class="titlebar-brand">
@@ -76,6 +76,8 @@ else
         </nav>
 
         <main class="main-content">@Body</main>
+
+        <BottomNav UserRol="@_user.Rol" />
 
     </div>
 }

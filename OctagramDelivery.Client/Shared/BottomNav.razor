@@ -1,0 +1,45 @@
+@inject NavigationManager Nav
+
+@if (UserRol != UserRole.Repartidor)
+{
+    <nav class="bottom-nav">
+        @foreach (var item in GetNavItems())
+        {
+            var path = new Uri(Nav.Uri).AbsolutePath;
+            var active = path.StartsWith(item.ActivePrefix, StringComparison.OrdinalIgnoreCase);
+            <a href="@item.Href" class="bottom-nav-item @(active ? "bottom-nav-active" : "")">
+                <span class="material-symbols-rounded bottom-nav-icon">@item.Icon</span>
+                <span class="bottom-nav-label">@item.Label</span>
+            </a>
+        }
+    </nav>
+}
+
+@code {
+    [Parameter] public UserRole UserRol { get; set; }
+
+    private record NavItem(string Href, string Icon, string Label, string ActivePrefix);
+
+    private IEnumerable<NavItem> GetNavItems() => UserRol switch
+    {
+        UserRole.Admin => [
+            new("/admin/dashboard",   "dashboard",       "Inicio",    "/admin/dashboard"),
+            new("/gerente/jornadas",  "delivery_dining", "Jornadas",  "/gerente/jornada"),
+            new("/admin/negocios",    "store",           "Negocios",  "/admin/negocios"),
+            new("/admin/historial",   "history",         "Historial", "/admin/historial"),
+        ],
+        UserRole.Gerente => [
+            new("/gerente/dashboard", "dashboard",       "Inicio",    "/gerente/dashboard"),
+            new("/gerente/jornadas",  "delivery_dining", "Jornadas",  "/gerente/jornada"),
+            new("/gerente/clientes",  "people",          "Clientes",  "/gerente/clientes"),
+            new("/gerente/historial", "history",         "Historial", "/gerente/historial"),
+        ],
+        UserRole.Supervisor => [
+            new("/gerente/dashboard", "dashboard",       "Inicio",    "/gerente/dashboard"),
+            new("/gerente/jornadas",  "delivery_dining", "Jornadas",  "/gerente/jornada"),
+            new("/gerente/clientes",  "people",          "Clientes",  "/gerente/clientes"),
+            new("/gerente/historial", "history",         "Historial", "/gerente/historial"),
+        ],
+        _ => []
+    };
+}

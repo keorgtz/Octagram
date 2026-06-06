@@ -1,4 +1,5 @@
 @page "/repartidor/jornada"
+@page "/gerente/jornada/{JornadaId:int}"
 @attribute [Authorize(Roles = $"{nameof(UserRole.Repartidor)},{nameof(UserRole.Gerente)},{nameof(UserRole.Supervisor)},{nameof(UserRole.Admin)}")]
 @implements IDisposable
 @inject ApiService Api
@@ -22,11 +23,19 @@ else if (Estado.Jornada == null)
         <span class="material-symbols-rounded" style="font-size:64px;color:var(--gray-muted);">delivery_dining</span>
         <h2 style="color:var(--gray-dark);margin:0;">Sin jornada activa</h2>
         <p style="color:var(--gray-muted);margin:0;">No hay una jornada abierta para hoy.</p>
-        @if (_negocioId > 0 && !_soloLectura)
+        @if (_negocioId > 0 && !_soloLectura && _puedeAbrir)
         {
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AbrirJornada"
                        StartIcon="@Icons.Material.Rounded.PlayCircle" Style="margin-top:4px;">
                 Abrir Jornada de Hoy
+            </MudButton>
+        }
+        else if (!_puedeAbrir)
+        {
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Rounded.ArrowBack"
+                       OnClick='() => Nav.NavigateTo("/gerente/jornadas")'>
+                Ver jornadas activas
             </MudButton>
         }
         else if (_negocioId == 0)
@@ -39,12 +48,25 @@ else
 {
     <div class="jornada-mobile-header">
         <div class="jornada-mobile-meta">
-            <div style="min-width:0;">
+            @if (JornadaId.HasValue)
+            {
+                <button class="icon-btn" @onclick='() => Nav.NavigateTo("/gerente/jornadas")'>
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
+            }
+            <div style="min-width:0;flex:1;">
                 <div class="fw-700" style="font-size:15px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                    @Estado.Jornada.TenantNombre
+                    @(JornadaId.HasValue ? Estado.Jornada.DriverNombre : Estado.Jornada.TenantNombre)
                 </div>
                 <div class="text-muted" style="font-size:12px;margin-top:2px;">
-                    @Estado.Jornada.Fecha.ToString("dddd d 'de' MMMM", _mx)
+                    @if (JornadaId.HasValue)
+                    {
+                        <span>@Estado.Jornada.TenantNombre · @Estado.Jornada.Fecha.ToString("d 'de' MMMM", _mx)</span>
+                    }
+                    else
+                    {
+                        @Estado.Jornada.Fecha.ToString("dddd d 'de' MMMM", _mx)
+                    }
                 </div>
             </div>
             <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
@@ -103,9 +125,12 @@ else
             {
                 <span style="flex:1;"></span>
             }
-            <a href="/repartidor/historial" class="icon-btn" title="Historial">
-                <span class="material-symbols-rounded">history</span>
-            </a>
+            @if (!JornadaId.HasValue)
+            {
+                <a href="/repartidor/historial" class="icon-btn" title="Historial">
+                    <span class="material-symbols-rounded">history</span>
+                </a>
+            }
         </div>
     </div>
 
@@ -155,11 +180,15 @@ else
 }
 
 @code {
+    [Parameter] public int? JornadaId { get; set; }
+
     private static readonly System.Globalization.CultureInfo _mx =
         System.Globalization.CultureInfo.GetCultureInfo("es-MX");
 
     private bool   _cargando   = true;
     private bool   _soloLectura;
+    private bool   _puedeAbrir;
+    private bool   _initialized;
     private int    _negocioId;
     private string _saveText   = "Guardado ✓";
     private string _saveClass  = "save-ok";
@@ -168,24 +197,60 @@ else
     {
         Estado.OnChange += StateHasChanged;
         var user = await AuthSvc.GetCurrentUser();
-        _negocioId    = user?.NegocioIds.FirstOrDefault() ?? 0;
-        _soloLectura  = user?.Rol == UserRole.Supervisor;
+        _negocioId   = user?.NegocioIds.FirstOrDefault() ?? 0;
+        _soloLectura = user?.Rol == UserRole.Supervisor;
+        _puedeAbrir  = user?.Rol == UserRole.Repartidor;
+        _initialized = true;
 
-        if (!Estado.Cargado && _negocioId > 0)
-            await CargarJornada();
+        await CargarSiNecesario();
         _cargando = false;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!_initialized) return;
+        await CargarSiNecesario();
+    }
+
+    private async Task CargarSiNecesario()
+    {
+        if (JornadaId.HasValue)
+        {
+            if (Estado.Jornada?.Id != JornadaId.Value)
+            {
+                Estado.Limpiar();
+                _cargando = true;
+                StateHasChanged();
+                await CargarJornada();
+                _cargando = false;
+            }
+        }
+        else if (!Estado.Cargado && _negocioId > 0)
+        {
+            await CargarJornada();
+        }
     }
 
     private async Task CargarJornada()
     {
         try
         {
-            var jornada   = await Api.GetJornadaHoyAsync(_negocioId);
+            JornadaDto? jornada;
+            if (JornadaId.HasValue)
+            {
+                jornada = await Api.GetJornadaByIdAsync(JornadaId.Value);
+                if (jornada != null) _negocioId = jornada.TenantId;
+            }
+            else
+            {
+                jornada = await Api.GetJornadaHoyAsync(_negocioId);
+            }
+
+            if (jornada == null) return;
             var productos = await Api.GetProductosAsync(_negocioId) ?? new();
             var clientes  = (await Api.GetClientesAsync(_negocioId) ?? new())
-                            .Where(TieneEntregaHoy).ToList();
-            if (jornada != null)
-                Estado.Cargar(jornada, productos, clientes);
+                            .Where(c => JornadaId.HasValue || TieneEntregaHoy(c)).ToList();
+            Estado.Cargar(jornada, productos, clientes);
         }
         catch { }
     }

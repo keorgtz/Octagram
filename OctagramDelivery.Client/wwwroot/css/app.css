@@ -1287,43 +1287,122 @@ body,
     .page-content       { padding: 16px 18px; }
 }
 
-/* ── Móvil (≤ 640px): sidebar → overlay flotante ── */
+/* ── Bottom Navigation (mobile only) ─────────────────────────── */
+.bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 56px;
+    background: #fff;
+    border-top: 1px solid var(--gray-line, #E5E7EB);
+    box-shadow: 0 -2px 12px rgba(0,0,0,.06);
+    z-index: 300;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    text-decoration: none;
+    color: var(--gray-muted, #6B7280);
+    font-size: 10px;
+    font-weight: 500;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 120ms ease;
+    padding: 6px 2px;
+}
+.bottom-nav-item.bottom-nav-active,
+.bottom-nav-item:hover {
+    color: var(--pr-500, #1EB980);
+}
+.bottom-nav-icon { font-size: 22px; line-height: 1; }
+
+/* ── Jornadas Activas — monitor cards ────────────────────────── */
+.jornadas-activas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+}
+.jornada-monitor-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    padding: 16px;
+    cursor: pointer;
+    transition: box-shadow 150ms ease;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.jornada-monitor-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,.12); }
+.jornada-monitor-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.jornada-monitor-icon { color: var(--gray-muted); font-size: 20px; flex-shrink: 0; }
+.jornada-monitor-nombre {
+    flex: 1;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--gray-dark, #1C1E26);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.jornada-estado-badge {
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 2px 8px;
+    flex-shrink: 0;
+}
+.jornada-estado-badge.abierta {
+    background: #D1FAE5;
+    color: #065F46;
+}
+.jornada-estado-badge.cerrada {
+    background: var(--gray-100, #F3F4F6);
+    color: var(--gray-muted, #6B7280);
+}
+.jornada-monitor-totales {
+    display: flex;
+    gap: 16px;
+    padding: 10px 0;
+    border-top: 1px solid var(--gray-line, #E5E7EB);
+    border-bottom: 1px solid var(--gray-line, #E5E7EB);
+}
+.jornada-monitor-kpi { display: flex; flex-direction: column; gap: 2px; }
+.jornada-monitor-kpi-label { font-size: 10px; color: var(--gray-muted); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; }
+.jornada-monitor-kpi-value { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.jornada-monitor-action { display: flex; justify-content: flex-end; }
+
+/* ── Móvil (≤ 640px): bottom nav, sin sidebar ── */
 @media (max-width: 640px) {
 
-    /* Grid pierde columna de sidebar */
+    /* Grid sin sidebar */
     .app-shell,
     .app-shell.sidebar-collapsed {
         grid-template-areas: "titlebar" "main";
         grid-template-columns: 1fr;
     }
 
-    /* Sidebar: siempre fijo, oculto fuera de pantalla */
-    .sidebar {
-        position: fixed;
-        left: 0; top: 0; bottom: 0;
-        width: min(280px, 82vw);
-        z-index: 400;
-        transform: translateX(-100%);
-        transition: transform 200ms ease;
-        box-shadow: 4px 0 24px rgba(0,0,0,.22);
-    }
+    /* Sidebar completamente oculto en móvil */
+    .sidebar,
+    .sidebar-backdrop { display: none !important; }
 
-    /* Sidebar visible cuando NO tiene sidebar-collapsed */
-    .app-shell:not(.sidebar-collapsed) .sidebar {
-        transform: translateX(0);
-    }
+    /* Ocultar hamburger (reemplazado por bottom nav) */
+    .titlebar-menu-btn { display: none; }
 
-    /* Backdrop oscuro */
-    .sidebar-backdrop {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,.44);
-        z-index: 399;
-    }
-    .app-shell:not(.sidebar-collapsed) .sidebar-backdrop {
-        display: block;
-    }
+    /* Mostrar bottom nav */
+    .bottom-nav { display: flex; }
+
+    /* Espacio para bottom nav */
+    .main-content { padding-bottom: 64px; }
 
     /* Titlebar compacta */
     .titlebar                         { padding: 0 10px; gap: 4px; }
@@ -1333,10 +1412,10 @@ body,
     .titlebar-brand-icon              { width: 24px; height: 24px; }
 
     /* Page layout */
-    .page-content       { padding: 12px 14px; }
-    .h-page-title       { font-size: 15px; letter-spacing: 0.01em; }
-    .page-subtitle      { font-size: 11px; }
-    .page-header        { flex-direction: column; gap: 10px; }
+    .page-content        { padding: 12px 14px; }
+    .h-page-title        { font-size: 15px; letter-spacing: 0.01em; }
+    .page-subtitle       { font-size: 11px; }
+    .page-header         { flex-direction: column; gap: 10px; }
     .page-header-actions { flex-wrap: wrap; width: 100%; gap: 6px; }
 
     /* KPI compacto */
@@ -1346,14 +1425,36 @@ body,
     .kpi-label { font-size: 10px; }
 
     /* Tablas: scroll horizontal */
-    .data-card                { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .mud-table-container      { overflow-x: auto; }
+    .data-card           { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .mud-table-container { overflow-x: auto; }
 
     /* Grid clientes → columna única */
-    .neg-clientes-grid { grid-template-columns: 1fr; min-height: unset; }
+    .neg-clientes-grid   { grid-template-columns: 1fr; min-height: unset; }
 
     /* Login card */
-    .login-card { padding: 28px 22px 24px; border-radius: 12px; }
+    .login-card          { padding: 28px 22px 24px; border-radius: 12px; }
+
+    /* Jornadas monitor grid → 1 col */
+    .jornadas-activas-grid { grid-template-columns: 1fr; }
+
+    /* Dialogs → bottom sheet */
+    .mud-dialog-container { align-items: flex-end !important; padding: 0 !important; }
+    .mud-dialog {
+        border-radius: 20px 20px 0 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 90dvh;
+        overflow-y: auto;
+    }
+    .mud-dialog-title   { padding: 20px 20px 4px !important; }
+    .mud-dialog-content { padding: 8px 20px 12px !important; }
+    .mud-dialog-actions {
+        padding: 8px 16px 20px !important;
+        flex-direction: column-reverse !important;
+        gap: 8px;
+    }
+    .mud-dialog-actions .mud-button-root { width: 100%; }
 }
 
 /* ── Extra-small (≤ 390px) ── */

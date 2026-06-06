@@ -274,6 +274,40 @@ public class JornadasController : ControllerBase
         }));
     }
 
+    // GET /api/jornadas/negocio-hoy — todas las jornadas de hoy para un negocio
+    [HttpGet("negocio-hoy")]
+    [Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Gerente)},{nameof(UserRole.Supervisor)}")]
+    public async Task<ActionResult<List<JornadaResumenDto>>> GetNegocioHoy([FromQuery] int negocioId)
+    {
+        var callerRole    = CallerRole;
+        var callerNegocios = CallerNegocioIds;
+
+        if (callerRole != UserRole.Admin && !callerNegocios.Contains(negocioId))
+            return Forbid();
+
+        var hoy = DateOnly.FromDateTime(DateTime.Today);
+
+        var jornadas = await _ctx.DeliveryDays
+            .Include(d => d.Driver)
+            .Include(d => d.Tenant)
+            .Include(d => d.Rounds).ThenInclude(r => r.Details)
+            .Where(d => d.TenantId == negocioId && d.Fecha == hoy)
+            .OrderBy(d => d.Driver!.FullName)
+            .ToListAsync();
+
+        return Ok(jornadas.Select(d => new JornadaResumenDto
+        {
+            Id               = d.Id,
+            Fecha            = d.Fecha,
+            RepartidorNombre = d.Driver?.FullName ?? "",
+            NegocioNombre    = d.Tenant?.Nombre ?? "",
+            Estado           = d.Estado,
+            TotalNeto        = d.Rounds
+                .SelectMany(r => r.Details)
+                .Sum(det => (det.CantidadEntregada - det.CantidadDevuelta) * det.PrecioUnitario)
+        }));
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────
     private async Task<DeliveryDay?> LoadJornada(int tenantId, int driverId, DateOnly fecha)
         => await _ctx.DeliveryDays

@@ -117,6 +117,9 @@ public class ApiService
     public Task<TotalesJornada?> GetTotalesAsync(int jornadaId)
         => _http.GetFromJsonAsync<TotalesJornada>($"api/jornadas/{jornadaId}/totales");
 
+    public Task<List<JornadaResumenDto>?> GetJornadasNegocioHoyAsync(int negocioId)
+        => _http.GetFromJsonAsync<List<JornadaResumenDto>>($"api/jornadas/negocio-hoy?negocioId={negocioId}");
+
     // ── Historial ─────────────────────────────────────────────────
     public Task<List<JornadaResumenDto>?> GetHistorialAsync(int? negocioId = null, int? repartidorId = null, int page = 1)
     {

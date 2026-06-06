@@ -1,0 +1,122 @@
+@page "/gerente/jornadas"
+@attribute [Authorize(Roles = $"{nameof(UserRole.Gerente)},{nameof(UserRole.Admin)},{nameof(UserRole.Supervisor)}")]
+@inject ApiService Api
+@inject AuthService AuthSvc
+@inject NavigationManager Nav
+
+<PageTitle>Jornadas · TortiCloud</PageTitle>
+
+<div class="page-content">
+    <div class="page-header">
+        <div>
+            <h1 class="h-page-title">Jornadas de Hoy</h1>
+            <p class="page-subtitle">@DateTime.Today.ToString("dddd d 'de' MMMM", _mx)</p>
+        </div>
+        @if (_esAdmin && _negocios.Count > 1)
+        {
+            <MudSelect T="int" Value="_negocioActivo" ValueChanged="CambiarNegocio"
+                       Label="Negocio" Variant="Variant.Outlined" Margin="Margin.Dense"
+                       Style="min-width:180px;">
+                @foreach (var n in _negocios)
+                {
+                    <MudSelectItem T="int" Value="n.Id">@n.Nombre</MudSelectItem>
+                }
+            </MudSelect>
+        }
+    </div>
+
+    @if (_cargando)
+    {
+        <div style="display:flex;justify-content:center;padding:48px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        </div>
+    }
+    else if (_jornadas.Count == 0)
+    {
+        <div class="empty-state" style="padding:48px 0;">
+            <span class="material-symbols-rounded">delivery_dining</span>
+            <p>No hay jornadas registradas hoy en este negocio.</p>
+        </div>
+    }
+    else
+    {
+        <div class="jornadas-activas-grid">
+            @foreach (var j in _jornadas)
+            {
+                <div class="jornada-monitor-card" @onclick="() => Monitorear(j.Id)">
+                    <div class="jornada-monitor-header">
+                        <span class="material-symbols-rounded jornada-monitor-icon">person</span>
+                        <span class="jornada-monitor-nombre">@j.RepartidorNombre</span>
+                        @if (j.Estado == JornadaEstado.Abierta)
+                        {
+                            <span class="jornada-estado-badge abierta">● Activa</span>
+                        }
+                        else
+                        {
+                            <span class="jornada-estado-badge cerrada">Cerrada</span>
+                        }
+                    </div>
+                    <div class="jornada-monitor-totales">
+                        <div class="jornada-monitor-kpi">
+                            <span class="jornada-monitor-kpi-label">Neto</span>
+                            <span class="jornada-monitor-kpi-value text-vi">@j.TotalNeto.ToString("C", _mx)</span>
+                        </div>
+                    </div>
+                    <div class="jornada-monitor-action">
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small"
+                                   StartIcon="@Icons.Material.Rounded.Visibility"
+                                   OnClick="@(() => Monitorear(j.Id))">
+                            Ver jornada
+                        </MudButton>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private static readonly System.Globalization.CultureInfo _mx =
+        System.Globalization.CultureInfo.GetCultureInfo("es-MX");
+
+    private bool _cargando = true;
+    private bool _esAdmin;
+    private int _negocioActivo;
+    private List<NegocioDto> _negocios = new();
+    private List<JornadaResumenDto> _jornadas = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await AuthSvc.GetCurrentUser();
+        _esAdmin = user?.Rol == UserRole.Admin || user?.Rol == UserRole.Gerente;
+
+        if (_esAdmin)
+        {
+            _negocios      = await Api.GetNegociosAsync() ?? new();
+            _negocioActivo = _negocios.FirstOrDefault()?.Id ?? 0;
+        }
+        else
+        {
+            _negocioActivo = user?.NegocioIds.FirstOrDefault() ?? 0;
+        }
+
+        if (_negocioActivo > 0) await Cargar();
+        _cargando = false;
+    }
+
+    private async Task CambiarNegocio(int id)
+    {
+        _negocioActivo = id;
+        await Cargar();
+    }
+
+    private async Task Cargar()
+    {
+        _cargando = true;
+        _jornadas = await Api.GetJornadasNegocioHoyAsync(_negocioActivo) ?? new();
+        _cargando = false;
+    }
+
+    private void Monitorear(int jornadaId)
+        => Nav.NavigateTo($"/gerente/jornada/{jornadaId}");
+}
