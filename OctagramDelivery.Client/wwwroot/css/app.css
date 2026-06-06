@@ -955,18 +955,80 @@ body,
 }
 
 .jornada-mobile-totales {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 4px 20px;
     padding: 8px 0 2px;
 }
+
+.jornada-totales-toggle {
+    margin-left: auto;
+    align-self: center;
+    background: var(--page-bg);
+    border: none;
+    border-radius: 8px;
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--primary);
+    transition: background 120ms;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+}
+.jornada-totales-toggle:active { background: var(--gray-line); }
+.jornada-totales-toggle .material-symbols-rounded { font-size: 18px; }
 
 .jornada-mini-total {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     gap: 2px;
 }
+
+.jornada-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 0 12px;
+    margin: 0 16px 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    height: 42px;
+}
+.jornada-search-bar .material-symbols-rounded {
+    font-size: 18px;
+    color: var(--gray-muted);
+    flex-shrink: 0;
+}
+.jornada-search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--gray-dark);
+    background: transparent;
+    min-width: 0;
+}
+.jornada-search-input::placeholder { color: var(--gray-muted); }
+.jornada-search-clear {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    color: var(--gray-muted);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+.jornada-search-clear .material-symbols-rounded { font-size: 18px; }
 .jornada-mini-label {
     font-size: 9px;
     font-weight: 700;
@@ -1423,6 +1485,10 @@ body,
 .jornada-monitor-kpi-value { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .jornada-monitor-action { display: flex; justify-content: flex-end; }
 
+/* ── Renderizado dual desktop/mobile — defaults que el breakpoint overrides ── */
+.desk-only { display: block; }
+.mob-cards  { display: none; }
+
 /* ── Móvil (≤ 640px): bottom nav, sin sidebar ── */
 @media (max-width: 640px) {
 
@@ -1489,7 +1555,7 @@ body,
 
     /* Renderizado dual: ocultar tabla desktop, mostrar cards mobile */
     .desk-only { display: none !important; }
-    .mob-cards { display: flex; flex-direction: column; padding: 4px 0; }
+    .mob-cards { display: flex !important; flex-direction: column; padding: 4px 0; }
 
     /* Grid clientes → columna única */
     .neg-clientes-grid   { grid-template-columns: 1fr; min-height: unset; }
@@ -1541,20 +1607,16 @@ body,
     .rep-topbar           { height: 40px; }
     .status-bar           { display: none; }
     .cj-header            { height: 40px; }
-    .jornada-mobile-totales { gap: 8px; padding: 4px 0; }
+    .jornada-mobile-totales { gap: 4px 14px; padding: 4px 0; }
     .jornada-mini-value   { font-size: 12px; }
     .numpad-panel         { top: 50%; max-height: 94vh; overflow-y: auto; padding: 10px 14px; }
     .numpad-key           { min-height: 46px; }
 }
 
-/* ── Renderizado dual desktop/mobile ── */
-.desk-only { display: block; }
-.mob-cards  { display: none; }
-
 /* ═══════════════════════════════════════════════════════════════
    MOBILE LIST CARDS — sistema de tarjetas para vistas móviles
-   Ocultas en desktop via .mob-cards { display:none }.
-   Se definen aquí (fuera del media query) para máxima fiabilidad.
+   Ocultas en desktop via .mob-cards { display:none } definido
+   ANTES del primer breakpoint para que el media query lo override.
    ═══════════════════════════════════════════════════════════════ */
 
 /* Tarjeta contenedor */

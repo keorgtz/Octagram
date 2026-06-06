@@ -105,18 +105,51 @@ else
             var (bruto, neto, efect, _, _) = Estado.Totales();
         }
         <div class="jornada-mobile-totales">
-            <div class="jornada-mini-total">
-                <span class="jornada-mini-label">Bruto</span>
-                <span class="jornada-mini-value text-em">@bruto.ToString("C", _mx)</span>
-            </div>
-            <div class="jornada-mini-total">
-                <span class="jornada-mini-label">Neto</span>
-                <span class="jornada-mini-value text-vi">@neto.ToString("C", _mx)</span>
-            </div>
-            <div class="jornada-mini-total">
-                <span class="jornada-mini-label">Efectivo</span>
-                <span class="jornada-mini-value text-in">@efect.ToString("C", _mx)</span>
-            </div>
+            @if (_mostrarDinero)
+            {
+                <div class="jornada-mini-total">
+                    <span class="jornada-mini-label">Bruto</span>
+                    <span class="jornada-mini-value text-em">@bruto.ToString("C", _mx)</span>
+                </div>
+                <div class="jornada-mini-total">
+                    <span class="jornada-mini-label">Neto</span>
+                    <span class="jornada-mini-value text-vi">@neto.ToString("C", _mx)</span>
+                </div>
+                <div class="jornada-mini-total">
+                    <span class="jornada-mini-label">Efectivo</span>
+                    <span class="jornada-mini-value text-in">@efect.ToString("C", _mx)</span>
+                </div>
+            }
+            else
+            {
+                var totalesProd = GetTotalesProductos();
+                if (totalesProd.Count == 0)
+                {
+                    <div class="jornada-mini-total">
+                        <span class="jornada-mini-label">Sin entregas</span>
+                        <span class="jornada-mini-value" style="color:var(--gray-muted);">—</span>
+                    </div>
+                }
+                else
+                {
+                    foreach (var pt in totalesProd)
+                    {
+                        <div class="jornada-mini-total">
+                            <span class="jornada-mini-label">@pt.Nombre</span>
+                            <span class="jornada-mini-value" style="color:var(--gray-dark);">
+                                @(pt.EsGramaje ? $"{pt.Total:0.##} kg" : $"{pt.Total:0.##} pzs")
+                            </span>
+                        </div>
+                    }
+                }
+            }
+            <button class="jornada-totales-toggle"
+                    @onclick="() => _mostrarDinero = !_mostrarDinero"
+                    title="@(_mostrarDinero ? "Ver cantidades" : "Ver dinero")">
+                <span class="material-symbols-rounded">
+                    @(_mostrarDinero ? "straighten" : "attach_money")
+                </span>
+            </button>
         </div>
 
         <div style="display:flex;align-items:center;gap:8px;">
@@ -143,8 +176,24 @@ else
         </div>
     </div>
 
+    <div class="jornada-search-bar">
+        <span class="material-symbols-rounded">search</span>
+        <input type="search" placeholder="Buscar cliente..."
+               @bind="_busquedaCliente" @bind:event="oninput"
+               class="jornada-search-input" />
+        @if (!string.IsNullOrEmpty(_busquedaCliente))
+        {
+            <button class="jornada-search-clear" @onclick="() => _busquedaCliente = string.Empty">
+                <span class="material-symbols-rounded">close</span>
+            </button>
+        }
+    </div>
+
     <div class="jornada-client-list">
-        @foreach (var cliente in Estado.Clientes)
+        @{
+            var clientesFiltrados = ClientesFiltrados.ToList();
+        }
+        @foreach (var cliente in clientesFiltrados)
         {
             var excluido = Estado.Exclusiones.TryGetValue(cliente.Id, out var ex) && ex.ExcluidoDeEfectivo;
             var (cliNeto, _) = Estado.TotalesCliente(cliente.Id);
@@ -185,6 +234,13 @@ else
                 <p>No hay clientes con entrega programada para hoy.</p>
             </div>
         }
+        else if (clientesFiltrados.Count == 0)
+        {
+            <div class="empty-state">
+                <span class="material-symbols-rounded">search_off</span>
+                <p>No se encontraron clientes con ese nombre.</p>
+            </div>
+        }
     </div>
 }
 
@@ -199,8 +255,32 @@ else
     private bool   _puedeAbrir;
     private bool   _initialized;
     private int    _negocioId;
-    private string _saveText   = "Guardado ✓";
-    private string _saveClass  = "save-ok";
+    private string _saveText       = "Guardado ✓";
+    private string _saveClass      = "save-ok";
+    private string _busquedaCliente = string.Empty;
+    private bool   _mostrarDinero  = true;
+
+    private IEnumerable<CustomerDto> ClientesFiltrados =>
+        string.IsNullOrWhiteSpace(_busquedaCliente)
+            ? Estado.Clientes
+            : Estado.Clientes.Where(c => c.Nombre.Contains(_busquedaCliente, StringComparison.OrdinalIgnoreCase));
+
+    private record ProductTotal(string Nombre, decimal Total, bool EsGramaje);
+
+    private List<ProductTotal> GetTotalesProductos()
+    {
+        var result = new List<ProductTotal>();
+        foreach (var prod in Estado.Productos)
+        {
+            decimal total = 0;
+            foreach (var cliente in Estado.Clientes)
+                foreach (var ronda in Estado.Jornada?.Rondas ?? new())
+                    total += Estado.GetOrCreate(ronda.Id, cliente.Id, prod.Id).Entregado;
+            if (total > 0)
+                result.Add(new(prod.Nombre, total, prod.TipoMedida == TipoMedida.Gramaje));
+        }
+        return result;
+    }
 
     protected override async Task OnInitializedAsync()
     {
