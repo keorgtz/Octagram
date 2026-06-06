@@ -27,8 +27,15 @@ public class AuthService
             var resp = await _http.PostAsJsonAsync("api/auth/login", request);
             if (!resp.IsSuccessStatusCode)
             {
-                var err = await resp.Content.ReadAsStringAsync();
-                return (false, err.Trim('"'));
+                var raw = await resp.Content.ReadAsStringAsync();
+                var msg = raw.Trim('"');
+                // Si el cuerpo está vacío o es un JSON técnico de error del servidor,
+                // mostramos un mensaje legible en lugar de texto vacío o JSON crudo.
+                if (string.IsNullOrWhiteSpace(msg) || msg.TrimStart().StartsWith('{'))
+                    msg = resp.StatusCode == System.Net.HttpStatusCode.Unauthorized
+                        ? "Usuario o contraseña incorrectos."
+                        : "Error en el servidor. Revisa los logs de la API.";
+                return (false, msg);
             }
             var result = await resp.Content.ReadFromJsonAsync<LoginResponse>();
             if (result == null) return (false, "Respuesta inválida del servidor.");

@@ -47,6 +47,20 @@ public static class DbInitializer
 
         if (!migrated) return;
 
+        // Garantizar columnas añadidas por migraciones idempotentes aunque MigrateAsync
+        // haya tomado el camino del catch-2714 (tablas ya existían sin historial).
+        try
+        {
+            await context.Database.ExecuteSqlRawAsync(@"
+IF NOT EXISTS (SELECT 1 FROM sys.columns
+               WHERE object_id = OBJECT_ID(N'UsuarioNegocios') AND name = N'PermisosFlags')
+    ALTER TABLE [UsuarioNegocios] ADD [PermisosFlags] INT NOT NULL DEFAULT 0;");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[DbInitializer] Error al asegurar columna PermisosFlags: {ex.Message}");
+        }
+
         try
         {
             if (await context.Users.AnyAsync()) return;
