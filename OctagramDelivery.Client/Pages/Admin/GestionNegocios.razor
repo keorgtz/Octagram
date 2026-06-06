@@ -29,51 +29,97 @@
     else
     {
         <div class="data-card data-card-table">
-            <MudTable Items="_negocios" Hover="true" Dense="true" Striped="false">
-                <HeaderContent>
-                    <MudTh>Nombre</MudTh>
-                    <MudTh>Dirección</MudTh>
-                    <MudTh Style="text-align:center;">Repartidores</MudTh>
-                    <MudTh Style="text-align:center;">Estado</MudTh>
-                    <MudTh Style="width:108px;text-align:center;">Acciones</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd><span class="fw-600">@context.Nombre</span></MudTd>
-                    <MudTd><span class="text-muted">@(context.Direccion ?? "—")</span></MudTd>
-                    <MudTd Style="text-align:center;">
-                        <span class="fw-600 text-primary">@context.TotalRepartidores</span>
-                    </MudTd>
-                    <MudTd Style="text-align:center;">
-                        <MudChip T="string"
-                                 Color="@(context.IsActive ? Color.Success : Color.Default)"
-                                 Size="Size.Small" Variant="Variant.Filled">
-                            @(context.IsActive ? "Activo" : "Inactivo")
-                        </MudChip>
-                    </MudTd>
-                    <MudTd Style="text-align:center;">
-                        <div style="display:inline-flex;gap:2px;align-items:center;">
-                            <MudIconButton Icon="@Icons.Material.Rounded.ManageAccounts"
-                                           Size="Size.Small" Color="Color.Primary"
-                                           title="Gestionar negocio"
-                                           OnClick="@(() => AbrirGestionar(context))" />
-                            <MudIconButton Icon="@Icons.Material.Rounded.Edit"
-                                           Size="Size.Small" Color="Color.Default"
-                                           title="Editar"
-                                           OnClick="@(() => AbrirEditar(context))" />
-                            <MudIconButton Icon="@Icons.Material.Rounded.Delete"
-                                           Size="Size.Small" Color="Color.Default"
-                                           title="Desactivar"
-                                           OnClick="@(() => Eliminar(context))" />
+            <!-- Desktop -->
+            <div class="desk-only">
+                <MudTable Items="_negocios" Hover="true" Dense="true" Striped="false">
+                    <HeaderContent>
+                        <MudTh>Nombre</MudTh>
+                        <MudTh>Dirección</MudTh>
+                        <MudTh Style="text-align:center;">Repartidores</MudTh>
+                        <MudTh Style="text-align:center;">Estado</MudTh>
+                        <MudTh Style="width:108px;text-align:center;">Acciones</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd><span class="fw-600">@context.Nombre</span></MudTd>
+                        <MudTd><span class="text-muted">@(context.Direccion ?? "—")</span></MudTd>
+                        <MudTd Style="text-align:center;">
+                            <span class="fw-600 text-primary">@context.TotalRepartidores</span>
+                        </MudTd>
+                        <MudTd Style="text-align:center;">
+                            <MudChip T="string"
+                                     Color="@(context.IsActive ? Color.Success : Color.Default)"
+                                     Size="Size.Small" Variant="Variant.Filled">
+                                @(context.IsActive ? "Activo" : "Inactivo")
+                            </MudChip>
+                        </MudTd>
+                        <MudTd Style="text-align:center;">
+                            <div style="display:inline-flex;gap:2px;align-items:center;">
+                                <MudIconButton Icon="@Icons.Material.Rounded.ManageAccounts"
+                                               Size="Size.Small" Color="Color.Primary"
+                                               title="Gestionar negocio"
+                                               OnClick="@(() => AbrirGestionar(context))" />
+                                <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                                               Size="Size.Small" Color="Color.Default"
+                                               title="Editar"
+                                               OnClick="@(() => AbrirEditar(context))" />
+                                <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                               Size="Size.Small" Color="Color.Default"
+                                               title="Desactivar"
+                                               OnClick="@(() => Eliminar(context))" />
+                            </div>
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <div class="empty-state">
+                            <span class="material-symbols-rounded">storefront</span>
+                            <p>No hay negocios registrados aún.</p>
                         </div>
-                    </MudTd>
-                </RowTemplate>
-                <NoRecordsContent>
+                    </NoRecordsContent>
+                </MudTable>
+            </div>
+            <!-- Móvil -->
+            <div class="mob-cards">
+                @if (!_negocios.Any())
+                {
                     <div class="empty-state">
                         <span class="material-symbols-rounded">storefront</span>
                         <p>No hay negocios registrados aún.</p>
                     </div>
-                </NoRecordsContent>
-            </MudTable>
+                }
+                @foreach (var t in _negocios)
+                {
+                    <div class="mob-list-card">
+                        <div class="mob-list-card-header">
+                            <div class="mob-list-card-info">
+                                <div class="mob-list-card-title">@t.Nombre</div>
+                                <div class="mob-list-card-sub">@(t.Direccion ?? "Sin dirección")</div>
+                            </div>
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                                     Color="@(t.IsActive ? Color.Success : Color.Default)">
+                                @(t.IsActive ? "Activo" : "Inactivo")
+                            </MudChip>
+                        </div>
+                        <div class="mob-list-card-meta">
+                            <span class="mob-list-card-meta-item">
+                                <span class="material-symbols-rounded" style="font-size:14px;">delivery_dining</span>
+                                <span class="fw-600 text-primary">@t.TotalRepartidores</span>
+                                repartidores
+                            </span>
+                        </div>
+                        <div class="mob-list-card-actions">
+                            <MudIconButton Icon="@Icons.Material.Rounded.ManageAccounts"
+                                           Size="Size.Small" Color="Color.Primary"
+                                           title="Gestionar" OnClick="@(() => AbrirGestionar(t))" />
+                            <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                                           Size="Size.Small" Color="Color.Default"
+                                           title="Editar" OnClick="@(() => AbrirEditar(t))" />
+                            <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                           Size="Size.Small" Color="Color.Default"
+                                           title="Desactivar" OnClick="@(() => Eliminar(t))" />
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
     }
 

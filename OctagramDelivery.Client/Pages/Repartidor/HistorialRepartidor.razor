@@ -23,43 +23,84 @@
     else
     {
         <div class="data-card data-card-table">
-            <MudTable Items="_jornadas" Hover="true" Dense="true">
-                <HeaderContent>
-                    <MudTh>Fecha</MudTh>
-                    <MudTh Style="text-align:center;">Estado</MudTh>
-                    <MudTh Style="text-align:right;">Total Neto</MudTh>
-                    <MudTh></MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd>
-                        <span class="fw-500">
-                            @context.Fecha.ToString("dddd d 'de' MMMM", _mx)
-                        </span>
-                    </MudTd>
-                    <MudTd Style="text-align:center;">
-                        <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
-                                 Color="@(context.Estado == JornadaEstado.Revisada ? Color.Success : Color.Default)">
-                            @(context.Estado == JornadaEstado.Cerrada ? "Cerrada" : "Revisada")
-                        </MudChip>
-                    </MudTd>
-                    <MudTd Style="text-align:right;">
-                        <span class="fw-700 tabnum text-vi">
-                            @context.TotalNeto.ToString("C", _mx)
-                        </span>
-                    </MudTd>
-                    <MudTd Style="text-align:center;">
-                        <MudIconButton Icon="@Icons.Material.Rounded.Assessment" Size="Size.Small"
-                                       Color="Color.Primary" title="Ver Reporte"
-                                       OnClick="@(() => Nav.NavigateTo($"/reporte/{context.Id}"))" />
-                    </MudTd>
-                </RowTemplate>
-                <NoRecordsContent>
+            <!-- Desktop -->
+            <div class="desk-only">
+                <MudTable Items="_jornadas" Hover="true" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Fecha</MudTh>
+                        <MudTh Style="text-align:center;">Estado</MudTh>
+                        <MudTh Style="text-align:right;">Total Neto</MudTh>
+                        <MudTh></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>
+                            <span class="fw-500">
+                                @context.Fecha.ToString("dddd d 'de' MMMM", _mx)
+                            </span>
+                        </MudTd>
+                        <MudTd Style="text-align:center;">
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                                     Color="@(context.Estado == JornadaEstado.Revisada ? Color.Success : Color.Default)">
+                                @(context.Estado == JornadaEstado.Cerrada ? "Cerrada" : "Revisada")
+                            </MudChip>
+                        </MudTd>
+                        <MudTd Style="text-align:right;">
+                            <span class="fw-700 tabnum text-vi">
+                                @context.TotalNeto.ToString("C", _mx)
+                            </span>
+                        </MudTd>
+                        <MudTd Style="text-align:center;">
+                            <MudIconButton Icon="@Icons.Material.Rounded.Assessment" Size="Size.Small"
+                                           Color="Color.Primary" title="Ver Reporte"
+                                           OnClick="@(() => Nav.NavigateTo($"/reporte/{context.Id}"))" />
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <div class="empty-state">
+                            <span class="material-symbols-rounded">history</span>
+                            <p>No tienes jornadas anteriores.</p>
+                        </div>
+                    </NoRecordsContent>
+                </MudTable>
+            </div>
+            <!-- Móvil -->
+            <div class="mob-cards">
+                @if (!_jornadas.Any())
+                {
                     <div class="empty-state">
                         <span class="material-symbols-rounded">history</span>
                         <p>No tienes jornadas anteriores.</p>
                     </div>
-                </NoRecordsContent>
-            </MudTable>
+                }
+                @foreach (var j in _jornadas)
+                {
+                    <div class="mob-list-card">
+                        <div class="mob-list-card-header">
+                            <div class="mob-list-card-info">
+                                <div class="mob-list-card-title" style="text-transform:capitalize;">
+                                    @j.Fecha.ToString("dddd d 'de' MMMM", _mx)
+                                </div>
+                            </div>
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                                     Color="@(j.Estado == JornadaEstado.Revisada ? Color.Success : Color.Default)">
+                                @(j.Estado == JornadaEstado.Cerrada ? "Cerrada" : "Revisada")
+                            </MudChip>
+                        </div>
+                        <div class="mob-list-card-meta">
+                            <span class="tabnum fw-700 text-vi" style="font-size:18px;">
+                                @j.TotalNeto.ToString("C", _mx)
+                            </span>
+                        </div>
+                        <div class="mob-list-card-actions">
+                            <MudButton StartIcon="@Icons.Material.Rounded.Assessment"
+                                       Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                                       OnClick="@(() => Nav.NavigateTo($"/reporte/{j.Id}"))">
+                                Ver reporte
+                            </MudButton>
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
     }
 </div>

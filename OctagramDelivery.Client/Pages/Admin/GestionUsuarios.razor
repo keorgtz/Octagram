@@ -29,67 +29,125 @@
     else
     {
         <div class="data-card data-card-table">
-            <MudTable Items="_usuarios" Hover="true" Dense="true" Striped="false" Filter="FilterFunc">
-                <ToolBarContent>
+            <!-- Desktop -->
+            <div class="desk-only">
+                <MudTable Items="_usuarios" Hover="true" Dense="true" Striped="false" Filter="FilterFunc">
+                    <ToolBarContent>
+                        <MudTextField @bind-Value="_busqueda"
+                                      Placeholder="Buscar por usuario o nombre..."
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Rounded.Search"
+                                      FullWidth="true"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense" />
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh>Usuario</MudTh>
+                        <MudTh>Nombre</MudTh>
+                        <MudTh Style="text-align:center;">Rol</MudTh>
+                        <MudTh>Negocios</MudTh>
+                        <MudTh Style="text-align:center;">Estado</MudTh>
+                        <MudTh Style="width:72px;text-align:center;">Acciones</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>
+                            <span style="font-family:monospace;font-size:13px;font-weight:600;color:var(--primary);">@context.Username</span>
+                        </MudTd>
+                        <MudTd><span class="fw-500">@context.FullName</span></MudTd>
+                        <MudTd Style="text-align:center;">
+                            <MudChip T="string" Color="@GetRolColor(context.Rol)"
+                                     Size="Size.Small" Variant="Variant.Filled">
+                                @context.Rol
+                            </MudChip>
+                        </MudTd>
+                        <MudTd>
+                            <span class="text-muted" style="font-size:12px;">
+                                @(context.NegocioNombres.Any() ? string.Join(", ", context.NegocioNombres.Take(2)) : "—")
+                            </span>
+                        </MudTd>
+                        <MudTd Style="text-align:center;">
+                            <MudChip T="string"
+                                     Color="@(context.IsActive ? Color.Success : Color.Default)"
+                                     Size="Size.Small" Variant="Variant.Filled">
+                                @(context.IsActive ? "Activo" : "Inactivo")
+                            </MudChip>
+                        </MudTd>
+                        <MudTd Style="text-align:center;">
+                            <div style="display:inline-flex;gap:2px;align-items:center;">
+                                <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                                               Size="Size.Small" Color="Color.Default"
+                                               title="Editar"
+                                               OnClick="@(() => AbrirEditar(context))" />
+                                <MudIconButton Icon="@Icons.Material.Rounded.PersonOff"
+                                               Size="Size.Small" Color="Color.Default"
+                                               title="Desactivar"
+                                               OnClick="@(() => Desactivar(context))" />
+                            </div>
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <div class="empty-state">
+                            <span class="material-symbols-rounded">person_off</span>
+                            <p>No se encontraron usuarios.</p>
+                        </div>
+                    </NoRecordsContent>
+                </MudTable>
+            </div>
+            <!-- Móvil -->
+            <div class="mob-cards">
+                <div class="mob-search-bar">
                     <MudTextField @bind-Value="_busqueda"
                                   Placeholder="Buscar por usuario o nombre..."
                                   Adornment="Adornment.Start"
                                   AdornmentIcon="@Icons.Material.Rounded.Search"
-                                  FullWidth="true"
-                                  Variant="Variant.Outlined"
-                                  Margin="Margin.Dense" />
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh>Usuario</MudTh>
-                    <MudTh>Nombre</MudTh>
-                    <MudTh Style="text-align:center;">Rol</MudTh>
-                    <MudTh>Negocios</MudTh>
-                    <MudTh Style="text-align:center;">Estado</MudTh>
-                    <MudTh Style="width:72px;text-align:center;">Acciones</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd>
-                        <span style="font-family:monospace;font-size:13px;font-weight:600;color:var(--primary);">@context.Username</span>
-                    </MudTd>
-                    <MudTd><span class="fw-500">@context.FullName</span></MudTd>
-                    <MudTd Style="text-align:center;">
-                        <MudChip T="string" Color="@GetRolColor(context.Rol)"
-                                 Size="Size.Small" Variant="Variant.Filled">
-                            @context.Rol
-                        </MudChip>
-                    </MudTd>
-                    <MudTd>
-                        <span class="text-muted" style="font-size:12px;">
-                            @(context.NegocioNombres.Any() ? string.Join(", ", context.NegocioNombres.Take(2)) : "—")
-                        </span>
-                    </MudTd>
-                    <MudTd Style="text-align:center;">
-                        <MudChip T="string"
-                                 Color="@(context.IsActive ? Color.Success : Color.Default)"
-                                 Size="Size.Small" Variant="Variant.Filled">
-                            @(context.IsActive ? "Activo" : "Inactivo")
-                        </MudChip>
-                    </MudTd>
-                    <MudTd Style="text-align:center;">
-                        <div style="display:inline-flex;gap:2px;align-items:center;">
-                            <MudIconButton Icon="@Icons.Material.Rounded.Edit"
-                                           Size="Size.Small" Color="Color.Default"
-                                           title="Editar"
-                                           OnClick="@(() => AbrirEditar(context))" />
-                            <MudIconButton Icon="@Icons.Material.Rounded.PersonOff"
-                                           Size="Size.Small" Color="Color.Default"
-                                           title="Desactivar"
-                                           OnClick="@(() => Desactivar(context))" />
-                        </div>
-                    </MudTd>
-                </RowTemplate>
-                <NoRecordsContent>
+                                  FullWidth="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </div>
+                @{
+                    var usuariosFiltrados = _usuarios.Where(FilterFunc).ToList();
+                }
+                @if (!usuariosFiltrados.Any())
+                {
                     <div class="empty-state">
                         <span class="material-symbols-rounded">person_off</span>
                         <p>No se encontraron usuarios.</p>
                     </div>
-                </NoRecordsContent>
-            </MudTable>
+                }
+                @foreach (var u in usuariosFiltrados)
+                {
+                    <div class="mob-list-card">
+                        <div class="mob-list-card-header">
+                            <div class="mob-list-card-info">
+                                <div class="mob-list-card-title">@u.FullName</div>
+                                <div class="mob-list-card-sub" style="font-family:monospace;color:var(--primary);">@u.Username</div>
+                            </div>
+                            <MudChip T="string" Color="@GetRolColor(u.Rol)" Size="Size.Small" Variant="Variant.Filled">
+                                @u.Rol
+                            </MudChip>
+                        </div>
+                        <div class="mob-list-card-meta">
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                                     Color="@(u.IsActive ? Color.Success : Color.Default)">
+                                @(u.IsActive ? "Activo" : "Inactivo")
+                            </MudChip>
+                            @if (u.NegocioNombres.Any())
+                            {
+                                <span class="mob-list-card-meta-item">
+                                    <span class="material-symbols-rounded" style="font-size:13px;">store</span>
+                                    @string.Join(", ", u.NegocioNombres.Take(2))
+                                </span>
+                            }
+                        </div>
+                        <div class="mob-list-card-actions">
+                            <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                                           Size="Size.Small" Color="Color.Default"
+                                           title="Editar" OnClick="@(() => AbrirEditar(u))" />
+                            <MudIconButton Icon="@Icons.Material.Rounded.PersonOff"
+                                           Size="Size.Small" Color="Color.Default"
+                                           title="Desactivar" OnClick="@(() => Desactivar(u))" />
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
     }
 

@@ -41,6 +41,8 @@
     else
     {
         <div class="data-card data-card-table">
+            <!-- Desktop -->
+            <div class="desk-only">
             <MudTable Items="_productos" Hover="true" Dense="true" Striped="false" T="ProductDto">
                 <HeaderContent>
                     <MudTh Style="width:28px;"></MudTh>
@@ -189,6 +191,83 @@
                     </div>
                 </NoRecordsContent>
             </MudTable>
+            </div>
+            <!-- Móvil -->
+            <div class="mob-cards">
+                @if (!_productos.Any())
+                {
+                    <div class="empty-state">
+                        <span class="material-symbols-rounded">inventory_2</span>
+                        <p>No hay productos registrados para este negocio.</p>
+                    </div>
+                }
+                @foreach (var p in _productos)
+                {
+                    var expandido = _expandedIds.Contains(p.Id);
+                    <div class="mob-list-card">
+                        <div class="mob-list-card-header">
+                            <div class="mob-list-card-info">
+                                <div class="mob-list-card-title">@p.Nombre</div>
+                                <div class="mob-list-card-sub">
+                                    @p.PrecioPorUnidad.ToString("C", _mx)
+                                    @if (p.TipoMedida == TipoMedida.Gramaje)
+                                    { <span> / KG</span> }
+                                </div>
+                            </div>
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                                     Color="@(p.TipoMedida == TipoMedida.Gramaje ? Color.Info : Color.Default)">
+                                @(p.TipoMedida == TipoMedida.Gramaje ? "Gramaje" : "Pieza")
+                            </MudChip>
+                        </div>
+                        <div class="mob-list-card-meta">
+                            @if (p.Perfiles.Count > 0)
+                            {
+                                <span class="mob-list-card-meta-item">
+                                    <span class="material-symbols-rounded" style="font-size:13px;">price_change</span>
+                                    <span class="fw-600 text-primary">@p.Perfiles.Count</span> perfiles de precio
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="mob-list-card-meta-item">Sin perfiles — precio base para todos</span>
+                            }
+                        </div>
+                        @if (expandido)
+                        {
+                            <div class="mob-list-card-expand">
+                                @foreach (var tier in p.Perfiles.OrderBy(t => t.Numero))
+                                {
+                                    <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--gray-line);">
+                                        <span>
+                                            <span class="fw-700 text-primary" style="margin-right:6px;">@tier.Numero</span>
+                                            <span class="text-muted">@(tier.Etiqueta ?? "—")</span>
+                                        </span>
+                                        <span class="tabnum fw-600 text-em">@tier.Precio.ToString("C", _mx)</span>
+                                    </div>
+                                }
+                                <div style="margin-top:8px;">
+                                    <MudButton StartIcon="@Icons.Material.Rounded.Add"
+                                               Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                                               OnClick="@(() => AbrirCrearTier(p))">
+                                        Agregar Perfil
+                                    </MudButton>
+                                </div>
+                            </div>
+                        }
+                        <div class="mob-list-card-actions">
+                            <MudIconButton Icon="@(expandido ? Icons.Material.Rounded.ExpandLess : Icons.Material.Rounded.ExpandMore)"
+                                           Size="Size.Small" Color="Color.Default"
+                                           title="Ver perfiles" OnClick="@(() => ToggleExpand(p.Id))" />
+                            <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                                           Size="Size.Small" Color="Color.Default"
+                                           title="Editar" OnClick="@(() => AbrirEditar(p))" />
+                            <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                           Size="Size.Small" Color="Color.Default"
+                                           title="Desactivar" OnClick="@(() => Eliminar(p))" />
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
     }
 </div>

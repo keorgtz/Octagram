@@ -40,46 +40,86 @@
     else
     {
         <div class="data-card data-card-table">
-            <MudTable Items="_jornadas" Hover="true" Dense="true" Striped="false" RowsPerPage="25">
-                <HeaderContent>
-                    <MudTh>Fecha</MudTh>
-                    <MudTh>Repartidor</MudTh>
-                    <MudTh>Negocio</MudTh>
-                    <MudTh Style="text-align:center;">Estado</MudTh>
-                    <MudTh Style="text-align:right;">Total Neto</MudTh>
-                    <MudTh></MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd>@context.Fecha.ToString("dd/MM/yyyy")</MudTd>
-                    <MudTd><span class="fw-500">@context.RepartidorNombre</span></MudTd>
-                    <MudTd><span class="text-muted">@context.NegocioNombre</span></MudTd>
-                    <MudTd Style="text-align:center;">
-                        <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
-                                 Color="@(context.Estado == JornadaEstado.Revisada ? Color.Success : Color.Default)">
-                            @(context.Estado == JornadaEstado.Cerrada ? "Cerrada" : "Revisada")
-                        </MudChip>
-                    </MudTd>
-                    <MudTd Style="text-align:right;">
-                        <span class="fw-700 tabnum text-vi">
-                            @context.TotalNeto.ToString("C", _mx)
-                        </span>
-                    </MudTd>
-                    <MudTd Style="text-align:center;">
-                        <MudIconButton Icon="@Icons.Material.Rounded.Assessment" Size="Size.Small"
-                                       Color="Color.Primary" title="Ver Reporte"
-                                       OnClick="@(() => Nav.NavigateTo($"/reporte/{context.Id}"))" />
-                    </MudTd>
-                </RowTemplate>
-                <NoRecordsContent>
+            <!-- Desktop -->
+            <div class="desk-only">
+                <MudTable Items="_jornadas" Hover="true" Dense="true" Striped="false" RowsPerPage="25">
+                    <HeaderContent>
+                        <MudTh>Fecha</MudTh>
+                        <MudTh>Repartidor</MudTh>
+                        <MudTh>Negocio</MudTh>
+                        <MudTh Style="text-align:center;">Estado</MudTh>
+                        <MudTh Style="text-align:right;">Total Neto</MudTh>
+                        <MudTh></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.Fecha.ToString("dd/MM/yyyy")</MudTd>
+                        <MudTd><span class="fw-500">@context.RepartidorNombre</span></MudTd>
+                        <MudTd><span class="text-muted">@context.NegocioNombre</span></MudTd>
+                        <MudTd Style="text-align:center;">
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                                     Color="@(context.Estado == JornadaEstado.Revisada ? Color.Success : Color.Default)">
+                                @(context.Estado == JornadaEstado.Cerrada ? "Cerrada" : "Revisada")
+                            </MudChip>
+                        </MudTd>
+                        <MudTd Style="text-align:right;">
+                            <span class="fw-700 tabnum text-vi">
+                                @context.TotalNeto.ToString("C", _mx)
+                            </span>
+                        </MudTd>
+                        <MudTd Style="text-align:center;">
+                            <MudIconButton Icon="@Icons.Material.Rounded.Assessment" Size="Size.Small"
+                                           Color="Color.Primary" title="Ver Reporte"
+                                           OnClick="@(() => Nav.NavigateTo($"/reporte/{context.Id}"))" />
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <div class="empty-state">
+                            <span class="material-symbols-rounded">history</span>
+                            <p>No hay jornadas en el período seleccionado.</p>
+                        </div>
+                    </NoRecordsContent>
+                    <PagerContent>
+                        <MudTablePager />
+                    </PagerContent>
+                </MudTable>
+            </div>
+            <!-- Móvil -->
+            <div class="mob-cards">
+                @if (!_jornadas.Any())
+                {
                     <div class="empty-state">
                         <span class="material-symbols-rounded">history</span>
                         <p>No hay jornadas en el período seleccionado.</p>
                     </div>
-                </NoRecordsContent>
-                <PagerContent>
-                    <MudTablePager />
-                </PagerContent>
-            </MudTable>
+                }
+                @foreach (var j in _jornadas)
+                {
+                    <div class="mob-list-card">
+                        <div class="mob-list-card-header">
+                            <div class="mob-list-card-info">
+                                <div class="mob-list-card-title">@j.RepartidorNombre</div>
+                                <div class="mob-list-card-sub">@j.NegocioNombre · @j.Fecha.ToString("dd/MM/yyyy")</div>
+                            </div>
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                                     Color="@(j.Estado == JornadaEstado.Revisada ? Color.Success : Color.Default)">
+                                @(j.Estado == JornadaEstado.Cerrada ? "Cerrada" : "Revisada")
+                            </MudChip>
+                        </div>
+                        <div class="mob-list-card-meta">
+                            <span class="tabnum fw-700 text-vi" style="font-size:16px;">
+                                @j.TotalNeto.ToString("C", _mx)
+                            </span>
+                        </div>
+                        <div class="mob-list-card-actions">
+                            <MudButton StartIcon="@Icons.Material.Rounded.Assessment"
+                                       Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                                       OnClick="@(() => Nav.NavigateTo($"/reporte/{j.Id}"))">
+                                Ver reporte
+                            </MudButton>
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
     }
 </div>
