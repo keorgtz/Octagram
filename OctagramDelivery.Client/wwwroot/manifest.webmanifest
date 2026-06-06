@@ -1,6 +1,6 @@
 {
-  "name": "Octagram Delivery",
-  "short_name": "Octagram",
+  "name": "TortiCloud",
+  "short_name": "TortiCloud",
   "id": "./",
   "start_url": "./",
   "display": "standalone",

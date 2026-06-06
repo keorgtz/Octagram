@@ -52,7 +52,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowClient", policy =>
     {
         policy.WithOrigins(
-                "https://octagram-app.endevour.mx",
+                "https://torticloud-app.endevour.mx",
                 "http://localhost:5194",
                 "https://localhost:7218",
                 "http://localhost:5240",
