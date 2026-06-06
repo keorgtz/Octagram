@@ -1,5 +1,5 @@
 @page "/repartidor/jornada/cliente/{ClienteId:int}"
-@attribute [Authorize(Roles = $"{nameof(UserRole.Repartidor)},{nameof(UserRole.Admin)}")]
+@attribute [Authorize(Roles = $"{nameof(UserRole.Repartidor)},{nameof(UserRole.Gerente)},{nameof(UserRole.Supervisor)},{nameof(UserRole.Admin)}")]
 @implements IDisposable
 @inject ApiService Api
 @inject AuthService AuthSvc
@@ -32,7 +32,17 @@ else
             <span class="material-symbols-rounded">arrow_back</span>
         </button>
         <span class="cj-header-title">@_cliente.Nombre</span>
-        <span class="save-indicator @_saveClass" style="font-size:11px;">@_saveText</span>
+        @if (_soloLectura)
+        {
+            <span class="badge-solo-lectura">
+                <span class="material-symbols-rounded" style="font-size:13px;">visibility</span>
+                Solo lectura
+            </span>
+        }
+        else
+        {
+            <span class="save-indicator @_saveClass" style="font-size:11px;">@_saveText</span>
+        }
     </div>
 
     <!-- Vuelta tabs -->
@@ -44,7 +54,7 @@ else
                 @ronda.Etiqueta
             </button>
         }
-        @if (Estado.Jornada?.Estado == JornadaEstado.Abierta)
+        @if (!_soloLectura && Estado.Jornada?.Estado == JornadaEstado.Abierta)
         {
             <button class="cj-vuelta-tab add" @onclick="AgregarRonda">
                 <span class="material-symbols-rounded" style="font-size:16px;">add</span>
@@ -56,11 +66,12 @@ else
     <div class="cj-productos">
         @foreach (var prod in _productosDelCliente)
         {
-            var celda      = Estado.GetOrCreate(_rondaActivaId, ClienteId, prod.ProductId);
-            var subtotal   = (celda.Entregado - celda.Devuelto) * celda.Precio;
-            var titEnt     = "Entregado — " + prod.ProductNombre;
-            var titDev     = "Devuelto — "  + prod.ProductNombre;
-            var tipo       = prod.TipoMedida;
+            var celda    = Estado.GetOrCreate(_rondaActivaId, ClienteId, prod.ProductId);
+            var subtotal = (celda.Entregado - celda.Devuelto) * celda.Precio;
+            var titEnt   = "Entregado — " + prod.ProductNombre;
+            var titDev   = "Devuelto — "  + prod.ProductNombre;
+            var tipo     = prod.TipoMedida;
+            var noEditar = _soloLectura || Estado.Jornada?.Estado != JornadaEstado.Abierta;
 
             <div class="cj-producto-card">
                 <div class="cj-producto-header">
@@ -73,11 +84,13 @@ else
                     <span class="cj-qty-label entregado">Entregado</span>
                     <div style="display:flex;align-items:center;gap:8px;">
                         <span class="cj-qty-display">@FormatQty(celda.Entregado, tipo)</span>
-                        <button class="cj-qty-btn"
-                                disabled="@(Estado.Jornada?.Estado != JornadaEstado.Abierta)"
-                                @onclick="() => AbrirNumpad(celda, true, tipo, titEnt)">
-                            <span class="material-symbols-rounded">edit</span>
-                        </button>
+                        @if (!_soloLectura)
+                        {
+                            <button class="cj-qty-btn" disabled="@noEditar"
+                                    @onclick="() => AbrirNumpad(celda, true, tipo, titEnt)">
+                                <span class="material-symbols-rounded">edit</span>
+                            </button>
+                        }
                     </div>
                 </div>
 
@@ -86,11 +99,13 @@ else
                     <span class="cj-qty-label devuelto">Devuelto</span>
                     <div style="display:flex;align-items:center;gap:8px;">
                         <span class="cj-qty-display">@FormatQty(celda.Devuelto, tipo)</span>
-                        <button class="cj-qty-btn"
-                                disabled="@(Estado.Jornada?.Estado != JornadaEstado.Abierta)"
-                                @onclick="() => AbrirNumpad(celda, false, tipo, titDev)">
-                            <span class="material-symbols-rounded">edit</span>
-                        </button>
+                        @if (!_soloLectura)
+                        {
+                            <button class="cj-qty-btn" disabled="@noEditar"
+                                    @onclick="() => AbrirNumpad(celda, false, tipo, titDev)">
+                                <span class="material-symbols-rounded">edit</span>
+                            </button>
+                        }
                     </div>
                 </div>
             </div>
@@ -117,7 +132,7 @@ else
                              ToggledIcon="@Icons.Material.Rounded.MoneyOff"
                              Color="Color.Success"
                              ToggledColor="Color.Warning"
-                             Disabled="@(Estado.Jornada?.Estado != JornadaEstado.Abierta)" />
+                             Disabled="@(_soloLectura || Estado.Jornada?.Estado != JornadaEstado.Abierta)" />
     </div>
 }
 
@@ -135,6 +150,7 @@ else
         System.Globalization.CultureInfo.GetCultureInfo("es-MX");
 
     private bool         _cargando = true;
+    private bool         _soloLectura;
     private CustomerDto? _cliente;
     private List<CustomerProductDto> _productosDelCliente = new();
     private int          _rondaActivaId;
@@ -158,10 +174,12 @@ else
     {
         Estado.OnChange += StateHasChanged;
 
+        var currentUser = await AuthSvc.GetCurrentUser();
+        _soloLectura = currentUser?.Rol == UserRole.Supervisor;
+
         if (!Estado.Cargado)
         {
-            var user = await AuthSvc.GetCurrentUser();
-            var negocioId = user?.NegocioIds.FirstOrDefault() ?? 0;
+            var negocioId = currentUser?.NegocioIds.FirstOrDefault() ?? 0;
             if (negocioId > 0)
             {
                 var jornada   = await Api.GetJornadaHoyAsync(negocioId);
@@ -195,7 +213,7 @@ else
 
     private void OnNumpadConfirmar(decimal valor)
     {
-        if (_numpadCelda == null) return;
+        if (_numpadCelda == null || _soloLectura) return;
         if (_numpadEsEntregado) _numpadCelda.Entregado = valor;
         else                    _numpadCelda.Devuelto  = Math.Min(valor, _numpadCelda.Entregado);
         Estado.HayCambiosPendientes = true;

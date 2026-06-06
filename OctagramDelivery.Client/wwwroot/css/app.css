@@ -1274,3 +1274,126 @@ body,
 .reporte-producto-row:last-child { border-bottom: none; }
 .reporte-prod-nombre { flex: 1; font-weight: 500; color: var(--gray-dark, #1C1E26); }
 .reporte-prod-num { font-variant-numeric: tabular-nums; min-width: 44px; text-align: right; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVO — Móvil / Tablet
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Tablet (≤ 960px): sidebar más compacto ── */
+@media (max-width: 960px) {
+    :root { --sidebar-w: 200px; }
+    .titlebar-brand-sub { display: none; }
+    .titlebar-username  { max-width: 130px; font-size: 12px; }
+    .page-content       { padding: 16px 18px; }
+}
+
+/* ── Móvil (≤ 640px): sidebar → overlay flotante ── */
+@media (max-width: 640px) {
+
+    /* Grid pierde columna de sidebar */
+    .app-shell,
+    .app-shell.sidebar-collapsed {
+        grid-template-areas: "titlebar" "main";
+        grid-template-columns: 1fr;
+    }
+
+    /* Sidebar: siempre fijo, oculto fuera de pantalla */
+    .sidebar {
+        position: fixed;
+        left: 0; top: 0; bottom: 0;
+        width: min(280px, 82vw);
+        z-index: 400;
+        transform: translateX(-100%);
+        transition: transform 200ms ease;
+        box-shadow: 4px 0 24px rgba(0,0,0,.22);
+    }
+
+    /* Sidebar visible cuando NO tiene sidebar-collapsed */
+    .app-shell:not(.sidebar-collapsed) .sidebar {
+        transform: translateX(0);
+    }
+
+    /* Backdrop oscuro */
+    .sidebar-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.44);
+        z-index: 399;
+    }
+    .app-shell:not(.sidebar-collapsed) .sidebar-backdrop {
+        display: block;
+    }
+
+    /* Titlebar compacta */
+    .titlebar                         { padding: 0 10px; gap: 4px; }
+    .titlebar-brand-name,
+    .titlebar-brand-sub,
+    .titlebar-user                    { display: none; }
+    .titlebar-brand-icon              { width: 24px; height: 24px; }
+
+    /* Page layout */
+    .page-content       { padding: 12px 14px; }
+    .h-page-title       { font-size: 15px; letter-spacing: 0.01em; }
+    .page-subtitle      { font-size: 11px; }
+    .page-header        { flex-direction: column; gap: 10px; }
+    .page-header-actions { flex-wrap: wrap; width: 100%; gap: 6px; }
+
+    /* KPI compacto */
+    .kpi-grid  { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .kpi-card  { padding: 12px 12px 10px; border-radius: 14px; }
+    .kpi-value { font-size: 20px; }
+    .kpi-label { font-size: 10px; }
+
+    /* Tablas: scroll horizontal */
+    .data-card                { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .mud-table-container      { overflow-x: auto; }
+
+    /* Grid clientes → columna única */
+    .neg-clientes-grid { grid-template-columns: 1fr; min-height: unset; }
+
+    /* Login card */
+    .login-card { padding: 28px 22px 24px; border-radius: 12px; }
+}
+
+/* ── Extra-small (≤ 390px) ── */
+@media (max-width: 390px) {
+    .page-content        { padding: 10px 12px; }
+    .jornada-client-card { padding: 12px 12px; gap: 8px; }
+    .cj-qty-btn          { min-width: 72px; }
+    .numpad-key          { min-height: 50px; font-size: 19px; }
+    .kpi-value           { font-size: 18px; }
+}
+
+/* ── Rep-layout responsivo ── */
+@media (max-width: 640px) {
+    .rep-topbar       { height: 48px; padding: 0 12px; }
+    .rep-topbar .app-name { font-size: 16px; }
+    .status-bar       { font-size: 10px; padding: 0 12px; }
+}
+
+/* ── Horizontal (landscape) en móvil: modo compacto ── */
+@media (max-height: 500px) and (orientation: landscape) {
+    .rep-topbar           { height: 40px; }
+    .status-bar           { display: none; }
+    .cj-header            { height: 40px; }
+    .jornada-mobile-totales { gap: 8px; padding: 4px 0; }
+    .jornada-mini-value   { font-size: 12px; }
+    .numpad-panel         { top: 50%; max-height: 94vh; overflow-y: auto; padding: 10px 14px; }
+    .numpad-key           { min-height: 46px; }
+}
+
+/* ── Badge solo-lectura ── */
+.badge-solo-lectura {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    background: var(--am-pl, #FEF3C7);
+    color: var(--am, #F59E0B);
+    border-radius: 6px;
+    padding: 3px 8px;
+}

@@ -1,5 +1,5 @@
 @page "/repartidor/jornada"
-@attribute [Authorize(Roles = $"{nameof(UserRole.Repartidor)},{nameof(UserRole.Admin)}")]
+@attribute [Authorize(Roles = $"{nameof(UserRole.Repartidor)},{nameof(UserRole.Gerente)},{nameof(UserRole.Supervisor)},{nameof(UserRole.Admin)}")]
 @implements IDisposable
 @inject ApiService Api
 @inject AuthService AuthSvc
@@ -8,7 +8,7 @@
 @inject NavigationManager Nav
 @inject JornadaStateService Estado
 
-<PageTitle>Mi Jornada · OctagramDelivery</PageTitle>
+<PageTitle>Jornada · OctagramDelivery</PageTitle>
 
 @if (_cargando)
 {
@@ -22,32 +22,40 @@ else if (Estado.Jornada == null)
         <span class="material-symbols-rounded" style="font-size:64px;color:var(--gray-muted);">delivery_dining</span>
         <h2 style="color:var(--gray-dark);margin:0;">Sin jornada activa</h2>
         <p style="color:var(--gray-muted);margin:0;">No hay una jornada abierta para hoy.</p>
-        @if (_negocioId > 0)
+        @if (_negocioId > 0 && !_soloLectura)
         {
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AbrirJornada"
                        StartIcon="@Icons.Material.Rounded.PlayCircle" Style="margin-top:4px;">
                 Abrir Jornada de Hoy
             </MudButton>
         }
-        else
+        else if (_negocioId == 0)
         {
-            <MudAlert Severity="Severity.Warning">No tienes un negocio asignado. Contacta a tu supervisor.</MudAlert>
+            <MudAlert Severity="Severity.Warning">No tienes un negocio asignado.</MudAlert>
         }
     </div>
 }
 else
 {
-    <!-- Header de jornada -->
     <div class="jornada-mobile-header">
         <div class="jornada-mobile-meta">
-            <div>
-                <div class="fw-700" style="font-size:15px;line-height:1.2;">@Estado.Jornada.TenantNombre</div>
+            <div style="min-width:0;">
+                <div class="fw-700" style="font-size:15px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    @Estado.Jornada.TenantNombre
+                </div>
                 <div class="text-muted" style="font-size:12px;margin-top:2px;">
                     @Estado.Jornada.Fecha.ToString("dddd d 'de' MMMM", _mx)
                 </div>
             </div>
-            <div style="display:flex;align-items:center;gap:8px;">
-                @if (Estado.Jornada.Estado == JornadaEstado.Abierta)
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                @if (_soloLectura)
+                {
+                    <span class="badge-solo-lectura">
+                        <span class="material-symbols-rounded" style="font-size:13px;">visibility</span>
+                        Solo lectura
+                    </span>
+                }
+                else if (Estado.Jornada.Estado == JornadaEstado.Abierta)
                 {
                     <MudButton StartIcon="@Icons.Material.Rounded.CheckCircleOutline"
                                Variant="Variant.Filled" Color="Color.Success"
@@ -62,7 +70,6 @@ else
             </div>
         </div>
 
-        <!-- Mini totales -->
         @{
             var (bruto, neto, efect, _, _) = Estado.Totales();
         }
@@ -81,14 +88,20 @@ else
             </div>
         </div>
 
-        <!-- Barra de acciones -->
         <div style="display:flex;align-items:center;gap:8px;">
-            <span class="save-indicator @_saveClass" style="flex:1;font-size:11px;">@_saveText</span>
-            @if (Estado.Jornada.Estado == JornadaEstado.Abierta)
+            @if (!_soloLectura)
             {
-                <button class="icon-btn" title="Agregar vuelta" @onclick="AgregarRonda">
-                    <span class="material-symbols-rounded">add_circle</span>
-                </button>
+                <span class="save-indicator @_saveClass" style="flex:1;font-size:11px;">@_saveText</span>
+                @if (Estado.Jornada.Estado == JornadaEstado.Abierta)
+                {
+                    <button class="icon-btn" title="Agregar vuelta" @onclick="AgregarRonda">
+                        <span class="material-symbols-rounded">add_circle</span>
+                    </button>
+                }
+            }
+            else
+            {
+                <span style="flex:1;"></span>
             }
             <a href="/repartidor/historial" class="icon-btn" title="Historial">
                 <span class="material-symbols-rounded">history</span>
@@ -96,7 +109,6 @@ else
         </div>
     </div>
 
-    <!-- Lista de clientes -->
     <div class="jornada-client-list">
         @foreach (var cliente in Estado.Clientes)
         {
@@ -146,16 +158,18 @@ else
     private static readonly System.Globalization.CultureInfo _mx =
         System.Globalization.CultureInfo.GetCultureInfo("es-MX");
 
-    private bool   _cargando = true;
+    private bool   _cargando   = true;
+    private bool   _soloLectura;
     private int    _negocioId;
-    private string _saveText  = "Guardado ✓";
-    private string _saveClass = "save-indicator save-ok";
+    private string _saveText   = "Guardado ✓";
+    private string _saveClass  = "save-ok";
 
     protected override async Task OnInitializedAsync()
     {
         Estado.OnChange += StateHasChanged;
         var user = await AuthSvc.GetCurrentUser();
-        _negocioId = user?.NegocioIds.FirstOrDefault() ?? 0;
+        _negocioId    = user?.NegocioIds.FirstOrDefault() ?? 0;
+        _soloLectura  = user?.Rol == UserRole.Supervisor;
 
         if (!Estado.Cargado && _negocioId > 0)
             await CargarJornada();

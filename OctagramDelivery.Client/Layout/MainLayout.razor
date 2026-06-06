@@ -1,6 +1,7 @@
 @inherits LayoutComponentBase
 @inject AuthService AuthSvc
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <MudThemeProvider Theme="_theme" />
 <MudPopoverProvider />
@@ -68,6 +69,8 @@ else
             </button>
         </header>
 
+        <div class="sidebar-backdrop" @onclick="CloseSidebar"></div>
+
         <nav class="sidebar">
             <NavMenu UserRol="@_user.Rol" SidebarOpen="@_sidebarOpen" />
         </nav>
@@ -112,9 +115,20 @@ else
     {
         _user = await AuthSvc.GetCurrentUser();
         _loading = false;
+
+        if (_user?.Rol != UserRole.Repartidor)
+        {
+            try
+            {
+                var w = await JS.InvokeAsync<double>("eval", "window.innerWidth");
+                _sidebarOpen = w >= 900;
+            }
+            catch { _sidebarOpen = true; }
+        }
     }
 
     private void ToggleSidebar() => _sidebarOpen = !_sidebarOpen;
+    private void CloseSidebar()  => _sidebarOpen = false;
 
     private string GetInitials(string? name)
     {

@@ -32,6 +32,10 @@
                     <span class="material-symbols-rounded nav-item-icon">bar_chart</span>
                     @if (SidebarOpen) { <span class="nav-item-label">Vista General</span> }
                 </NavLink>
+                <NavLink class="nav-item" href="/repartidor/jornada" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                    <span class="material-symbols-rounded nav-item-icon">delivery_dining</span>
+                    @if (SidebarOpen) { <span class="nav-item-label">Jornada en Vivo</span> }
+                </NavLink>
                 <NavLink class="nav-item" href="/gerente/clientes" Match="NavLinkMatch.Prefix" ActiveClass="active">
                     <span class="material-symbols-rounded nav-item-icon">people</span>
                     @if (SidebarOpen) { <span class="nav-item-label">Clientes</span> }
@@ -57,6 +61,10 @@
                 <NavLink class="nav-item" href="/gerente/dashboard" Match="NavLinkMatch.Prefix" ActiveClass="active">
                     <span class="material-symbols-rounded nav-item-icon">dashboard</span>
                     @if (SidebarOpen) { <span class="nav-item-label">Vista General</span> }
+                </NavLink>
+                <NavLink class="nav-item" href="/repartidor/jornada" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                    <span class="material-symbols-rounded nav-item-icon">delivery_dining</span>
+                    @if (SidebarOpen) { <span class="nav-item-label">Jornada en Vivo</span> }
                 </NavLink>
             </div>
 
@@ -85,20 +93,24 @@
 
         case UserRole.Supervisor:
             <div class="nav-section">
-                <NavLink class="nav-item" href="/supervisor/dashboard" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                <NavLink class="nav-item" href="/gerente/dashboard" Match="NavLinkMatch.Prefix" ActiveClass="active">
                     <span class="material-symbols-rounded nav-item-icon">dashboard</span>
-                    @if (SidebarOpen) { <span class="nav-item-label">Dashboard</span> }
+                    @if (SidebarOpen) { <span class="nav-item-label">Vista General</span> }
+                </NavLink>
+                <NavLink class="nav-item" href="/repartidor/jornada" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                    <span class="material-symbols-rounded nav-item-icon">delivery_dining</span>
+                    @if (SidebarOpen) { <span class="nav-item-label">Jornada en Vivo</span> }
                 </NavLink>
             </div>
 
             <div class="nav-divider"></div>
             @if (SidebarOpen) { <div class="nav-category">Catálogos</div> }
             <div class="nav-section">
-                <NavLink class="nav-item" href="/supervisor/clientes" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                <NavLink class="nav-item" href="/gerente/clientes" Match="NavLinkMatch.Prefix" ActiveClass="active">
                     <span class="material-symbols-rounded nav-item-icon">people</span>
                     @if (SidebarOpen) { <span class="nav-item-label">Clientes</span> }
                 </NavLink>
-                <NavLink class="nav-item" href="/supervisor/productos" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                <NavLink class="nav-item" href="/gerente/productos" Match="NavLinkMatch.Prefix" ActiveClass="active">
                     <span class="material-symbols-rounded nav-item-icon">inventory_2</span>
                     @if (SidebarOpen) { <span class="nav-item-label">Productos</span> }
                 </NavLink>
@@ -107,7 +119,7 @@
             <div class="nav-divider"></div>
             @if (SidebarOpen) { <div class="nav-category">Reportes</div> }
             <div class="nav-section">
-                <NavLink class="nav-item" href="/supervisor/historial" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                <NavLink class="nav-item" href="/gerente/historial" Match="NavLinkMatch.Prefix" ActiveClass="active">
                     <span class="material-symbols-rounded nav-item-icon">history</span>
                     @if (SidebarOpen) { <span class="nav-item-label">Historial</span> }
                 </NavLink>
