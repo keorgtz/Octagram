@@ -101,17 +101,22 @@
                 @foreach (var t in negociosFiltrados)
                 {
                     <div class="mob-lc">
-                        <div class="mob-lc-top">
-                            <span class="mob-lc-name">@t.Nombre</span>
-                            <span class="mob-badge @(t.IsActive ? "mob-badge-green" : "mob-badge-gray")">
-                                @(t.IsActive ? "Activo" : "Inactivo")
-                            </span>
-                        </div>
-                        <div class="mob-lc-sub">@(t.Direccion ?? "Sin dirección registrada")</div>
-                        <div class="mob-lc-stats">
-                            <div class="mob-lc-stat">
-                                <span class="mob-lc-key">Repartidores</span>
-                                <span class="mob-lc-val primary">@t.TotalRepartidores</span>
+                        <div style="display:flex;align-items:flex-start;gap:10px;">
+                            <div style="flex:1;min-width:0;">
+                                <div class="mob-lc-name">@t.Nombre</div>
+                                <div class="jornada-card-chips" style="margin-top:5px;">
+                                    <span class="mob-badge @(t.IsActive ? "mob-badge-green" : "mob-badge-gray")" style="font-size:10px;padding:2px 7px;">
+                                        @(t.IsActive ? "Activo" : "Inactivo")
+                                    </span>
+                                    @if (!string.IsNullOrEmpty(t.Direccion))
+                                    {
+                                        <span class="jornada-card-chip sin-datos">@t.Direccion</span>
+                                    }
+                                </div>
+                            </div>
+                            <div style="text-align:right;flex-shrink:0;">
+                                <div style="font-size:20px;font-weight:700;color:var(--primary);">@t.TotalRepartidores</div>
+                                <div style="font-size:10px;font-weight:600;color:var(--gray-muted);text-transform:uppercase;">reps</div>
                             </div>
                         </div>
                         <div class="mob-lc-acts">

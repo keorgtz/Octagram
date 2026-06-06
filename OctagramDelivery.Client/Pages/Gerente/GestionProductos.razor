@@ -221,25 +221,25 @@
                 {
                     var expandido = _expandedIds.Contains(p.Id);
                     <div class="mob-lc">
-                        <div class="mob-lc-top">
-                            <span class="mob-lc-name">@p.Nombre</span>
-                            <span class="mob-badge @(p.TipoMedida == TipoMedida.Gramaje ? "mob-badge-blue" : "mob-badge-gray")">
-                                @(p.TipoMedida == TipoMedida.Gramaje ? "Gramaje" : "Pieza")
-                            </span>
-                        </div>
-                        <div class="mob-lc-stats">
-                            <div class="mob-lc-stat">
-                                <span class="mob-lc-key">Precio base</span>
-                                <span class="mob-lc-val">
-                                    @p.PrecioPorUnidad.ToString("C", _mx)
-                                    @if (p.TipoMedida == TipoMedida.Gramaje) { <span style="font-size:10px;color:var(--gray-muted);"> /KG</span> }
-                                </span>
+                        <div style="display:flex;align-items:flex-start;gap:10px;">
+                            <div style="flex:1;min-width:0;">
+                                <div class="mob-lc-name">@p.Nombre</div>
+                                <div class="jornada-card-chips" style="margin-top:5px;">
+                                    <span class="jornada-card-chip @(p.TipoMedida == TipoMedida.Gramaje ? "" : "sin-datos")">
+                                        @(p.TipoMedida == TipoMedida.Gramaje ? "Gramaje" : "Pieza")
+                                    </span>
+                                    @if (p.Perfiles.Count > 0)
+                                    {
+                                        <span class="jornada-card-chip sin-datos">@p.Perfiles.Count perfil@(p.Perfiles.Count == 1 ? "" : "es")</span>
+                                    }
+                                </div>
                             </div>
-                            <div class="mob-lc-stat">
-                                <span class="mob-lc-key">Perfiles</span>
-                                <span class="mob-lc-val @(p.Perfiles.Count > 0 ? "primary" : "")">
-                                    @(p.Perfiles.Count > 0 ? p.Perfiles.Count.ToString() : "—")
-                                </span>
+                            <div style="text-align:right;flex-shrink:0;">
+                                <div class="jornada-card-monto" style="color:var(--em);">@p.PrecioPorUnidad.ToString("C", _mx)</div>
+                                @if (p.TipoMedida == TipoMedida.Gramaje)
+                                {
+                                    <div style="font-size:10px;font-weight:600;color:var(--gray-muted);text-transform:uppercase;">/KG</div>
+                                }
                             </div>
                         </div>
                         @if (expandido && p.Perfiles.Any())

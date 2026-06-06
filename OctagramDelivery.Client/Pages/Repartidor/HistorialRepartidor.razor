@@ -74,29 +74,21 @@
                 }
                 @foreach (var j in _jornadas)
                 {
-                    <div class="mob-lc">
-                        <div class="mob-lc-top">
-                            <span class="mob-lc-name" style="text-transform:capitalize;">
+                    <div class="jornada-client-card" @onclick="@(() => Nav.NavigateTo($"/reporte/{j.Id}"))">
+                        <div class="jornada-card-body">
+                            <div class="jornada-card-nombre" style="text-transform:capitalize;">
                                 @j.Fecha.ToString("dddd d 'de' MMMM", _mx)
-                            </span>
-                            <span class="mob-badge @(j.Estado == JornadaEstado.Revisada ? "mob-badge-green" : "mob-badge-gray")">
-                                @(j.Estado == JornadaEstado.Cerrada ? "Cerrada" : "Revisada")
-                            </span>
-                        </div>
-                        <div class="mob-lc-stats">
-                            <div class="mob-lc-stat">
-                                <span class="mob-lc-key">Total Neto</span>
-                                <span class="mob-lc-val vi tabnum fw-700" style="font-size:18px;">
-                                    @j.TotalNeto.ToString("C", _mx)
+                            </div>
+                            <div class="jornada-card-chips">
+                                <span class="jornada-card-chip @(j.Estado == JornadaEstado.Revisada ? "" : "sin-datos")">
+                                    @(j.Estado == JornadaEstado.Cerrada ? "Cerrada" : "Revisada")
                                 </span>
                             </div>
                         </div>
-                        <div class="mob-lc-acts">
-                            <button class="mob-act-btn mob-act-primary" @onclick="@(() => Nav.NavigateTo($"/reporte/{j.Id}"))">
-                                <span class="material-symbols-rounded">assessment</span>
-                                Ver reporte
-                            </button>
+                        <div class="jornada-card-right">
+                            <span class="jornada-card-monto">@j.TotalNeto.ToString("C", _mx)</span>
                         </div>
+                        <span class="material-symbols-rounded" style="color:var(--gray-muted);font-size:18px;flex-shrink:0;">chevron_right</span>
                     </div>
                 }
             </div>

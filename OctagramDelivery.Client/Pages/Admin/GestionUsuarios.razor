@@ -96,11 +96,15 @@
             <!-- Móvil -->
             <div class="mob-cards">
                 <div class="mob-search-box">
-                    <MudTextField @bind-Value="_busqueda"
-                                  Placeholder="Buscar por usuario o nombre..."
-                                  Adornment="Adornment.Start"
-                                  AdornmentIcon="@Icons.Material.Rounded.Search"
-                                  FullWidth="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    <span class="material-symbols-rounded" style="color:var(--gray-muted);font-size:20px;flex-shrink:0;">search</span>
+                    <input type="search" class="mob-srch-input" placeholder="Buscar usuario o nombre..."
+                           @bind="_busqueda" @bind:event="oninput" />
+                    @if (!string.IsNullOrEmpty(_busqueda))
+                    {
+                        <button class="mob-srch-clear" @onclick="() => _busqueda = string.Empty">
+                            <span class="material-symbols-rounded">close</span>
+                        </button>
+                    }
                 </div>
                 @{
                     var usuariosFiltrados = _usuarios.Where(FilterFunc).ToList();
@@ -115,21 +119,23 @@
                 @foreach (var u in usuariosFiltrados)
                 {
                     <div class="mob-lc">
-                        <div class="mob-lc-top">
-                            <span class="mob-lc-name">@u.FullName</span>
-                            <span class="mob-badge @GetRolBadge(u.Rol)">@u.Rol</span>
-                        </div>
-                        <div class="mob-lc-sub2">@u.Username</div>
-                        <div class="mob-lc-tags">
-                            <span class="mob-badge @(u.IsActive ? "mob-badge-green" : "mob-badge-gray")">
-                                @(u.IsActive ? "Activo" : "Inactivo")
-                            </span>
-                            @if (u.NegocioNombres.Any())
-                            {
-                                <span class="mob-lc-tag">
-                                    @string.Join(", ", u.NegocioNombres.Take(2))
-                                </span>
-                            }
+                        <div style="display:flex;align-items:flex-start;gap:10px;">
+                            <div style="flex:1;min-width:0;">
+                                <div class="mob-lc-name">@u.FullName</div>
+                                <div class="jornada-card-chips" style="margin-top:5px;">
+                                    <span class="mob-badge @GetRolBadge(u.Rol)" style="font-size:10px;padding:2px 7px;">@u.Rol</span>
+                                    <span class="mob-badge @(u.IsActive ? "mob-badge-green" : "mob-badge-gray")" style="font-size:10px;padding:2px 7px;">
+                                        @(u.IsActive ? "Activo" : "Inactivo")
+                                    </span>
+                                </div>
+                                <div style="font-size:11px;color:var(--gray-muted);margin-top:4px;font-family:monospace;">@u.Username</div>
+                                @if (u.NegocioNombres.Any())
+                                {
+                                    <div class="jornada-card-chips" style="margin-top:4px;">
+                                        <span class="jornada-card-chip sin-datos">@string.Join(", ", u.NegocioNombres.Take(2))</span>
+                                    </div>
+                                }
+                            </div>
                         </div>
                         <div class="mob-lc-acts">
                             <button class="mob-act-btn" @onclick="@(() => AbrirEditar(u))">

@@ -128,21 +128,19 @@
                         <div class="mob-cards">
                             @foreach (var r in neg.Repartidores)
                             {
-                                <div class="mob-rep-row">
-                                    <div class="mob-rep-row-top">
-                                        <span class="mob-rep-row-name">@r.FullName</span>
-                                        <span class="mob-badge @(r.Estado == JornadaEstado.Abierta ? "mob-badge-green" : "mob-badge-gray")">
-                                            @(r.Estado == JornadaEstado.Abierta ? "Activo" : "Cerrado")
-                                        </span>
-                                    </div>
-                                    <div class="mob-rep-row-stats">
-                                        <div class="mob-lc-stat">
-                                            <span class="mob-lc-key">Neto</span>
-                                            <span class="mob-lc-val vi tabnum fw-600">@r.TotalNeto.ToString("C0", _mx)</span>
+                                <div class="mob-lc">
+                                    <div style="display:flex;align-items:flex-start;gap:10px;">
+                                        <div style="flex:1;min-width:0;">
+                                            <div class="mob-lc-name">@r.FullName</div>
+                                            <div class="jornada-card-chips" style="margin-top:5px;">
+                                                <span class="jornada-card-chip @(r.Estado == JornadaEstado.Abierta ? "" : "sin-datos")">
+                                                    @(r.Estado == JornadaEstado.Abierta ? "Activo" : "Cerrado")
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div class="mob-lc-stat">
-                                            <span class="mob-lc-key">Efectivo</span>
-                                            <span class="mob-lc-val in tabnum fw-700">@r.TotalEfectivo.ToString("C0", _mx)</span>
+                                        <div style="text-align:right;flex-shrink:0;">
+                                            <div class="jornada-card-monto">@r.TotalNeto.ToString("C0", _mx)</div>
+                                            <div class="tabnum" style="font-size:11px;font-weight:600;color:var(--in);margin-top:2px;">@r.TotalEfectivo.ToString("C0", _mx) ef</div>
                                         </div>
                                     </div>
                                 </div>

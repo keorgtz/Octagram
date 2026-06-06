@@ -169,36 +169,39 @@
                 @foreach (var c in clientesFiltrados)
                 {
                     var seleccionado = _seleccionados.Contains(c);
+                    var infoSub = string.Join(" · ", new[] { c.Grupo, c.Direccion ?? c.Telefono }.Where(s => !string.IsNullOrEmpty(s)));
                     <div class="mob-lc @(seleccionado ? "mob-lc-selected" : "")"
                          @onclick="@(() => { if (_modoSeleccion) ToggleSeleccion(c); })">
-                        <div class="mob-lc-top">
+                        <div style="display:flex;align-items:flex-start;gap:10px;">
                             @if (_modoSeleccion)
                             {
-                                <div class="mob-lc-check @(seleccionado ? "on" : "")"></div>
+                                <div class="mob-lc-check @(seleccionado ? "on" : "")" style="margin-top:2px;flex-shrink:0;"></div>
                             }
-                            <span class="mob-lc-name">@c.Nombre</span>
-                            <span class="mob-badge @(c.IsActive ? "mob-badge-green" : "mob-badge-gray")">
-                                @(c.IsActive ? "Activo" : "Inactivo")
-                            </span>
-                        </div>
-                        @{
-                            var infoSub = string.Join(" · ", new[] { c.Grupo, c.Direccion ?? c.Telefono }.Where(s => !string.IsNullOrEmpty(s)));
-                        }
-                        @if (!string.IsNullOrEmpty(infoSub))
-                        {
-                            <div class="mob-lc-sub">@infoSub</div>
-                        }
-                        <div class="mob-lc-stats">
-                            <div class="mob-lc-stat">
-                                <span class="mob-lc-key">Productos</span>
-                                <span class="mob-lc-val @(c.Productos.Count > 0 ? "primary" : "")">
-                                    @(c.Productos.Count > 0 ? c.Productos.Count.ToString() : "—")
-                                </span>
+                            <div style="flex:1;min-width:0;">
+                                <div class="mob-lc-name">@c.Nombre</div>
+                                <div class="jornada-card-chips" style="margin-top:5px;">
+                                    <span class="mob-badge @(c.IsActive ? "mob-badge-green" : "mob-badge-gray")" style="font-size:10px;padding:2px 7px;">
+                                        @(c.IsActive ? "Activo" : "Inactivo")
+                                    </span>
+                                    @if (!string.IsNullOrEmpty(infoSub))
+                                    {
+                                        <span class="jornada-card-chip sin-datos">@infoSub</span>
+                                    }
+                                    @if (c.DiasEntrega > 0)
+                                    {
+                                        <span class="jornada-card-chip sin-datos">@FormatDias(c.DiasEntrega)</span>
+                                    }
+                                </div>
                             </div>
-                            <div class="mob-lc-stat">
-                                <span class="mob-lc-key">Días entrega</span>
-                                <span class="mob-lc-val" style="font-size:12px;">@FormatDias(c.DiasEntrega)</span>
-                            </div>
+                            @if (!_modoSeleccion)
+                            {
+                                <div style="text-align:right;flex-shrink:0;">
+                                    <div style="font-size:20px;font-weight:700;color:@(c.Productos.Count > 0 ? "var(--primary)" : "var(--gray-muted)");">
+                                        @(c.Productos.Count > 0 ? c.Productos.Count.ToString() : "—")
+                                    </div>
+                                    <div style="font-size:10px;font-weight:600;color:var(--gray-muted);text-transform:uppercase;">prod</div>
+                                </div>
+                            }
                         </div>
                         @if (!_modoSeleccion)
                         {

@@ -126,13 +126,21 @@
                 @foreach (var r in _data.Repartidores)
                 {
                     <div class="mob-lc">
-                        <div class="mob-lc-top">
-                            <span class="mob-lc-name">@r.FullName</span>
-                            <span class="mob-badge @(r.Estado == JornadaEstado.Abierta ? "mob-badge-green" : "mob-badge-gray")">
-                                @(r.Estado == JornadaEstado.Abierta ? "Activo" : "Cerrado")
-                            </span>
+                        <div style="display:flex;align-items:flex-start;gap:10px;">
+                            <div style="flex:1;min-width:0;">
+                                <div class="mob-lc-name">@r.FullName</div>
+                                <div class="jornada-card-chips" style="margin-top:5px;">
+                                    <span class="jornada-card-chip @(r.Estado == JornadaEstado.Abierta ? "" : "sin-datos")">
+                                        @(r.Estado == JornadaEstado.Abierta ? "Activo" : "Cerrado")
+                                    </span>
+                                    <span class="jornada-card-chip sin-datos">@r.ClientesAtendidos/@r.TotalClientes clientes</span>
+                                </div>
+                            </div>
+                            <div style="text-align:right;flex-shrink:0;">
+                                <div class="jornada-card-monto">@r.TotalNeto.ToString("C0", _mx)</div>
+                                <div class="tabnum" style="font-size:11px;font-weight:600;color:var(--in);margin-top:2px;">@r.TotalEfectivo.ToString("C0", _mx) ef</div>
+                            </div>
                         </div>
-                        <div class="mob-lc-sub">@r.ClientesAtendidos/@r.TotalClientes clientes atendidos</div>
                         <div class="mob-lc-stats">
                             <div class="mob-lc-stat">
                                 <span class="mob-lc-key">Entregado</span>

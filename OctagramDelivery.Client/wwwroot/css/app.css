@@ -1933,6 +1933,10 @@ body,
     color: var(--primary, #1EB980);
 }
 
+/* jornada-client-card cuando se usa dentro de mob-cards (no en jornada-client-list) */
+.mob-cards .jornada-client-card { margin-bottom: 8px; }
+.mob-cards .jornada-client-card:last-child { margin-bottom: 0; }
+
 /* Rep-card dentro de MudCardContent (dashboard) */
 .mob-rep-row {
     padding: 12px 16px;
