@@ -11,6 +11,8 @@ public class JornadaSnapshot
     public JornadaDto Jornada { get; set; } = new();
     public List<ProductDto> Productos { get; set; } = new();
     public List<CustomerDto> Clientes { get; set; } = new();
+    // Clave: "{rondaId}_{seccionId}_{productoId}" → cantidad cargada para esa vuelta
+    public Dictionary<string, decimal> StocksRonda { get; set; } = new();
     public DateTime GuardadoEn { get; set; } = DateTime.UtcNow;
 }
 

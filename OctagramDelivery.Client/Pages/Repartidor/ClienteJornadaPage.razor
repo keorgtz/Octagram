@@ -66,51 +66,114 @@ else
 
     <!-- Productos -->
     <div class="cj-productos">
-        @foreach (var prod in _productosDelCliente)
-        {
-            var celda    = Estado.GetOrCreate(_rondaActivaId, ClienteId, prod.ProductId);
-            var subtotal = (celda.Entregado - celda.Devuelto) * celda.Precio;
-            var titEnt   = "Entregado — " + prod.ProductNombre;
-            var titDev   = "Devuelto — "  + prod.ProductNombre;
-            var tipo     = prod.TipoMedida;
+        @{
+            var grupos = GetGruposDisplay();
+            var usaGrupos = _gruposProducto.Count > 0;
             var noEditar = _soloLectura || Estado.Jornada?.Estado != JornadaEstado.Abierta;
+        }
 
-            <div class="cj-producto-card">
-                <div class="cj-producto-header">
-                    <span class="cj-producto-nombre">@prod.ProductNombre</span>
-                    <span class="cj-producto-subtotal">@subtotal.ToString("C", _mx)</span>
-                </div>
-
-                <!-- Entregado -->
-                <div class="cj-qty-row">
-                    <span class="cj-qty-label entregado">Entregado</span>
-                    <div style="display:flex;align-items:center;gap:8px;">
-                        <span class="cj-qty-display">@FormatQty(celda.Entregado, tipo)</span>
-                        @if (!_soloLectura)
+        @if (usaGrupos && grupos.Count > 0)
+        {
+            @foreach (var grupo in grupos)
+            {
+                var expandido = grupo.Id == null ? _sinGrupoExpandido : _grupoExpandidoId == grupo.Id;
+                var icono = grupo.Id == null ? "label_off" : "category";
+                <div class="cj-grupo-acordion">
+                    <button class="cj-grupo-header @(expandido ? "abierto" : "")"
+                            @onclick="() => ToggleGrupo(grupo.Id)">
+                        <span class="material-symbols-rounded" style="font-size:18px;color:var(--vi);">@icono</span>
+                        <span style="flex:1;font-size:14px;font-weight:700;">@grupo.Nombre</span>
+                        <span class="cj-grupo-count">@grupo.Productos.Count</span>
+                        <span class="material-symbols-rounded" style="font-size:20px;color:var(--gray-muted);transition:transform .2s;transform:rotate(@(expandido ? "180deg" : "0deg"));">expand_more</span>
+                    </button>
+                    @if (expandido)
+                    {
+                        @foreach (var prod in grupo.Productos)
                         {
-                            <button class="cj-qty-btn" disabled="@noEditar"
-                                    @onclick="() => AbrirNumpad(celda, true, tipo, titEnt)">
-                                <span class="material-symbols-rounded">edit</span>
-                            </button>
+                            var celda    = Estado.GetOrCreate(_rondaActivaId, ClienteId, prod.ProductId);
+                            var subtotal = (celda.Entregado - celda.Devuelto) * celda.Precio;
+                            var titEnt   = "Entregado — " + prod.ProductNombre;
+                            var titDev   = "Devuelto — "  + prod.ProductNombre;
+                            var tipo     = prod.TipoMedida;
+                            <div class="cj-producto-card cj-producto-en-grupo">
+                                <div class="cj-producto-header">
+                                    <span class="cj-producto-nombre">@prod.ProductNombre</span>
+                                    <span class="cj-producto-subtotal">@subtotal.ToString("C", _mx)</span>
+                                </div>
+                                <div class="cj-qty-row">
+                                    <span class="cj-qty-label entregado">Entregado</span>
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <span class="cj-qty-display">@FormatQty(celda.Entregado, tipo)</span>
+                                        @if (!_soloLectura)
+                                        {
+                                            <button class="cj-qty-btn" disabled="@noEditar"
+                                                    @onclick="() => AbrirNumpad(celda, true, tipo, titEnt)">
+                                                <span class="material-symbols-rounded">edit</span>
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="cj-qty-row">
+                                    <span class="cj-qty-label devuelto">Devuelto</span>
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <span class="cj-qty-display">@FormatQty(celda.Devuelto, tipo)</span>
+                                        @if (!_soloLectura)
+                                        {
+                                            <button class="cj-qty-btn" disabled="@noEditar"
+                                                    @onclick="() => AbrirNumpad(celda, false, tipo, titDev)">
+                                                <span class="material-symbols-rounded">edit</span>
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
                         }
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            @foreach (var prod in _productosDelCliente.OrderBy(p => p.ProductId))
+            {
+                var celda    = Estado.GetOrCreate(_rondaActivaId, ClienteId, prod.ProductId);
+                var subtotal = (celda.Entregado - celda.Devuelto) * celda.Precio;
+                var titEnt   = "Entregado — " + prod.ProductNombre;
+                var titDev   = "Devuelto — "  + prod.ProductNombre;
+                var tipo     = prod.TipoMedida;
+                <div class="cj-producto-card">
+                    <div class="cj-producto-header">
+                        <span class="cj-producto-nombre">@prod.ProductNombre</span>
+                        <span class="cj-producto-subtotal">@subtotal.ToString("C", _mx)</span>
+                    </div>
+                    <div class="cj-qty-row">
+                        <span class="cj-qty-label entregado">Entregado</span>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span class="cj-qty-display">@FormatQty(celda.Entregado, tipo)</span>
+                            @if (!_soloLectura)
+                            {
+                                <button class="cj-qty-btn" disabled="@noEditar"
+                                        @onclick="() => AbrirNumpad(celda, true, tipo, titEnt)">
+                                    <span class="material-symbols-rounded">edit</span>
+                                </button>
+                            }
+                        </div>
+                    </div>
+                    <div class="cj-qty-row">
+                        <span class="cj-qty-label devuelto">Devuelto</span>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span class="cj-qty-display">@FormatQty(celda.Devuelto, tipo)</span>
+                            @if (!_soloLectura)
+                            {
+                                <button class="cj-qty-btn" disabled="@noEditar"
+                                        @onclick="() => AbrirNumpad(celda, false, tipo, titDev)">
+                                    <span class="material-symbols-rounded">edit</span>
+                                </button>
+                            }
+                        </div>
                     </div>
                 </div>
-
-                <!-- Devuelto -->
-                <div class="cj-qty-row">
-                    <span class="cj-qty-label devuelto">Devuelto</span>
-                    <div style="display:flex;align-items:center;gap:8px;">
-                        <span class="cj-qty-display">@FormatQty(celda.Devuelto, tipo)</span>
-                        @if (!_soloLectura)
-                        {
-                            <button class="cj-qty-btn" disabled="@noEditar"
-                                    @onclick="() => AbrirNumpad(celda, false, tipo, titDev)">
-                                <span class="material-symbols-rounded">edit</span>
-                            </button>
-                        }
-                    </div>
-                </div>
-            </div>
+            }
         }
 
         @if (_productosDelCliente.Count == 0)
@@ -158,6 +221,11 @@ else
     private int          _rondaActivaId;
     private bool         _excluido;
 
+    // Grupos de producto
+    private List<GrupoProductoDto> _gruposProducto = new();
+    private int?  _grupoExpandidoId;   // Id del grupo expandido (null = ninguno)
+    private bool  _sinGrupoExpandido;  // "Sin grupo" está expandido
+
     private string _saveText  = "Guardado ✓";
     private string _saveClass = "save-ok";
 
@@ -191,6 +259,15 @@ else
         _productosDelCliente = _cliente?.Productos ?? new();
         _rondaActivaId = Estado.Jornada?.Rondas.FirstOrDefault()?.Id ?? 0;
         _excluido = Estado.Exclusiones.TryGetValue(ClienteId, out var ex) && ex.ExcluidoDeEfectivo;
+
+        // Cargar grupos de producto desde snapshot local, ordenados por Id
+        if (Estado.Jornada?.TenantId is > 0)
+        {
+            var negSnap = await LocalData.GetNegocioSnapshotAsync(Estado.Jornada.TenantId);
+            _gruposProducto = negSnap?.GruposProducto.OrderBy(g => g.Id).ToList() ?? new();
+        }
+        // Auto-expandir el primer grupo
+        _grupoExpandidoId = _gruposProducto.FirstOrDefault()?.Id;
 
         _cargando = false;
     }
@@ -266,16 +343,59 @@ else
         }
     }
 
-    /// <summary>Persiste el estado actual de la jornada en localStorage para disponibilidad offline.</summary>
+    /// <summary>Persiste el estado actual de la jornada en localStorage (preserva StocksRonda existentes).</summary>
     private async Task GuardarSnapshotLocalAsync()
     {
         if (Estado.Jornada?.TenantId is not > 0) return;
+        // Leer snapshot existente para no sobreescribir los stocks por ronda editados en JornadaPage
+        var existing = await LocalData.GetSnapshotAsync(Estado.Jornada.TenantId);
         await LocalData.SaveSnapshotAsync(Estado.Jornada.TenantId, new JornadaSnapshot
         {
-            Jornada   = Estado.GetSnapshotJornada(),
-            Productos = Estado.Productos,
-            Clientes  = Estado.Clientes
+            Jornada     = Estado.GetSnapshotJornada(),
+            Productos   = Estado.Productos,
+            Clientes    = Estado.Clientes,
+            StocksRonda = existing?.StocksRonda ?? new()
         });
+    }
+
+    // ── Grupos accordion ────────────────────────────────────────────────────
+    private record GrupoDisplay(int? Id, string Nombre, List<CustomerProductDto> Productos);
+
+    private List<GrupoDisplay> GetGruposDisplay()
+    {
+        // Mapa productoId → grupoProductoId (desde Estado.Productos que tiene GrupoProductoId)
+        var grupoMap = Estado.Productos.ToDictionary(p => p.Id, p => p.GrupoProductoId);
+        var asignados = new HashSet<int>();
+        var result = new List<GrupoDisplay>();
+
+        foreach (var grupo in _gruposProducto.OrderBy(g => g.Id))
+        {
+            var prods = _productosDelCliente
+                .Where(p => grupoMap.TryGetValue(p.ProductId, out var gid) && gid == grupo.Id)
+                .OrderBy(p => p.ProductId)
+                .ToList();
+            if (prods.Count == 0) continue;
+            foreach (var p in prods) asignados.Add(p.ProductId);
+            result.Add(new(grupo.Id, grupo.Nombre, prods));
+        }
+
+        // Productos sin grupo al final, ordenados por Id
+        var sinGrupo = _productosDelCliente
+            .Where(p => !asignados.Contains(p.ProductId))
+            .OrderBy(p => p.ProductId)
+            .ToList();
+        if (sinGrupo.Count > 0)
+            result.Add(new(null, "Sin grupo", sinGrupo));
+
+        return result;
+    }
+
+    private void ToggleGrupo(int? grupoId)
+    {
+        if (grupoId == null)
+            _sinGrupoExpandido = !_sinGrupoExpandido;
+        else
+            _grupoExpandidoId = _grupoExpandidoId == grupoId ? null : grupoId;
     }
 
     private void OnSynced()

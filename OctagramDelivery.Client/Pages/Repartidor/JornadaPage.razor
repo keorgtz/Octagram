@@ -348,7 +348,16 @@ else
                     <div class="hoja-seccion-card">
                         <div class="hoja-seccion-title">
                             <span class="material-symbols-rounded" style="font-size:16px;">map</span>
-                            <span>@sec.Nombre</span>
+                            <span style="flex:1;">@sec.Nombre</span>
+                            @if (_hojaRondaId.HasValue)
+                            {
+                                <button class="hoja-edit-btn"
+                                        title="Editar carga de esta sección para esta vuelta"
+                                        @onclick="() => EditarCargaSeccionAsync(sec)"
+                                        @onclick:stopPropagation="true">
+                                    <span class="material-symbols-rounded">edit</span>
+                                </button>
+                            }
                         </div>
                         @foreach (var item in sec.Items)
                         {
@@ -431,9 +440,12 @@ else
             .Where(c => string.IsNullOrWhiteSpace(_busquedaCliente) || c.Nombre.Contains(_busquedaCliente, StringComparison.OrdinalIgnoreCase))
             .Where(c => _grupoFiltro == null || c.Grupo == _grupoFiltro);
 
+    // Stocks por ronda: clave "{rondaId}_{seccionId}_{productoId}" → cantidad cargada
+    private Dictionary<string, decimal> _stocksRonda = new();
+
     private record ProductTotal(string Nombre, decimal Total, bool EsGramaje, bool EsGrupo = false);
     private record SeccionItem(string ProductoNombre, decimal Stock, decimal Entregado, decimal Devuelto);
-    private record SeccionResumen(string Nombre, List<SeccionItem> Items);
+    private record SeccionResumen(int Id, string Nombre, List<SeccionItem> Items);
 
     private List<ProductTotal> GetTotalesProductos()
     {
@@ -490,6 +502,13 @@ else
         return individual;
     }
 
+    // Devuelve el stock para una ronda específica, con fallback al stock base de la sección.
+    private decimal GetStockParaRonda(int rondaId, int seccionId, int productoId, decimal stockBase)
+    {
+        var key = $"{rondaId}_{seccionId}_{productoId}";
+        return _stocksRonda.TryGetValue(key, out var v) ? v : stockBase;
+    }
+
     private List<SeccionResumen> GetSeccionesResumen(int? rondaId = null)
     {
         var todasRondas = Estado.Jornada?.Rondas ?? new();
@@ -507,6 +526,11 @@ else
 
             var items = sec.Stocks.Select(stock =>
             {
+                // Stock efectivo: suma por ronda (cada ronda puede tener su propio valor editado)
+                decimal cantidadStock = rondaId.HasValue
+                    ? GetStockParaRonda(rondaId.Value, sec.Id, stock.ProductoId, stock.CantidadStock)
+                    : todasRondas.Sum(r => GetStockParaRonda(r.Id, sec.Id, stock.ProductoId, stock.CantidadStock));
+
                 decimal entregado = 0, devuelto = 0;
                 foreach (var cliId in clienteIds)
                     foreach (var ronda in rondas)
@@ -515,13 +539,64 @@ else
                         entregado += c.Entregado;
                         devuelto  += c.Devuelto;
                     }
-                return new SeccionItem(stock.ProductoNombre, stock.CantidadStock, entregado, devuelto);
+                return new SeccionItem(stock.ProductoNombre, cantidadStock, entregado, devuelto);
             }).Where(i => i.Stock > 0 || i.Entregado > 0 || i.Devuelto > 0).ToList();
 
             if (items.Count > 0)
-                resumen.Add(new SeccionResumen(sec.Nombre, items));
+                resumen.Add(new SeccionResumen(sec.Id, sec.Nombre, items));
         }
         return resumen;
+    }
+
+    private async Task EditarCargaSeccionAsync(SeccionResumen sec)
+    {
+        if (!_hojaRondaId.HasValue || Estado.Jornada == null) return;
+        var ronda = Estado.Jornada.Rondas.FirstOrDefault(r => r.Id == _hojaRondaId.Value);
+        var seccionDto = _secciones.FirstOrDefault(s => s.Id == sec.Id);
+        if (ronda == null || seccionDto == null) return;
+
+        var productosSeccion = seccionDto.Stocks
+            .OrderBy(s => s.ProductoId)
+            .Select(s => Estado.Productos.FirstOrDefault(p => p.Id == s.ProductoId)
+                         ?? new ProductDto { Id = s.ProductoId, Nombre = s.ProductoNombre })
+            .ToList();
+
+        var stocksActuales = seccionDto.Stocks.ToDictionary(
+            s => s.ProductoId,
+            s => GetStockParaRonda(_hojaRondaId.Value, seccionDto.Id, s.ProductoId, s.CantidadStock));
+
+        var parameters = new DialogParameters<EditarCargaSeccionDialog>
+        {
+            { x => x.SeccionNombre, sec.Nombre },
+            { x => x.RondaEtiqueta, ronda.Etiqueta },
+            { x => x.Stocks, stocksActuales },
+            { x => x.Productos, productosSeccion }
+        };
+
+        var dialog = await Dialog.ShowAsync<EditarCargaSeccionDialog>("Editar carga", parameters);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false } && result.Data is Dictionary<int, decimal> nuevosStocks)
+        {
+            foreach (var (prodId, qty) in nuevosStocks)
+                _stocksRonda[$"{_hojaRondaId.Value}_{seccionDto.Id}_{prodId}"] = qty;
+            await GuardarStocksRondaAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task GuardarStocksRondaAsync()
+    {
+        if (Estado.Jornada?.TenantId is not > 0) return;
+        var negId = Estado.Jornada.TenantId;
+        var snap = await LocalData.GetSnapshotAsync(negId) ?? new JornadaSnapshot
+        {
+            Jornada   = Estado.GetSnapshotJornada(),
+            Productos = Estado.Productos,
+            Clientes  = Estado.Clientes
+        };
+        snap.StocksRonda = _stocksRonda;
+        await LocalData.SaveSnapshotAsync(negId, snap);
     }
 
     protected override async Task OnInitializedAsync()
@@ -538,6 +613,15 @@ else
         _initialized = true;
 
         await CargarSiNecesario();
+
+        // Cargar stocks por ronda desde snapshot (datos operativos locales)
+        if (_negocioId > 0 && !JornadaId.HasValue)
+        {
+            var snapStocks = await LocalData.GetSnapshotAsync(_negocioId);
+            if (snapStocks?.StocksRonda != null)
+                _stocksRonda = snapStocks.StocksRonda;
+        }
+
         _cargando = false;
 
         // Cargar datos del negocio (grupos, secciones) y arrancar sync periódico

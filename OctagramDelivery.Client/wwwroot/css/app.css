@@ -2399,3 +2399,66 @@ body,
     color: var(--vi, #8B5CF6);
 }
 
+/* ── Botón editar carga en hoja de reparto ──────────────────────────── */
+.hoja-edit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgba(255,255,255,.4);
+    border-radius: 8px;
+    background: rgba(255,255,255,.15);
+    color: #fff;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background .15s;
+    flex-shrink: 0;
+}
+.hoja-edit-btn:hover { background: rgba(255,255,255,.3); }
+.hoja-edit-btn .material-symbols-rounded { font-size: 16px; }
+
+/* ── Accordion de grupos en ClienteJornadaPage ──────────────────────── */
+.cj-grupo-acordion {
+    margin-bottom: 4px;
+}
+
+.cj-grupo-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 14px;
+    background: #fff;
+    border: none;
+    border-top: 1px solid var(--gray-line, #E5E7EB);
+    cursor: pointer;
+    text-align: left;
+    color: var(--gray-dark, #1C1E26);
+    -webkit-tap-highlight-color: transparent;
+}
+.cj-grupo-header:first-of-type { border-top: none; }
+.cj-grupo-header.abierto { background: #F5F3FF; }
+
+.cj-grupo-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    background: var(--vi-pl, #EDE9FE);
+    color: var(--vi, #8B5CF6);
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* Tarjetas dentro de un grupo: sin margen lateral propio, heredan el padding del acordión */
+.cj-producto-en-grupo {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    border-top: 1px solid var(--page-bg, #F2F3F7) !important;
+    margin: 0 !important;
+}
+
