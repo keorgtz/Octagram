@@ -43,6 +43,29 @@ a { color: var(--primary); text-decoration: none; }
     --sidebar-active-fg:     #1EB980;
     --sidebar-hover-bg:      #E8FAF3;
     --sidebar-active-shadow: 0 1px 3px rgba(30,185,128,.15);
+
+    /* ── MeridianUI — Semantic palette ── */
+    --em:      #10B981; /* Emerald  · entregado / activo */
+    --em-bg:   #F0FDF4;
+    --em-lt:   #6EE7B7;
+    --am:      #F59E0B; /* Amber    · alerta */
+    --am-bg:   #FFFBEB;
+    --vi:      #8B5CF6; /* Violet   · neto / totales */
+    --vi-pl:   #EDE9FE;
+    --in:      #6366F1; /* Indigo   · efectivo */
+    --in-pl:   #E0E7FF;
+    --or:      #F97316; /* Orange   · devolución / gasto */
+    --or-pl:   #FFEDD5;
+    --primary: #1EB980;
+    --pr-100:  #D9F7EA;
+    --pr-600:  #159E6D;
+
+    /* ── MeridianUI — Neutrals ── */
+    --gray-dark:  #1C1E26;
+    --gray-muted: #6B7280;
+    --gray-line:  #E5E7EB;
+    --page-bg:    #F2F3F7;
+    --font:       'Inter', system-ui, sans-serif;
 }
 
 .app-shell {
@@ -1708,9 +1731,9 @@ body,
     font-weight: 600;
     color: var(--gray-dark, #1C1E26);
 }
-.mob-lc-val.em     { color: var(--em,  #F59E0B); }
-.mob-lc-val.vi     { color: var(--vi,  #6366F1); }
-.mob-lc-val.in     { color: var(--in,  #10B981); }
+.mob-lc-val.em     { color: var(--em,  #10B981); }
+.mob-lc-val.vi     { color: var(--vi,  #8B5CF6); }
+.mob-lc-val.in     { color: var(--in,  #6366F1); }
 .mob-lc-val.or     { color: var(--or,  #F97316); }
 .mob-lc-val.primary{ color: var(--primary, #1EB980); }
 
@@ -1728,6 +1751,85 @@ body,
     font-size: 11px;
     color: var(--gray-muted, #6B7280);
     font-weight: 500;
+}
+
+/* ── Layout horizontal dentro de mob-lc ── */
+.lc-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+.lc-left  { flex: 1; min-width: 0; }
+.lc-right {
+    flex-shrink: 0;
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+/* ── Tags / chips de estado e info ── */
+.lc-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin-top: 5px;
+}
+.lc-tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--page-bg, #F2F3F7);
+    color: var(--gray-muted, #6B7280);
+    white-space: nowrap;
+    letter-spacing: .01em;
+}
+.lc-tag.green  { background: #D1FAE5; color: #065F46; }
+.lc-tag.blue   { background: #DBEAFE; color: #1E40AF; }
+.lc-tag.amber  { background: #FEF3C7; color: #92400E; }
+.lc-tag.violet { background: #EDE9FE; color: #5B21B6; }
+.lc-tag.red    { background: #FEE2E2; color: #991B1B; }
+
+/* ── Métrica monetaria (columna derecha) ── */
+.lc-amount {
+    font-size: 18px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--primary, #1EB980);
+    line-height: 1.2;
+}
+.lc-amount.vi    { color: var(--vi,  #8B5CF6); }
+.lc-amount.in    { color: var(--in,  #6366F1); }
+.lc-amount.em    { color: var(--em,  #10B981); }
+.lc-amount.muted { color: var(--gray-muted, #6B7280); }
+.lc-amount-sub {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--gray-muted, #6B7280);
+}
+
+/* ── Conteo entero (columna derecha) ── */
+.lc-count {
+    font-size: 20px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--primary, #1EB980);
+    line-height: 1.2;
+}
+.lc-count.muted { color: var(--gray-muted, #6B7280); }
+.lc-count-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--gray-muted, #6B7280);
 }
 
 /* Fila de acciones — botones HTML nativos */

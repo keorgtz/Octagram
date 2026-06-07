@@ -221,24 +221,24 @@
                 {
                     var expandido = _expandedIds.Contains(p.Id);
                     <div class="mob-lc">
-                        <div style="display:flex;align-items:flex-start;gap:10px;">
-                            <div style="flex:1;min-width:0;">
+                        <div class="lc-row">
+                            <div class="lc-left">
                                 <div class="mob-lc-name">@p.Nombre</div>
-                                <div class="jornada-card-chips" style="margin-top:5px;">
-                                    <span class="jornada-card-chip @(p.TipoMedida == TipoMedida.Gramaje ? "" : "sin-datos")">
+                                <div class="lc-tags">
+                                    <span class="lc-tag @(p.TipoMedida == TipoMedida.Gramaje ? "blue" : "")">
                                         @(p.TipoMedida == TipoMedida.Gramaje ? "Gramaje" : "Pieza")
                                     </span>
                                     @if (p.Perfiles.Count > 0)
                                     {
-                                        <span class="jornada-card-chip sin-datos">@p.Perfiles.Count perfil@(p.Perfiles.Count == 1 ? "" : "es")</span>
+                                        <span class="lc-tag">@p.Perfiles.Count perfil@(p.Perfiles.Count == 1 ? "" : "es")</span>
                                     }
                                 </div>
                             </div>
-                            <div style="text-align:right;flex-shrink:0;">
-                                <div class="jornada-card-monto" style="color:var(--em);">@p.PrecioPorUnidad.ToString("C", _mx)</div>
+                            <div class="lc-right">
+                                <div class="lc-amount em">@p.PrecioPorUnidad.ToString("C", _mx)</div>
                                 @if (p.TipoMedida == TipoMedida.Gramaje)
                                 {
-                                    <div style="font-size:10px;font-weight:600;color:var(--gray-muted);text-transform:uppercase;">/KG</div>
+                                    <div class="lc-amount-sub">/KG</div>
                                 }
                             </div>
                         </div>

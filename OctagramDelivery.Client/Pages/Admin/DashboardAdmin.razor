@@ -115,19 +115,19 @@
                         @foreach (var r in neg.Repartidores)
                         {
                             <div class="mob-lc">
-                                <div style="display:flex;align-items:flex-start;gap:10px;">
-                                    <div style="flex:1;min-width:0;">
+                                <div class="lc-row">
+                                    <div class="lc-left">
                                         <div class="mob-lc-name">@r.FullName</div>
-                                        <div class="jornada-card-chips" style="margin-top:5px;">
-                                            <span class="jornada-card-chip @(r.Estado == JornadaEstado.Abierta ? "" : "sin-datos")">
+                                        <div class="lc-tags">
+                                            <span class="lc-tag @(r.Estado == JornadaEstado.Abierta ? "green" : "")">
                                                 @(r.Estado == JornadaEstado.Abierta ? "Activo" : "Cerrado")
                                             </span>
-                                            <span class="jornada-card-chip sin-datos">@r.ClientesAtendidos/@r.TotalClientes clientes</span>
+                                            <span class="lc-tag">@r.ClientesAtendidos/@r.TotalClientes clientes</span>
                                         </div>
                                     </div>
-                                    <div style="text-align:right;flex-shrink:0;">
-                                        <div class="jornada-card-monto">@r.TotalEfectivo.ToString("C0", _mx)</div>
-                                        <div class="tabnum" style="font-size:11px;font-weight:600;color:var(--vi);margin-top:2px;">@r.TotalNeto.ToString("C0", _mx) neto</div>
+                                    <div class="lc-right">
+                                        <div class="lc-amount in">@r.TotalEfectivo.ToString("C0", _mx)</div>
+                                        <div class="lc-amount-sub">efectivo</div>
                                     </div>
                                 </div>
                                 <div class="mob-lc-stats">
@@ -137,11 +137,11 @@
                                     </div>
                                     <div class="mob-lc-stat">
                                         <span class="mob-lc-key">Neto</span>
-                                        <span class="mob-lc-val vi tabnum fw-600">@r.TotalNeto.ToString("C0", _mx)</span>
+                                        <span class="mob-lc-val vi tabnum">@r.TotalNeto.ToString("C0", _mx)</span>
                                     </div>
                                     <div class="mob-lc-stat">
                                         <span class="mob-lc-key">Efectivo</span>
-                                        <span class="mob-lc-val in tabnum fw-700">@r.TotalEfectivo.ToString("C0", _mx)</span>
+                                        <span class="mob-lc-val in tabnum">@r.TotalEfectivo.ToString("C0", _mx)</span>
                                     </div>
                                 </div>
                             </div>

@@ -119,20 +119,18 @@
                 @foreach (var u in usuariosFiltrados)
                 {
                     <div class="mob-lc">
-                        <div style="display:flex;align-items:flex-start;gap:10px;">
-                            <div style="flex:1;min-width:0;">
+                        <div class="lc-row">
+                            <div class="lc-left">
                                 <div class="mob-lc-name">@u.FullName</div>
-                                <div class="jornada-card-chips" style="margin-top:5px;">
-                                    <span class="mob-badge @GetRolBadge(u.Rol)" style="font-size:10px;padding:2px 7px;">@u.Rol</span>
-                                    <span class="mob-badge @(u.IsActive ? "mob-badge-green" : "mob-badge-gray")" style="font-size:10px;padding:2px 7px;">
-                                        @(u.IsActive ? "Activo" : "Inactivo")
-                                    </span>
+                                <div class="lc-tags">
+                                    <span class="lc-tag @GetRolTag(u.Rol)">@u.Rol</span>
+                                    <span class="lc-tag @(u.IsActive ? "green" : "")">@(u.IsActive ? "Activo" : "Inactivo")</span>
                                 </div>
-                                <div style="font-size:11px;color:var(--gray-muted);margin-top:4px;font-family:monospace;">@u.Username</div>
+                                <div class="mob-lc-sub2" style="margin-top:4px;">@u.Username</div>
                                 @if (u.NegocioNombres.Any())
                                 {
-                                    <div class="jornada-card-chips" style="margin-top:4px;">
-                                        <span class="jornada-card-chip sin-datos">@string.Join(", ", u.NegocioNombres.Take(2))</span>
+                                    <div class="lc-tags" style="margin-top:3px;">
+                                        <span class="lc-tag">@string.Join(", ", u.NegocioNombres.Take(2))</span>
                                     </div>
                                 }
                             </div>
@@ -305,5 +303,13 @@
         UserRole.Gerente    => "mob-badge-amber",
         UserRole.Supervisor => "mob-badge-blue",
         _                   => "mob-badge-green"
+    };
+
+    private static string GetRolTag(UserRole r) => r switch
+    {
+        UserRole.Admin      => "violet",
+        UserRole.Gerente    => "blue",
+        UserRole.Supervisor => "amber",
+        _                   => "green"
     };
 }
