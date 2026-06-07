@@ -141,6 +141,12 @@ else
                     <span class="material-symbols-rounded">arrow_back</span>
                 </button>
             }
+            else if (_vista != Vista.Home)
+            {
+                <button class="icon-btn" @onclick="() => _vista = Vista.Home">
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
+            }
             <div style="min-width:0;flex:1;">
                 <div class="fw-700" style="font-size:15px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                     @(JornadaId.HasValue ? Estado.Jornada.DriverNombre : Estado.Jornada.TenantNombre)
@@ -277,130 +283,54 @@ else
         </div>
     </div>
 
-    <div class="jornada-search-bar">
-        <span class="material-symbols-rounded">search</span>
-        <input type="search" placeholder="Buscar cliente..."
-               @bind="_busquedaCliente" @bind:event="oninput"
-               class="jornada-search-input" />
-        @if (!string.IsNullOrEmpty(_busquedaCliente))
-        {
-            <button class="jornada-search-clear" @onclick="() => _busquedaCliente = string.Empty">
-                <span class="material-symbols-rounded">close</span>
-            </button>
-        }
-    </div>
+    <!-- ══ ROUTER DE VISTAS ══════════════════════════════════════════════ -->
 
-    @if (Estado.Clientes.Any(c => !string.IsNullOrEmpty(c.Grupo)))
+    @if (_vista == Vista.Home)
     {
-        var gruposJornada = Estado.Clientes
-            .Where(c => !string.IsNullOrEmpty(c.Grupo))
-            .Select(c => c.Grupo!).Distinct().OrderBy(g => g).ToList();
-        <div class="jornada-grupo-chips">
-            <button class="jornada-grupo-chip @(_grupoFiltro == null ? "on" : "")"
-                    @onclick="() => _grupoFiltro = null">Todos</button>
-            @foreach (var g in gruposJornada)
+        <!-- ── HOME: selector de acción ────────────────────────────────── -->
+        <div class="jhome-container">
+            <p class="jhome-subtitle">¿Qué vas a hacer?</p>
+
+            @if (_secciones.Count > 0)
             {
-                var gLocal = g;
-                <button class="jornada-grupo-chip @(_grupoFiltro == gLocal ? "on" : "")"
-                        @onclick="() => _grupoFiltro = (_grupoFiltro == gLocal ? null : gLocal)">@g</button>
-            }
-        </div>
-    }
-    @if (_grupoFiltro != null)
-    {
-        var clientesGrupoList = Estado.Clientes.Where(c => c.Grupo == _grupoFiltro).ToList();
-        var (gBruto, gNeto, gEfect, _, _) = Estado.TotalesFiltrados(clientesGrupoList.Select(c => c.Id));
-        <div class="jornada-grupo-banner">
-            <span class="material-symbols-rounded" style="font-size:18px;">group</span>
-            <span>@_grupoFiltro · @clientesGrupoList.Count cliente@(clientesGrupoList.Count == 1 ? "" : "s")</span>
-            <div style="margin-left:auto;display:flex;gap:12px;font-size:12px;flex-wrap:wrap;">
-                <span>Bruto: <strong class="tabnum text-em">@gBruto.ToString("C0", _mx)</strong></span>
-                <span>Neto: <strong class="tabnum text-vi">@gNeto.ToString("C0", _mx)</strong></span>
-                <span>Efectivo: <strong class="tabnum text-in">@gEfect.ToString("C0", _mx)</strong></span>
-            </div>
-        </div>
-    }
-
-    <div class="jornada-client-list">
-        @{
-            var clientesFiltrados = ClientesFiltrados.ToList();
-        }
-        @foreach (var cliente in clientesFiltrados)
-        {
-            var excluido = Estado.Exclusiones.TryGetValue(cliente.Id, out var ex) && ex.ExcluidoDeEfectivo;
-            var (cliNeto, _) = Estado.TotalesCliente(cliente.Id);
-            var chips = GetChipsCliente(cliente.Id);
-            <div class="jornada-client-card @(excluido ? "excluido" : "")"
-                 @onclick="() => IrACliente(cliente.Id)">
-                <div class="jornada-card-body">
-                    <div class="jornada-card-nombre">@cliente.Nombre</div>
-                    <div class="jornada-card-chips">
-                        @if (chips.Count == 0)
-                        {
-                            <span class="jornada-card-chip sin-datos">Sin capturar</span>
-                        }
-                        else
-                        {
-                            @foreach (var chip in chips)
-                            {
-                                <span class="jornada-card-chip">@chip</span>
-                            }
-                        }
+                <button class="jhome-btn stocks" @onclick="() => _vista = Vista.Stocks">
+                    <span class="material-symbols-rounded jhome-icon-stocks">inventory_2</span>
+                    <div class="jhome-btn-body">
+                        <span class="jhome-btn-titulo">Stocks de reparto</span>
+                        <span class="jhome-btn-sub">Define cuánto llevas por vuelta y sección</span>
                     </div>
-                </div>
-                <div class="jornada-card-right">
-                    <span class="jornada-card-monto">@cliNeto.ToString("C", _mx)</span>
-                    @if (excluido && ex != null)
-                    {
-                        <span class="jornada-card-excl">@GetMetodoPagoLabel(ex.MetodoPagoAlternativo)</span>
-                    }
-                </div>
-                <span class="material-symbols-rounded" style="color:var(--gray-muted);font-size:18px;flex-shrink:0;">chevron_right</span>
-            </div>
-        }
+                    <span class="material-symbols-rounded jhome-chevron">chevron_right</span>
+                </button>
+            }
 
-        @if (Estado.Clientes.Count == 0)
-        {
-            <div class="empty-state">
-                <span class="material-symbols-rounded">group</span>
-                <p>No hay clientes con entrega programada para hoy.</p>
-            </div>
-        }
-        else if (clientesFiltrados.Count == 0)
-        {
-            <div class="empty-state">
-                <span class="material-symbols-rounded">search_off</span>
-                <p>No se encontraron clientes con ese nombre.</p>
-            </div>
-        }
-    </div>
-
-    @if (!JornadaId.HasValue && _secciones.Count > 0)
+            <button class="jhome-btn reparto" @onclick="() => _vista = Vista.Reparto">
+                <span class="material-symbols-rounded jhome-icon-reparto">delivery_dining</span>
+                <div class="jhome-btn-body">
+                    <span class="jhome-btn-titulo">Hoja de reparto</span>
+                    <span class="jhome-btn-sub">Registra entregas y devoluciones por cliente</span>
+                </div>
+                <span class="material-symbols-rounded jhome-chevron">chevron_right</span>
+            </button>
+        </div>
+    }
+    else if (_vista == Vista.Stocks)
     {
-        var secResumenes = GetSeccionesResumen(_hojaRondaId);
-        if (secResumenes.Count > 0)
-        {
-            <div class="hoja-reparto">
-                <!-- Título + indicador de modo -->
-                <div class="hoja-reparto-title">
-                    <span class="material-symbols-rounded" style="font-size:18px;">assignment</span>
-                    <span style="flex:1;">Hoja de Reparto</span>
-                    @if (_hojaRondaId.HasValue)
-                    {
-                        var etRonda = Estado.Jornada?.Rondas.FirstOrDefault(r => r.Id == _hojaRondaId.Value)?.Etiqueta ?? "";
-                        <span style="font-size:11px;opacity:.8;font-weight:400;">@etRonda · toca Cargado para editar</span>
-                    }
-                    else
-                    {
-                        <span style="font-size:11px;opacity:.7;font-weight:400;">Todas las vueltas</span>
-                    }
-                </div>
+        <!-- ── STOCKS: carga por sección/vuelta ──────────────────────── -->
+        <div class="jstocks-container">
 
-                <!-- Selector de vuelta -->
-                <div class="hoja-vuelta-bar">
-                    <button class="hoja-vuelta-chip @(_hojaRondaId == null ? "on" : "")"
-                            @onclick="() => _hojaRondaId = null">Todas</button>
-                    @foreach (var ronda in Estado.Jornada?.Rondas ?? new())
+            @if (!(Estado.Jornada?.Rondas.Count > 0))
+            {
+                <div class="empty-state" style="padding:40px 0;">
+                    <span class="material-symbols-rounded">route</span>
+                    <p>No hay vueltas configuradas en esta jornada.</p>
+                </div>
+            }
+            else
+            {
+                <!-- Selector de vuelta (stocks siempre son por vuelta específica) -->
+                <div class="jstocks-vuelta-bar">
+                    <span class="jstocks-vuelta-label">Vuelta:</span>
+                    @foreach (var ronda in Estado.Jornada!.Rondas)
                     {
                         var rId = ronda.Id;
                         <button class="hoja-vuelta-chip @(_hojaRondaId == rId ? "on" : "")"
@@ -408,62 +338,227 @@ else
                     }
                 </div>
 
-                <!-- Secciones con stock editable inline -->
-                @foreach (var sec in secResumenes)
+                @if (!_hojaRondaId.HasValue)
                 {
-                    <div class="hoja-seccion-card">
-                        <div class="hoja-seccion-title">
-                            <span class="material-symbols-rounded" style="font-size:16px;">map</span>
-                            <span>@sec.Nombre</span>
-                        </div>
-                        @foreach (var item in sec.Items)
+                    <div style="padding:20px 16px;text-align:center;color:var(--gray-muted);font-size:13px;">
+                        Selecciona una vuelta para editar sus stocks.
+                    </div>
+                }
+                else if (_secciones.Count == 0)
+                {
+                    <div class="empty-state" style="padding:40px 0;">
+                        <span class="material-symbols-rounded">map</span>
+                        <p>No hay secciones configuradas para este negocio.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="jstocks-secciones">
+                        @foreach (var sec in _secciones.Where(s => s.Stocks.Count > 0))
                         {
-                            var netoSec    = item.Entregado - item.Devuelto;
-                            var diff       = item.Stock - netoSec;
-                            var excede     = diff < 0;
-                            var exacto     = diff == 0;
-                            var estadoClass = excede ? "excede" : exacto ? "exacto" : "falta";
-                            var puedeEditar = _hojaRondaId.HasValue;
-                            <div class="hoja-prod-row">
-                                <span class="hoja-prod-nombre">@item.ProductoNombre</span>
-                                <div class="hoja-prod-stats">
-                                    <!-- Cargado: editable inline con numpad cuando hay vuelta seleccionada -->
-                                    @if (puedeEditar)
-                                    {
-                                        <button class="hoja-stat-cargado-btn"
-                                                @onclick="() => AbrirNumpadStock(_hojaRondaId!.Value, sec.Id, item)">
-                                            <span class="hoja-stat-label">
-                                                Cargado <span class="material-symbols-rounded hoja-edit-inline">edit</span>
-                                            </span>
-                                            <span class="hoja-stat-num">@item.Stock.ToString("0.##")</span>
-                                        </button>
-                                    }
-                                    else
-                                    {
-                                        <div class="hoja-stat">
-                                            <span class="hoja-stat-label">Cargado</span>
-                                            <span class="hoja-stat-num">@item.Stock.ToString("0.##")</span>
-                                        </div>
-                                    }
-                                    <div class="hoja-stat">
-                                        <span class="hoja-stat-label">Entregado</span>
-                                        <span class="hoja-stat-num">@netoSec.ToString("0.##")</span>
-                                    </div>
-                                    <div class="hoja-stat @estadoClass">
-                                        <span class="hoja-stat-label">
-                                            @if (excede) { <span class="material-symbols-rounded" style="font-size:10px;vertical-align:middle;">warning</span>@(" Excede") }
-                                            else if (exacto) { <span class="material-symbols-rounded" style="font-size:10px;vertical-align:middle;">check_circle</span>@(" OK") }
-                                            else { <span class="material-symbols-rounded" style="font-size:10px;vertical-align:middle;">inventory_2</span>@(" Devolver") }
-                                        </span>
-                                        <span class="hoja-stat-num">@(exacto ? "—" : Math.Abs(diff).ToString("0.##"))</span>
-                                    </div>
+                            <div class="jstocks-seccion-card">
+                                <div class="jstocks-seccion-titulo">
+                                    <span class="material-symbols-rounded" style="font-size:16px;color:var(--in,#6366F1);">map</span>
+                                    <span>@sec.Nombre</span>
                                 </div>
+                                @foreach (var st in sec.Stocks.OrderBy(s => s.ProductoId))
+                                {
+                                    var prodDto  = Estado.Productos.FirstOrDefault(p => p.Id == st.ProductoId);
+                                    var esGramaje = prodDto?.TipoMedida == TipoMedida.Gramaje;
+                                    var valorAct  = GetStockParaRonda(_hojaRondaId!.Value, sec.Id, st.ProductoId, st.CantidadStock);
+                                    var sItem     = new SeccionItem(st.ProductoId, st.ProductoNombre, esGramaje, valorAct, 0, 0);
+                                    <div class="jstocks-prod-row">
+                                        <span class="jstocks-prod-nombre">@st.ProductoNombre</span>
+                                        <div class="jstocks-prod-right">
+                                            <span class="jstocks-valor @(valorAct > 0 ? "activo" : "")">
+                                                @valorAct.ToString("0.##")
+                                                <span class="jstocks-unidad">@(esGramaje ? "kg" : "pzs")</span>
+                                            </span>
+                                            @if (!_soloLectura && Estado.Jornada?.Estado == JornadaEstado.Abierta)
+                                            {
+                                                <button class="jstocks-edit-btn"
+                                                        @onclick="() => AbrirNumpadStock(_hojaRondaId!.Value, sec.Id, sItem)">
+                                                    <span class="material-symbols-rounded">edit</span>
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        @if (!_secciones.Any(s => s.Stocks.Count > 0))
+                        {
+                            <div class="empty-state" style="padding:32px 0;">
+                                <span class="material-symbols-rounded">inventory_2</span>
+                                <p>Las secciones no tienen productos asignados.</p>
                             </div>
                         }
                     </div>
+
+                    <!-- Conciliación de stocks (si ya hay entregas) -->
+                    @if (HayEntregasEnVuelta())
+                    {
+                        <div style="padding:0 16px 8px;">
+                            <div class="hoja-reparto-title" style="border-radius:12px 12px 0 0;">
+                                <span class="material-symbols-rounded" style="font-size:18px;">balance</span>
+                                <span style="flex:1;">Conciliación de esta vuelta</span>
+                            </div>
+                            @foreach (var sec in GetSeccionesResumenActuales())
+                            {
+                                <div class="hoja-seccion-card" style="border-radius:0;border-top:1px solid var(--gray-line);">
+                                    <div class="hoja-seccion-title">
+                                        <span class="material-symbols-rounded" style="font-size:15px;">map</span>
+                                        <span>@sec.Nombre</span>
+                                    </div>
+                                    @foreach (var item in sec.Items)
+                                    {
+                                        var netoSec    = item.Entregado - item.Devuelto;
+                                        var diff       = item.Stock - netoSec;
+                                        var excede     = diff < 0;
+                                        var exacto     = diff == 0;
+                                        var estadoClass = excede ? "excede" : exacto ? "exacto" : "falta";
+                                        <div class="hoja-prod-row">
+                                            <span class="hoja-prod-nombre">@item.ProductoNombre</span>
+                                            <div class="hoja-prod-stats">
+                                                <div class="hoja-stat">
+                                                    <span class="hoja-stat-label">Cargado</span>
+                                                    <span class="hoja-stat-num">@item.Stock.ToString("0.##")</span>
+                                                </div>
+                                                <div class="hoja-stat">
+                                                    <span class="hoja-stat-label">Entregado</span>
+                                                    <span class="hoja-stat-num">@netoSec.ToString("0.##")</span>
+                                                </div>
+                                                <div class="hoja-stat @estadoClass">
+                                                    <span class="hoja-stat-label">
+                                                        @if (excede) { <span class="material-symbols-rounded" style="font-size:10px;vertical-align:middle;">warning</span>@(" Excede") }
+                                                        else if (exacto) { <span class="material-symbols-rounded" style="font-size:10px;vertical-align:middle;">check_circle</span>@(" OK") }
+                                                        else { <span class="material-symbols-rounded" style="font-size:10px;vertical-align:middle;">inventory_2</span>@(" Devolver") }
+                                                    </span>
+                                                    <span class="hoja-stat-num">@(exacto ? "—" : Math.Abs(diff).ToString("0.##"))</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <!-- Botón ir a repartir -->
+                    @if (!_soloLectura && Estado.Jornada?.Estado == JornadaEstado.Abierta)
+                    {
+                        <div class="jstocks-footer">
+                            <button class="jstocks-ir-btn" @onclick="() => _vista = Vista.Reparto">
+                                <span class="material-symbols-rounded">delivery_dining</span>
+                                Ir a repartir
+                            </button>
+                        </div>
+                    }
+                }
+            }
+        </div>
+    }
+    else
+    {
+        <!-- ── REPARTO: lista de clientes ────────────────────────────── -->
+        <div class="jornada-search-bar">
+            <span class="material-symbols-rounded">search</span>
+            <input type="search" placeholder="Buscar cliente..."
+                   @bind="_busquedaCliente" @bind:event="oninput"
+                   class="jornada-search-input" />
+            @if (!string.IsNullOrEmpty(_busquedaCliente))
+            {
+                <button class="jornada-search-clear" @onclick="() => _busquedaCliente = string.Empty">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            }
+        </div>
+
+        @if (Estado.Clientes.Any(c => !string.IsNullOrEmpty(c.Grupo)))
+        {
+            var gruposJornada = Estado.Clientes
+                .Where(c => !string.IsNullOrEmpty(c.Grupo))
+                .Select(c => c.Grupo!).Distinct().OrderBy(g => g).ToList();
+            <div class="jornada-grupo-chips">
+                <button class="jornada-grupo-chip @(_grupoFiltro == null ? "on" : "")"
+                        @onclick="() => _grupoFiltro = null">Todos</button>
+                @foreach (var g in gruposJornada)
+                {
+                    var gLocal = g;
+                    <button class="jornada-grupo-chip @(_grupoFiltro == gLocal ? "on" : "")"
+                            @onclick="() => _grupoFiltro = (_grupoFiltro == gLocal ? null : gLocal)">@g</button>
                 }
             </div>
         }
+        @if (_grupoFiltro != null)
+        {
+            var clientesGrupoList = Estado.Clientes.Where(c => c.Grupo == _grupoFiltro).ToList();
+            var (gBruto, gNeto, gEfect, _, _) = Estado.TotalesFiltrados(clientesGrupoList.Select(c => c.Id));
+            <div class="jornada-grupo-banner">
+                <span class="material-symbols-rounded" style="font-size:18px;">group</span>
+                <span>@_grupoFiltro · @clientesGrupoList.Count cliente@(clientesGrupoList.Count == 1 ? "" : "s")</span>
+                <div style="margin-left:auto;display:flex;gap:12px;font-size:12px;flex-wrap:wrap;">
+                    <span>Bruto: <strong class="tabnum text-em">@gBruto.ToString("C0", _mx)</strong></span>
+                    <span>Neto: <strong class="tabnum text-vi">@gNeto.ToString("C0", _mx)</strong></span>
+                    <span>Efectivo: <strong class="tabnum text-in">@gEfect.ToString("C0", _mx)</strong></span>
+                </div>
+            </div>
+        }
+
+        <div class="jornada-client-list">
+            @{
+                var clientesFiltrados = ClientesFiltrados.ToList();
+            }
+            @foreach (var cliente in clientesFiltrados)
+            {
+                var excluido = Estado.Exclusiones.TryGetValue(cliente.Id, out var ex) && ex.ExcluidoDeEfectivo;
+                var (cliNeto, _) = Estado.TotalesCliente(cliente.Id);
+                var chips = GetChipsCliente(cliente.Id);
+                <div class="jornada-client-card @(excluido ? "excluido" : "")"
+                     @onclick="() => IrACliente(cliente.Id)">
+                    <div class="jornada-card-body">
+                        <div class="jornada-card-nombre">@cliente.Nombre</div>
+                        <div class="jornada-card-chips">
+                            @if (chips.Count == 0)
+                            {
+                                <span class="jornada-card-chip sin-datos">Sin capturar</span>
+                            }
+                            else
+                            {
+                                @foreach (var chip in chips)
+                                {
+                                    <span class="jornada-card-chip">@chip</span>
+                                }
+                            }
+                        </div>
+                    </div>
+                    <div class="jornada-card-right">
+                        <span class="jornada-card-monto">@cliNeto.ToString("C", _mx)</span>
+                        @if (excluido && ex != null)
+                        {
+                            <span class="jornada-card-excl">@GetMetodoPagoLabel(ex.MetodoPagoAlternativo)</span>
+                        }
+                    </div>
+                    <span class="material-symbols-rounded" style="color:var(--gray-muted);font-size:18px;flex-shrink:0;">chevron_right</span>
+                </div>
+            }
+
+            @if (Estado.Clientes.Count == 0)
+            {
+                <div class="empty-state">
+                    <span class="material-symbols-rounded">group</span>
+                    <p>No hay clientes con entrega programada para hoy.</p>
+                </div>
+            }
+            else if (clientesFiltrados.Count == 0)
+            {
+                <div class="empty-state">
+                    <span class="material-symbols-rounded">search_off</span>
+                    <p>No se encontraron clientes con ese nombre.</p>
+                </div>
+            }
+        </div>
     }
 }
 
@@ -499,6 +594,10 @@ else
     // Múltiples jornadas por día
     private List<JornadaDto>? _misJornadasHoy;
     private bool               _mostrarPickerJornadas;
+
+    // Vista activa (solo ruta repartidor)
+    private enum Vista { Home, Stocks, Reparto }
+    private Vista _vista = Vista.Home;
 
     // Numpad inline para editar stock de sección por ronda
     private bool    _stockNumpadVisible;
@@ -582,6 +681,13 @@ else
         var key = $"{rondaId}_{seccionId}_{productoId}";
         return _stocksRonda.TryGetValue(key, out var v) ? v : stockBase;
     }
+
+    private List<SeccionResumen> GetSeccionesResumenActuales()
+        => _hojaRondaId.HasValue ? GetSeccionesResumen(_hojaRondaId) : new();
+
+    private bool HayEntregasEnVuelta()
+        => _hojaRondaId.HasValue &&
+           GetSeccionesResumen(_hojaRondaId).Any(s => s.Items.Any(i => i.Entregado > 0 || i.Devuelto > 0));
 
     private List<SeccionResumen> GetSeccionesResumen(int? rondaId = null)
     {
@@ -982,7 +1088,15 @@ else
             _gruposProducto = snap.GruposProducto;
             _secciones      = snap.Secciones;
         }
-        // Auto-seleccionar primera vuelta en hoja de reparto cuando hay secciones configuradas
+
+        // Si es gerente viendo jornada ajena → ir directamente a reparto
+        if (JornadaId.HasValue)
+            _vista = Vista.Reparto;
+        // Si no hay secciones configuradas → ir directamente a reparto (sin pantalla de stocks)
+        else if (_secciones.Count == 0)
+            _vista = Vista.Reparto;
+
+        // Auto-seleccionar primera vuelta cuando hay secciones
         if (_secciones.Count > 0 && _hojaRondaId == null)
             _hojaRondaId = Estado.Jornada?.Rondas.FirstOrDefault()?.Id;
 
