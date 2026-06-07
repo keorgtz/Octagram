@@ -73,16 +73,20 @@
                             <div style="font-size:12px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px;">
                                 Crear y asignar nuevo usuario
                             </div>
-                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                            <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;">
                                 <MudTextField @bind-Value="_nuevoUsername" Label="Usuario (login)"
-                                              Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                              Variant="Variant.Outlined" Margin="Margin.Dense"
+                                              Style="flex:1;min-width:180px;" />
                                 <MudTextField @bind-Value="_nuevoNombre" Label="Nombre completo"
-                                              Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                              Variant="Variant.Outlined" Margin="Margin.Dense"
+                                              Style="flex:1;min-width:180px;" />
                                 <MudTextField @bind-Value="_nuevaPassword" Label="Contraseña"
                                               InputType="InputType.Password"
-                                              Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                              Variant="Variant.Outlined" Margin="Margin.Dense"
+                                              Style="flex:1;min-width:180px;" />
                                 <MudSelect T="UserRole" @bind-Value="_nuevoRol" Label="Rol"
-                                           Variant="Variant.Outlined" Margin="Margin.Dense">
+                                           Variant="Variant.Outlined" Margin="Margin.Dense"
+                                           Style="flex:1;min-width:180px;">
                                     <MudSelectItem T="UserRole" Value="UserRole.Supervisor">Supervisor</MudSelectItem>
                                     <MudSelectItem T="UserRole" Value="UserRole.Repartidor">Repartidor</MudSelectItem>
                                 </MudSelect>
@@ -114,30 +118,56 @@
                     }
                     else
                     {
-                        <MudTable Items="_usuarios" Hover="true" Dense="true" Elevation="0">
-                            <HeaderContent>
-                                <MudTh>Nombre</MudTh>
-                                <MudTh>Usuario</MudTh>
-                                <MudTh Style="text-align:center;">Rol</MudTh>
-                                <MudTh Style="width:48px;"></MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd><span class="fw-600">@context.FullName</span></MudTd>
-                                <MudTd><span class="text-muted" style="font-size:12px;">@context.Username</span></MudTd>
-                                <MudTd Style="text-align:center;">
-                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
-                                             Color="@(context.Rol == UserRole.Supervisor ? Color.Info : Color.Default)">
-                                        @context.Rol
-                                    </MudChip>
-                                </MudTd>
-                                <MudTd>
-                                    <MudIconButton Icon="@Icons.Material.Rounded.LinkOff"
-                                                   Size="Size.Small" Color="Color.Default"
-                                                   title="Remover del negocio"
-                                                   OnClick="@(() => RemoverUsuario(context))" />
-                                </MudTd>
-                            </RowTemplate>
-                        </MudTable>
+                        <!-- Desktop -->
+                        <div class="desk-only">
+                            <MudTable Items="_usuarios" Hover="true" Dense="true" Elevation="0">
+                                <HeaderContent>
+                                    <MudTh>Nombre</MudTh>
+                                    <MudTh>Usuario</MudTh>
+                                    <MudTh Style="text-align:center;">Rol</MudTh>
+                                    <MudTh Style="width:48px;"></MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd><span class="fw-600">@context.FullName</span></MudTd>
+                                    <MudTd><span class="text-muted" style="font-size:12px;">@context.Username</span></MudTd>
+                                    <MudTd Style="text-align:center;">
+                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Filled"
+                                                 Color="@(context.Rol == UserRole.Supervisor ? Color.Info : Color.Default)">
+                                            @context.Rol
+                                        </MudChip>
+                                    </MudTd>
+                                    <MudTd>
+                                        <MudIconButton Icon="@Icons.Material.Rounded.LinkOff"
+                                                       Size="Size.Small" Color="Color.Default"
+                                                       title="Remover del negocio"
+                                                       OnClick="@(() => RemoverUsuario(context))" />
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                        <!-- Móvil -->
+                        <div class="mob-cards" style="padding-top:4px;">
+                            @foreach (var u in _usuarios)
+                            {
+                                <div class="mob-lc">
+                                    <div class="lc-row">
+                                        <div class="lc-left">
+                                            <div class="mob-lc-name">@u.FullName</div>
+                                            <div class="lc-tags">
+                                                <span class="lc-tag @(u.Rol == UserRole.Supervisor ? "blue" : "green")">@u.Rol</span>
+                                                <span class="lc-tag" style="font-family:monospace;">@u.Username</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mob-lc-acts">
+                                        <button class="mob-act-btn mob-act-danger" @onclick="@(() => RemoverUsuario(u))">
+                                            <span class="material-symbols-rounded">link_off</span>
+                                            Remover
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
                     }
                 </div>
             </MudTabPanel>

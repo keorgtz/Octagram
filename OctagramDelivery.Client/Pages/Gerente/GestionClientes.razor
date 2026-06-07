@@ -294,40 +294,44 @@
             {
                 var asig = _asignaciones.FirstOrDefault(a => a.ProductId == prod.Id);
                 var activo = asig != null;
-                <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-line);">
-                    <MudCheckBox T="bool" Value="activo"
-                                 ValueChanged="@(v => ToggleProducto(prod.Id, v))"
-                                 Color="Color.Primary" />
-                    <div style="flex:1;min-width:0;">
-                        <div class="fw-500" style="font-size:13px;">@prod.Nombre</div>
-                        <div style="font-size:11px;color:var(--gray-muted);">
-                            @(prod.TipoMedida == TipoMedida.Gramaje ? "Gramaje" : "Pieza") —
-                            @prod.PrecioPorUnidad.ToString("C", _mx)
-                            @(prod.TipoMedida == TipoMedida.Gramaje ? "/KG" : "")
+                <div style="padding:10px 0;border-bottom:1px solid var(--gray-line);">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <MudCheckBox T="bool" Value="activo"
+                                     ValueChanged="@(v => ToggleProducto(prod.Id, v))"
+                                     Color="Color.Primary" />
+                        <div style="flex:1;min-width:0;">
+                            <div class="fw-500" style="font-size:13px;">@prod.Nombre</div>
+                            <div style="font-size:11px;color:var(--gray-muted);">
+                                @(prod.TipoMedida == TipoMedida.Gramaje ? "Gramaje" : "Pieza") —
+                                @prod.PrecioPorUnidad.ToString("C", _mx)
+                                @(prod.TipoMedida == TipoMedida.Gramaje ? "/KG" : "")
+                            </div>
                         </div>
                     </div>
                     @if (activo && asig != null)
                     {
-                        <MudNumericField T="decimal" Value="asig.CantidadHabitual"
-                                         ValueChanged="@(v => asig.CantidadHabitual = v)"
-                                         Label="Cant. habitual" Style="width:110px;"
-                                         Variant="Variant.Outlined" Margin="Margin.Dense" Min="0"
-                                         Format="@(prod.TipoMedida == TipoMedida.Gramaje ? "F2" : "F0")" />
-                        <MudSelect T="int?" Value="asig.PriceTierId"
-                                   ValueChanged="@(v => asig.PriceTierId = v)"
-                                   Label="Perfil" Style="width:170px;"
-                                   Variant="Variant.Outlined" Margin="Margin.Dense"
-                                   Clearable="false">
-                            <MudSelectItem T="int?" Value="(int?)null">
-                                Base — @prod.PrecioPorUnidad.ToString("C", _mx)
-                            </MudSelectItem>
-                            @foreach (var tier in prod.Perfiles.OrderBy(t => t.Numero))
-                            {
-                                <MudSelectItem T="int?" Value="(int?)tier.Id">
-                                    Perfil @tier.Numero@(tier.Etiqueta != null ? " · " + tier.Etiqueta : "") — @tier.Precio.ToString("C", _mx)
+                        <div style="display:flex;gap:10px;margin-top:8px;padding-left:44px;flex-wrap:wrap;">
+                            <MudNumericField T="decimal" Value="asig.CantidadHabitual"
+                                             ValueChanged="@(v => asig.CantidadHabitual = v)"
+                                             Label="Cant. habitual" Style="width:110px;"
+                                             Variant="Variant.Outlined" Margin="Margin.Dense" Min="0"
+                                             Format="@(prod.TipoMedida == TipoMedida.Gramaje ? "F2" : "F0")" />
+                            <MudSelect T="int?" Value="asig.PriceTierId"
+                                       ValueChanged="@(v => asig.PriceTierId = v)"
+                                       Label="Perfil" Style="flex:1;min-width:160px;"
+                                       Variant="Variant.Outlined" Margin="Margin.Dense"
+                                       Clearable="false">
+                                <MudSelectItem T="int?" Value="(int?)null">
+                                    Base — @prod.PrecioPorUnidad.ToString("C", _mx)
                                 </MudSelectItem>
-                            }
-                        </MudSelect>
+                                @foreach (var tier in prod.Perfiles.OrderBy(t => t.Numero))
+                                {
+                                    <MudSelectItem T="int?" Value="(int?)tier.Id">
+                                        Perfil @tier.Numero@(tier.Etiqueta != null ? " · " + tier.Etiqueta : "") — @tier.Precio.ToString("C", _mx)
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        </div>
                     }
                 </div>
             }
