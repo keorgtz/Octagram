@@ -1510,6 +1510,118 @@ body,
 .jornada-monitor-kpi-value { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .jornada-monitor-action { display: flex; justify-content: flex-end; }
 
+/* ── Picker de jornadas múltiples ── */
+.jorpicker-container {
+    max-width: 480px;
+    margin: 24px auto;
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.jorpicker-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 4px 8px;
+    border-bottom: 1px solid var(--gray-line, #E5E7EB);
+    margin-bottom: 4px;
+}
+.jorpicker-titulo {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gray-dark, #1C1E26);
+}
+.jorpicker-sub {
+    font-size: 12px;
+    color: var(--gray-muted, #6B7280);
+    margin-top: 2px;
+}
+.jorpicker-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    border: 1.5px solid var(--gray-line, #E5E7EB);
+    border-radius: 14px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color 140ms, box-shadow 140ms, transform 80ms;
+    -webkit-tap-highlight-color: transparent;
+    width: 100%;
+    text-align: left;
+}
+.jorpicker-card:hover  { border-color: var(--in, #6366F1); box-shadow: 0 2px 8px rgba(99,102,241,.12); }
+.jorpicker-card:active { transform: scale(.98); }
+.jorpicker-card-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.jorpicker-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.jorpicker-dot.abierta { background: var(--em, #10B981); box-shadow: 0 0 0 3px rgba(16,185,129,.18); }
+.jorpicker-dot.cerrada { background: var(--gray-muted, #9CA3AF); }
+.jorpicker-card-titulo { font-size: 14px; font-weight: 700; color: var(--gray-dark, #1C1E26); }
+.jorpicker-card-hora   { font-size: 12px; color: var(--gray-muted, #6B7280); margin-top: 2px; }
+.jorpicker-estado {
+    font-size: 11px; font-weight: 700; border-radius: 6px; padding: 3px 9px; flex-shrink: 0;
+}
+.jorpicker-estado.abierta { background: #D1FAE5; color: #065F46; }
+.jorpicker-estado.cerrada { background: #F3F4F6; color: var(--gray-muted, #6B7280); }
+.jorpicker-nueva-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px;
+    border: 1.5px dashed var(--gray-line, #D1D5DB);
+    border-radius: 14px;
+    background: transparent;
+    color: var(--in, #6366F1);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 140ms, background 140ms;
+    -webkit-tap-highlight-color: transparent;
+    width: 100%;
+    margin-top: 4px;
+}
+.jorpicker-nueva-btn:hover  { border-color: var(--in, #6366F1); background: #EEF2FF; }
+.jorpicker-nueva-btn:active { background: #E0E7FF; }
+.jorpicker-nueva-btn .material-symbols-rounded { font-size: 20px; }
+
+/* ── Panel de apertura de jornada (Gerente) ── */
+.joropen-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+.joropen-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px 18px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-dark, #1C1E26);
+    -webkit-tap-highlight-color: transparent;
+    text-align: left;
+}
+.joropen-toggle:hover { background: var(--page-bg, #F2F3F7); }
+.joropen-panel {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 18px 16px;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--gray-line, #E5E7EB);
+    padding-top: 14px;
+}
+
 /* ── Renderizado dual desktop/mobile — defaults que el breakpoint overrides ── */
 .desk-only { display: block; }
 .mob-cards  { display: none; }

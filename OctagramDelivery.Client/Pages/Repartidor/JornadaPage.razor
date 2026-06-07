@@ -27,6 +27,54 @@
         <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
     </div>
 }
+else if (_mostrarPickerJornadas && _misJornadasHoy != null)
+{
+    <!-- Selector de jornadas: hay más de una jornada hoy -->
+    <div class="jorpicker-container">
+        <div class="jorpicker-header">
+            <span class="material-symbols-rounded" style="font-size:32px;color:var(--in,#6366F1);">delivery_dining</span>
+            <div>
+                <div class="jorpicker-titulo">Mis jornadas de hoy</div>
+                <div class="jorpicker-sub">Selecciona una para continuar</div>
+            </div>
+        </div>
+
+        @{ var idx = 0; }
+        @foreach (var j in _misJornadasHoy.OrderBy(x => x.FechaApertura))
+        {
+            idx++;
+            var jLocal  = j;
+            var isAbierta = j.Estado == JornadaEstado.Abierta;
+            <button class="jorpicker-card" @onclick="() => SeleccionarJornada(jLocal)">
+                <div class="jorpicker-card-left">
+                    <span class="jorpicker-dot @(isAbierta ? "abierta" : "cerrada")"></span>
+                    <div>
+                        <div class="jorpicker-card-titulo">Jornada @idx</div>
+                        <div class="jorpicker-card-hora">
+                            Abierta @j.FechaApertura.ToLocalTime().ToString("hh:mm tt")
+                            @if (!isAbierta && j.FechaCierre.HasValue)
+                            {
+                                <span> · Cerrada @j.FechaCierre.Value.ToLocalTime().ToString("hh:mm tt")</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <span class="jorpicker-estado @(isAbierta ? "abierta" : "cerrada")">
+                    @(isAbierta ? "Activa" : "Cerrada")
+                </span>
+                <span class="material-symbols-rounded" style="color:var(--gray-muted);font-size:20px;flex-shrink:0;">chevron_right</span>
+            </button>
+        }
+
+        @if (_puedeAbrir && !_soloLectura)
+        {
+            <button class="jorpicker-nueva-btn" @onclick="AbrirJornada">
+                <span class="material-symbols-rounded">add_circle</span>
+                Abrir nueva jornada
+            </button>
+        }
+    </div>
+}
 else if (Estado.Jornada == null)
 {
     @if (_sinDatosLocales)
@@ -195,10 +243,22 @@ else
                         <span class="material-symbols-rounded">add_circle</span>
                     </button>
                 }
+                @if (_puedeAbrir)
+                {
+                    <button class="icon-btn" title="Abrir nueva jornada" @onclick="AbrirJornada">
+                        <span class="material-symbols-rounded">add_task</span>
+                    </button>
+                }
             }
             else
             {
                 <span style="flex:1;"></span>
+            }
+            @if ((_misJornadasHoy?.Count ?? 0) > 1)
+            {
+                <button class="icon-btn" title="Mis jornadas de hoy" @onclick="() => _mostrarPickerJornadas = true">
+                    <span class="material-symbols-rounded">swap_horiz</span>
+                </button>
             }
             @if (!JornadaId.HasValue)
             {
@@ -436,6 +496,10 @@ else
     private List<GrupoProductoDto> _gruposProducto  = new();
     private int?    _hojaRondaId;      // null = todas las vueltas
 
+    // Múltiples jornadas por día
+    private List<JornadaDto>? _misJornadasHoy;
+    private bool               _mostrarPickerJornadas;
+
     // Numpad inline para editar stock de sección por ronda
     private bool    _stockNumpadVisible;
     private string  _stockNumpadTitulo = "";
@@ -618,6 +682,34 @@ else
                 _stocksRonda = snapStocks.StocksRonda;
         }
 
+        // Cargar lista de todas las jornadas de hoy (soporte múltiples jornadas)
+        if (_negocioId > 0 && !JornadaId.HasValue && OfflineSync.IsOnline)
+        {
+            try
+            {
+                _misJornadasHoy = await Api.GetMisJornadasHoyAsync(_negocioId);
+                if (Estado.Jornada == null)
+                {
+                    if (_misJornadasHoy?.Count == 1)
+                    {
+                        // Auto-seleccionar la única jornada
+                        var full = await Api.GetJornadaByIdAsync(_misJornadasHoy[0].Id);
+                        if (full != null)
+                        {
+                            var prods = await Api.GetProductosAsync(_negocioId) ?? new();
+                            var clis  = (await Api.GetClientesAsync(_negocioId) ?? new()).Where(TieneEntregaHoy).ToList();
+                            Estado.Cargar(full, prods, clis);
+                            await LocalData.SaveSnapshotAsync(_negocioId, new JornadaSnapshot
+                            { Jornada = full, Productos = prods, Clientes = clis });
+                        }
+                    }
+                    else if ((_misJornadasHoy?.Count ?? 0) > 1)
+                        _mostrarPickerJornadas = true;
+                }
+            }
+            catch { }
+        }
+
         _cargando = false;
 
         // Cargar datos del negocio (grupos, secciones) y arrancar sync periódico
@@ -760,14 +852,16 @@ else
         if (_negocioId == 0) return;
         try
         {
-            var jornada = await Api.GetJornadaHoyAsync(_negocioId);
+            // Si ya hay una jornada cargada, refrescar esa específica; si no, la más reciente del día
+            JornadaDto? jornada = Estado.Jornada?.Id > 0
+                ? await Api.GetJornadaByIdAsync(Estado.Jornada.Id)
+                : await Api.GetJornadaHoyAsync(_negocioId);
             if (jornada == null) return;
 
             var productos = await Api.GetProductosAsync(_negocioId) ?? new();
             var clientes  = (await Api.GetClientesAsync(_negocioId) ?? new())
                             .Where(TieneEntregaHoy).ToList();
 
-            // Siempre actualizar snapshot local con datos frescos del servidor
             await LocalData.SaveSnapshotAsync(_negocioId, new JornadaSnapshot
             {
                 Jornada   = jornada,
@@ -775,7 +869,6 @@ else
                 Clientes  = clientes
             });
 
-            // Solo sobreescribir estado en memoria si no hay ediciones locales pendientes
             var pending = await LocalData.CountPendingAsync();
             if (pending == 0)
             {
@@ -785,6 +878,33 @@ else
             }
         }
         catch { }
+    }
+
+    /// <summary>Carga una jornada específica seleccionada desde el picker.</summary>
+    private async Task SeleccionarJornada(JornadaDto j)
+    {
+        _mostrarPickerJornadas = false;
+        _cargando = true;
+        StateHasChanged();
+        try
+        {
+            var jornada = await Api.GetJornadaByIdAsync(j.Id);
+            if (jornada != null)
+            {
+                var prods = await Api.GetProductosAsync(_negocioId) ?? new();
+                var clis  = (await Api.GetClientesAsync(_negocioId) ?? new()).Where(TieneEntregaHoy).ToList();
+                Estado.Limpiar();
+                Estado.Cargar(jornada, prods, clis);
+                // Recuperar stocks específicos de esta jornada si el snapshot coincide
+                var snap = await LocalData.GetSnapshotAsync(_negocioId);
+                _stocksRonda = (snap?.Jornada?.Id == jornada.Id && snap.StocksRonda != null)
+                    ? snap.StocksRonda : new();
+                await LocalData.SaveSnapshotAsync(_negocioId, new JornadaSnapshot
+                { Jornada = jornada, Productos = prods, Clientes = clis, StocksRonda = _stocksRonda });
+            }
+        }
+        catch { Snackbar.Add("Error al cargar la jornada", Severity.Error); }
+        _cargando = false;
     }
 
     /// <summary>Descarga TODOS los datos desde la nube y los persiste en local. Botón manual.</summary>
@@ -974,9 +1094,14 @@ else
             var resp = await Api.AbrirJornadaAsync(new OpenJornadaRequest { TenantId = _negocioId });
             if (resp.IsSuccessStatusCode)
             {
-                Estado.Limpiar();
-                _loadedFromCache = false;
-                await CargarJornada();
+                var nueva = await resp.Content.ReadFromJsonAsync<JornadaDto>();
+                if (nueva != null)
+                {
+                    _misJornadasHoy ??= new();
+                    _misJornadasHoy.Add(nueva);
+                    await SeleccionarJornada(nueva);
+                    Snackbar.Add("Jornada abierta", Severity.Success);
+                }
             }
             else
             {

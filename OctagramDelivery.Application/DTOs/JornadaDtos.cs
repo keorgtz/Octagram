@@ -17,7 +17,12 @@ public class JornadaDto
     public List<ClienteJornadaDto> Clientes { get; set; } = new();
 }
 
-public class OpenJornadaRequest { public int TenantId { get; set; } }
+public class OpenJornadaRequest
+{
+    public int TenantId { get; set; }
+    /// <summary>Solo Admin/Gerente pueden especificar un repartidor diferente al caller.</summary>
+    public int? DriverId { get; set; }
+}
 
 public class RondaDto
 {
@@ -124,11 +129,13 @@ public class TotalesProductoCliente
 public class JornadaResumenDto
 {
     public int Id { get; set; }
+    public int DriverId { get; set; }
     public DateOnly Fecha { get; set; }
     public string RepartidorNombre { get; set; } = string.Empty;
     public string NegocioNombre { get; set; } = string.Empty;
     public JornadaEstado Estado { get; set; }
     public decimal TotalNeto { get; set; }
+    public DateTime FechaApertura { get; set; }
 }
 
 // ── Reporte de jornada ─────────────────────────────────────────────

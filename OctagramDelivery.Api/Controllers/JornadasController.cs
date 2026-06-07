@@ -31,17 +31,46 @@ public class JornadasController : ControllerBase
     private UserRole CallerRole => Enum.Parse<UserRole>(User.FindFirst(System.Security.Claims.ClaimTypes.Role)!.Value);
     private List<int> CallerNegocioIds => User.FindAll("negocioId").Select(c => int.Parse(c.Value)).ToList();
 
-    // GET /api/jornadas/hoy — jornada activa del repartidor
+    // GET /api/jornadas/hoy — jornada más reciente del repartidor hoy (backward compat)
     [HttpGet("hoy")]
     public async Task<ActionResult<JornadaDto>> GetToday([FromQuery] int negocioId)
     {
         var hoy = DateOnly.FromDateTime(DateTime.Today);
         var driverId = CallerId;
 
-        var jornada = await LoadJornada(negocioId, driverId, hoy);
-        if (jornada == null) return NotFound("No hay jornada abierta hoy.");
+        var jornada = await _ctx.DeliveryDays
+            .Include(d => d.Driver)
+            .Include(d => d.Tenant)
+            .Include(d => d.Rounds).ThenInclude(r => r.Details).ThenInclude(d => d.Customer)
+            .Include(d => d.Rounds).ThenInclude(r => r.Details).ThenInclude(d => d.Product)
+            .Include(d => d.DayCustomers).ThenInclude(dc => dc.Customer)
+            .Where(d => d.TenantId == negocioId && d.DriverId == driverId && d.Fecha == hoy)
+            .OrderByDescending(d => d.Estado == JornadaEstado.Abierta ? 1 : 0)
+            .ThenByDescending(d => d.FechaApertura)
+            .FirstOrDefaultAsync();
 
+        if (jornada == null) return NotFound("No hay jornada hoy.");
         return Ok(MapJornada(jornada));
+    }
+
+    // GET /api/jornadas/mis-jornadas-hoy — todas las jornadas del repartidor hoy
+    [HttpGet("mis-jornadas-hoy")]
+    public async Task<ActionResult<List<JornadaDto>>> GetMisJornadasHoy([FromQuery] int negocioId)
+    {
+        var hoy = DateOnly.FromDateTime(DateTime.Today);
+        var driverId = CallerId;
+
+        var jornadas = await _ctx.DeliveryDays
+            .Include(d => d.Driver)
+            .Include(d => d.Tenant)
+            .Include(d => d.Rounds).ThenInclude(r => r.Details).ThenInclude(d => d.Customer)
+            .Include(d => d.Rounds).ThenInclude(r => r.Details).ThenInclude(d => d.Product)
+            .Include(d => d.DayCustomers).ThenInclude(dc => dc.Customer)
+            .Where(d => d.TenantId == negocioId && d.DriverId == driverId && d.Fecha == hoy)
+            .OrderBy(d => d.FechaApertura)
+            .ToListAsync();
+
+        return Ok(jornadas.Select(MapJornada).ToList());
     }
 
     // GET /api/jornadas/{id}
@@ -58,15 +87,18 @@ public class JornadasController : ControllerBase
         return Ok(MapJornada(jornada));
     }
 
-    // POST /api/jornadas/abrir
+    // POST /api/jornadas/abrir — siempre crea una jornada nueva (sin límite por día)
     [HttpPost("abrir")]
     public async Task<ActionResult<JornadaDto>> Abrir([FromBody] OpenJornadaRequest req)
     {
         var hoy = DateOnly.FromDateTime(DateTime.Today);
-        var driverId = CallerId;
+        var callerRole = CallerRole;
 
-        var existing = await LoadJornada(req.TenantId, driverId, hoy);
-        if (existing != null) return Ok(MapJornada(existing));
+        // Admin/Gerente/Supervisor pueden abrir jornada para otro repartidor
+        int driverId = (req.DriverId.HasValue &&
+                        (callerRole == UserRole.Admin || callerRole == UserRole.Gerente || callerRole == UserRole.Supervisor))
+            ? req.DriverId.Value
+            : CallerId;
 
         var jornada = new DeliveryDay
         {
@@ -79,12 +111,15 @@ public class JornadasController : ControllerBase
         _ctx.DeliveryDays.Add(jornada);
         await _ctx.SaveChangesAsync();
 
-        // Primera ronda automática
         var ronda = new DeliveryRound { DeliveryDayId = jornada.Id, NumeroRonda = 1, Etiqueta = "Mañana", Orden = 1 };
         _ctx.DeliveryRounds.Add(ronda);
         await _ctx.SaveChangesAsync();
 
         var loaded = await LoadJornadaById(jornada.Id);
+
+        await _hub.Clients.Group($"negocio-{req.TenantId}")
+            .SendAsync("JornadaAbierta", new { jornadaId = jornada.Id, driverId });
+
         return CreatedAtAction(nameof(GetById), new { id = jornada.Id }, MapJornada(loaded!));
     }
 
@@ -264,10 +299,12 @@ public class JornadasController : ControllerBase
         return Ok(jornadas.Select(d => new JornadaResumenDto
         {
             Id               = d.Id,
+            DriverId         = d.DriverId,
             Fecha            = d.Fecha,
             RepartidorNombre = d.Driver?.FullName ?? "",
             NegocioNombre    = d.Tenant?.Nombre ?? "",
             Estado           = d.Estado,
+            FechaApertura    = d.FechaApertura,
             TotalNeto        = d.Rounds
                 .SelectMany(r => r.Details)
                 .Sum(det => (det.CantidadEntregada - det.CantidadDevuelta) * det.PrecioUnitario)
@@ -298,10 +335,12 @@ public class JornadasController : ControllerBase
         return Ok(jornadas.Select(d => new JornadaResumenDto
         {
             Id               = d.Id,
+            DriverId         = d.DriverId,
             Fecha            = d.Fecha,
             RepartidorNombre = d.Driver?.FullName ?? "",
             NegocioNombre    = d.Tenant?.Nombre ?? "",
             Estado           = d.Estado,
+            FechaApertura    = d.FechaApertura,
             TotalNeto        = d.Rounds
                 .SelectMany(r => r.Details)
                 .Sum(det => (det.CantidadEntregada - det.CantidadDevuelta) * det.PrecioUnitario)

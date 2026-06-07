@@ -3,6 +3,7 @@
 @inject ApiService Api
 @inject AuthService AuthSvc
 @inject NavigationManager Nav
+@inject ISnackbar Snackbar
 
 <PageTitle>Jornadas · TortiCloud</PageTitle>
 
@@ -12,18 +13,53 @@
             <h1 class="h-page-title">Jornadas de Hoy</h1>
             <p class="page-subtitle">@DateTime.Today.ToString("dddd d 'de' MMMM", _mx)</p>
         </div>
-        @if (_esAdmin && _negocios.Count > 1)
-        {
-            <MudSelect T="int" Value="_negocioActivo" ValueChanged="CambiarNegocio"
-                       Label="Negocio" Variant="Variant.Outlined" Margin="Margin.Dense"
-                       Style="min-width:180px;">
-                @foreach (var n in _negocios)
-                {
-                    <MudSelectItem T="int" Value="n.Id">@n.Nombre</MudSelectItem>
-                }
-            </MudSelect>
-        }
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            @if (_esAdmin && _negocios.Count > 1)
+            {
+                <MudSelect T="int" Value="_negocioActivo" ValueChanged="CambiarNegocio"
+                           Label="Negocio" Variant="Variant.Outlined" Margin="Margin.Dense"
+                           Style="min-width:180px;">
+                    @foreach (var n in _negocios)
+                    {
+                        <MudSelectItem T="int" Value="n.Id">@n.Nombre</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+        </div>
     </div>
+
+    @if (_esAdmin && _repartidores.Count > 0)
+    {
+        <div class="joropen-card">
+            <button class="joropen-toggle" @onclick="() => _abrirExpanded = !_abrirExpanded">
+                <span class="material-symbols-rounded" style="color:var(--em,#10B981);">add_task</span>
+                <span>Abrir jornada para repartidor</span>
+                <span class="material-symbols-rounded" style="margin-left:auto;color:var(--gray-muted);font-size:20px;">
+                    @(_abrirExpanded ? "expand_less" : "expand_more")
+                </span>
+            </button>
+            @if (_abrirExpanded)
+            {
+                <div class="joropen-panel">
+                    <MudSelect T="int" @bind-Value="_repartidorId" Label="Repartidor"
+                               Variant="Variant.Outlined" Margin="Margin.Dense"
+                               Style="flex:1;min-width:200px;">
+                        <MudSelectItem T="int" Value="0" Disabled="true">Selecciona un repartidor</MudSelectItem>
+                        @foreach (var u in _repartidores)
+                        {
+                            <MudSelectItem T="int" Value="u.UserId">@u.FullName</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                               Disabled="@(_abriendo || _repartidorId == 0)"
+                               OnClick="AbrirJornadaParaRepartidor"
+                               StartIcon="@Icons.Material.Rounded.PlayCircle">
+                        @(_abriendo ? "Abriendo…" : "Abrir")
+                    </MudButton>
+                </div>
+            }
+        </div>
+    }
 
     @if (_cargando)
     {
@@ -41,12 +77,22 @@
     else
     {
         <div class="jornadas-activas-grid">
-            @foreach (var j in _jornadas)
+            @foreach (var j in _jornadas.OrderBy(j => j.RepartidorNombre).ThenBy(j => j.FechaApertura))
             {
+                var numJornada    = GetNumJornada(j);
+                var tieneMultiple = TieneMultiplesJornadas(j.DriverId);
                 <div class="jornada-monitor-card" @onclick="() => Monitorear(j.Id)">
                     <div class="jornada-monitor-header">
                         <span class="material-symbols-rounded jornada-monitor-icon">person</span>
-                        <span class="jornada-monitor-nombre">@j.RepartidorNombre</span>
+                        <div style="flex:1;min-width:0;">
+                            <div class="jornada-monitor-nombre">@j.RepartidorNombre</div>
+                            @if (tieneMultiple)
+                            {
+                                <div style="font-size:11px;color:var(--gray-muted);">
+                                    Jornada @numJornada · @j.FechaApertura.ToLocalTime().ToString("hh:mm tt")
+                                </div>
+                            }
+                        </div>
                         @if (j.Estado == JornadaEstado.Abierta)
                         {
                             <span class="jornada-estado-badge abierta">● Activa</span>
@@ -84,6 +130,19 @@
     private int _negocioActivo;
     private List<TenantDto> _negocios = new();
     private List<JornadaResumenDto> _jornadas = new();
+    private List<UsuarioNegocioDto> _repartidores = new();
+    private int  _repartidorId;
+    private bool _abrirExpanded;
+    private bool _abriendo;
+
+    // Índice precalculado: DriverId → lista ordenada por FechaApertura
+    private Dictionary<int, List<JornadaResumenDto>> _jornadasPorDriver = new();
+
+    private int  GetNumJornada(JornadaResumenDto j)
+        => _jornadasPorDriver.TryGetValue(j.DriverId, out var lst) ? lst.IndexOf(j) + 1 : 1;
+
+    private bool TieneMultiplesJornadas(int driverId)
+        => _jornadasPorDriver.TryGetValue(driverId, out var lst) && lst.Count > 1;
 
     protected override async Task OnInitializedAsync()
     {
@@ -100,21 +159,63 @@
             _negocioActivo = user?.NegocioIds.FirstOrDefault() ?? 0;
         }
 
-        if (_negocioActivo > 0) await Cargar();
+        if (_negocioActivo > 0)
+            await Task.WhenAll(Cargar(), CargarRepartidores());
+
         _cargando = false;
     }
 
     private async Task CambiarNegocio(int id)
     {
         _negocioActivo = id;
-        await Cargar();
+        _repartidorId  = 0;
+        await Task.WhenAll(Cargar(), CargarRepartidores());
     }
 
     private async Task Cargar()
     {
         _cargando = true;
         _jornadas = await Api.GetJornadasNegocioHoyAsync(_negocioActivo) ?? new();
+        _jornadasPorDriver = _jornadas
+            .GroupBy(j => j.DriverId)
+            .ToDictionary(g => g.Key, g => g.OrderBy(j => j.FechaApertura).ToList());
         _cargando = false;
+    }
+
+    private async Task CargarRepartidores()
+    {
+        if (_negocioActivo == 0) return;
+        var todos = await Api.GetUsuariosNegocioAsync(_negocioActivo) ?? new();
+        _repartidores = todos.Where(u => u.Rol == UserRole.Repartidor && u.IsActive).ToList();
+    }
+
+    private async Task AbrirJornadaParaRepartidor()
+    {
+        if (_repartidorId == 0 || _abriendo) return;
+        _abriendo = true;
+        StateHasChanged();
+        try
+        {
+            var resp = await Api.AbrirJornadaAsync(new OpenJornadaRequest
+            {
+                TenantId = _negocioActivo,
+                DriverId = _repartidorId
+            });
+            if (resp.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Jornada abierta correctamente", Severity.Success);
+                _abrirExpanded = false;
+                _repartidorId  = 0;
+                await Cargar();
+            }
+            else
+            {
+                var msg = await resp.Content.ReadAsStringAsync();
+                Snackbar.Add($"Error al abrir: {msg}", Severity.Error);
+            }
+        }
+        catch { Snackbar.Add("Error de conexión", Severity.Error); }
+        _abriendo = false;
     }
 
     private void Monitorear(int jornadaId)

@@ -106,6 +106,9 @@ public class ApiService
     public Task<JornadaDto?> GetJornadaHoyAsync(int negocioId)
         => _http.GetFromJsonAsync<JornadaDto>($"api/jornadas/hoy?negocioId={negocioId}");
 
+    public Task<List<JornadaDto>?> GetMisJornadasHoyAsync(int negocioId)
+        => _http.GetFromJsonAsync<List<JornadaDto>>($"api/jornadas/mis-jornadas-hoy?negocioId={negocioId}");
+
     public Task<JornadaDto?> GetJornadaByIdAsync(int id)
         => _http.GetFromJsonAsync<JornadaDto>($"api/jornadas/{id}");
 
