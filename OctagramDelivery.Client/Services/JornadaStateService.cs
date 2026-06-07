@@ -134,6 +134,50 @@ public class JornadaStateService
 
     public void Notificar() => OnChange?.Invoke();
 
+    /// <summary>Reconstruye un JornadaDto con los valores actuales de Celdas y Exclusiones para persistir en local.</summary>
+    public JornadaDto GetSnapshotJornada()
+    {
+        if (Jornada == null) return new();
+        return new JornadaDto
+        {
+            Id            = Jornada.Id,
+            TenantId      = Jornada.TenantId,
+            TenantNombre  = Jornada.TenantNombre,
+            DriverId      = Jornada.DriverId,
+            DriverNombre  = Jornada.DriverNombre,
+            Fecha         = Jornada.Fecha,
+            Estado        = Jornada.Estado,
+            FechaApertura = Jornada.FechaApertura,
+            FechaCierre   = Jornada.FechaCierre,
+            Clientes      = Exclusiones.Values.ToList(),
+            Rondas        = Jornada.Rondas.Select(r => new RondaDto
+            {
+                Id          = r.Id,
+                NumeroRonda = r.NumeroRonda,
+                Etiqueta    = r.Etiqueta,
+                Orden       = r.Orden,
+                Detalles    = Clientes.SelectMany(cli => Productos.Select(p =>
+                {
+                    var key = (r.Id, cli.Id, p.Id);
+                    if (!Celdas.TryGetValue(key, out var celda)) return null;
+                    if (celda.Entregado == 0 && celda.Devuelto == 0) return null;
+                    return new DetalleDto
+                    {
+                        RondaId           = r.Id,
+                        ClienteId         = cli.Id,
+                        ProductoId        = p.Id,
+                        CantidadEntregada = celda.Entregado,
+                        CantidadDevuelta  = celda.Devuelto,
+                        PrecioUnitario    = celda.Precio,
+                        GramajePreset     = celda.GramajePreset
+                    };
+                }))
+                .OfType<DetalleDto>()
+                .ToList()
+            }).ToList()
+        };
+    }
+
     public class CeldaState
     {
         public decimal       Entregado    { get; set; }

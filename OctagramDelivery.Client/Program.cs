@@ -30,6 +30,7 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<ApiService>();
 builder.Services.AddScoped<MigrationService>();
 builder.Services.AddSingleton<JornadaStateService>();
+builder.Services.AddScoped<LocalDataService>();
 builder.Services.AddScoped<OfflineSyncService>();
 builder.Services.AddTransient(sp => new HubService(
     sp.GetRequiredService<AuthService>(),

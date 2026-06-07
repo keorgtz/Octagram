@@ -1,31 +1,25 @@
-using Blazored.LocalStorage;
 using Microsoft.JSInterop;
 using OctagramDelivery.Application.DTOs;
+using OctagramDelivery.Domain.Enums;
 
 namespace OctagramDelivery.Client.Services;
 
-public class PendingSave
-{
-    public int RondaId { get; set; }
-    public List<DetalleUpsertItem> Detalles { get; set; } = new();
-}
-
 public class OfflineSyncService : IAsyncDisposable
 {
-    private readonly ILocalStorageService _storage;
+    private readonly LocalDataService _local;
     private readonly ApiService _api;
     private readonly IJSRuntime _js;
     private DotNetObjectReference<OfflineSyncService>? _jsRef;
     private bool _initialized;
-    private const string QueueKey = "tc_pending_saves";
+    private bool _syncing;
 
     public bool IsOnline { get; private set; } = true;
     public event Action? OnConnectivityChanged;
     public event Action? OnSynced;
 
-    public OfflineSyncService(ILocalStorageService storage, ApiService api, IJSRuntime js)
+    public OfflineSyncService(LocalDataService local, ApiService api, IJSRuntime js)
     {
-        _storage = storage;
+        _local = local;
         _api = api;
         _js = js;
     }
@@ -59,50 +53,85 @@ public class OfflineSyncService : IAsyncDisposable
         OnConnectivityChanged?.Invoke();
     }
 
-    public async Task EnqueueSaveAsync(int rondaId, List<DetalleUpsertItem> detalles)
+    // ── Encolar operaciones ───────────────────────────────────────────────
+
+    public async Task EnqueueRondaSaveAsync(int rondaId, int jornadaId, int negocioId, List<DetalleUpsertItem> detalles)
     {
-        var queue = await SafeGetQueue();
-        var existing = queue.FirstOrDefault(q => q.RondaId == rondaId);
-        if (existing != null) existing.Detalles = detalles;
-        else queue.Add(new PendingSave { RondaId = rondaId, Detalles = detalles });
-        await _storage.SetItemAsync(QueueKey, queue);
+        await _local.UpsertOpAsync(new PendingOperation
+        {
+            Tipo      = PendingOpType.BulkSaveRonda,
+            RondaId   = rondaId,
+            JornadaId = jornadaId,
+            NegocioId = negocioId,
+            Detalles  = detalles
+        });
+        if (IsOnline) _ = ProcessQueueAsync();
     }
+
+    public async Task EnqueueExclusionAsync(int jornadaId, int negocioId, int clienteId, bool excluido, MetodoPago metodo)
+    {
+        await _local.UpsertOpAsync(new PendingOperation
+        {
+            Tipo               = PendingOpType.ToggleExclusion,
+            JornadaId          = jornadaId,
+            NegocioId          = negocioId,
+            ClienteId          = clienteId,
+            ExcluidoDeEfectivo = excluido,
+            MetodoPago         = metodo
+        });
+        if (IsOnline) _ = ProcessQueueAsync();
+    }
+
+    // ── Procesar cola ─────────────────────────────────────────────────────
 
     public async Task ProcessQueueAsync()
     {
-        var queue = await SafeGetQueue();
-        if (queue.Count == 0) return;
-        var synced = new List<int>();
-        foreach (var item in queue)
+        if (_syncing) return;
+        _syncing = true;
+        try
         {
-            try
+            var ops = await _local.GetOpsAsync();
+            if (ops.Count == 0) return;
+
+            var synced = new List<string>();
+            foreach (var op in ops)
             {
-                var resp = await _api.BulkSaveDetallesAsync(item.RondaId,
-                    new BulkSaveRondaRequest { Detalles = item.Detalles });
-                if (resp.IsSuccessStatusCode) synced.Add(item.RondaId);
+                try
+                {
+                    bool ok = false;
+                    switch (op.Tipo)
+                    {
+                        case PendingOpType.BulkSaveRonda:
+                            var r = await _api.BulkSaveDetallesAsync(op.RondaId,
+                                new BulkSaveRondaRequest { Detalles = op.Detalles });
+                            ok = r.IsSuccessStatusCode;
+                            break;
+                        case PendingOpType.ToggleExclusion:
+                            var e = await _api.ToggleExclusionAsync(op.JornadaId, op.ClienteId,
+                                new ToggleExclusionRequest
+                                {
+                                    ExcluidoDeEfectivo    = op.ExcluidoDeEfectivo,
+                                    MetodoPagoAlternativo = op.MetodoPago
+                                });
+                            ok = e.IsSuccessStatusCode;
+                            break;
+                    }
+                    if (ok) synced.Add(op.OpId);
+                    else op.Intentos++;
+                }
+                catch { op.Intentos++; }
             }
-            catch { }
+
+            if (synced.Count > 0)
+            {
+                foreach (var id in synced) await _local.RemoveOpAsync(id);
+                OnSynced?.Invoke();
+            }
         }
-        if (synced.Count > 0)
-        {
-            queue.RemoveAll(q => synced.Contains(q.RondaId));
-            if (queue.Count == 0) await _storage.RemoveItemAsync(QueueKey);
-            else await _storage.SetItemAsync(QueueKey, queue);
-            OnSynced?.Invoke();
-        }
+        finally { _syncing = false; }
     }
 
-    public async Task<int> PendingCountAsync()
-    {
-        var q = await SafeGetQueue();
-        return q.Count;
-    }
-
-    private async Task<List<PendingSave>> SafeGetQueue()
-    {
-        try { return await _storage.GetItemAsync<List<PendingSave>>(QueueKey) ?? new(); }
-        catch { return new(); }
-    }
+    public Task<int> PendingCountAsync() => _local.CountPendingAsync();
 
     public async ValueTask DisposeAsync()
     {

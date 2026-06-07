@@ -8,7 +8,7 @@
 @inject NavigationManager Nav
 @inject JornadaStateService Estado
 @inject OfflineSyncService OfflineSync
-@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject LocalDataService LocalData
 
 <PageTitle>Cliente · TortiCloud</PageTitle>
 
@@ -231,8 +231,11 @@ else
     private async Task GuardarAsync()
     {
         if (Estado.Jornada == null) return;
-        bool allOk = true;
-        bool sinConexion = false;
+
+        // 1. Guardar snapshot en local inmediatamente (no requiere red)
+        await GuardarSnapshotLocalAsync();
+
+        // 2. Encolar sincronización con el servidor por cada ronda
         foreach (var ronda in Estado.Jornada.Rondas)
         {
             var detalles = _productosDelCliente.Select(p =>
@@ -249,41 +252,27 @@ else
                 };
             }).ToList();
 
-            try
-            {
-                var resp = await Api.BulkSaveDetallesAsync(ronda.Id, new BulkSaveRondaRequest { Detalles = detalles });
-                if (!resp.IsSuccessStatusCode)
-                {
-                    allOk = false;
-                    await OfflineSync.EnqueueSaveAsync(ronda.Id, detalles);
-                }
-            }
-            catch (HttpRequestException)
-            {
-                allOk = false;
-                sinConexion = true;
-                await OfflineSync.EnqueueSaveAsync(ronda.Id, detalles);
-            }
+            await OfflineSync.EnqueueRondaSaveAsync(
+                ronda.Id, Estado.Jornada.Id, Estado.Jornada.TenantId, detalles);
         }
 
-        if (allOk)
-        {
-            _saveText  = "Guardado ✓";
-            _saveClass = "save-ok";
-            Estado.HayCambiosPendientes = false;
-            await ActualizarCacheLocal();
-        }
-        else if (sinConexion || !OfflineSync.IsOnline)
-        {
-            _saveText  = "En cola · sin conexión";
-            _saveClass = "save-error";
-        }
-        else
-        {
-            _saveText  = "Error al guardar";
-            _saveClass = "save-error";
-        }
+        // El guardado local siempre es exitoso → confirmar al usuario
+        _saveText  = "Guardado ✓";
+        _saveClass = "save-ok";
+        Estado.HayCambiosPendientes = false;
         await InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>Persiste el estado actual de la jornada en localStorage para disponibilidad offline.</summary>
+    private async Task GuardarSnapshotLocalAsync()
+    {
+        if (Estado.Jornada?.TenantId is not > 0) return;
+        await LocalData.SaveSnapshotAsync(Estado.Jornada.TenantId, new JornadaSnapshot
+        {
+            Jornada   = Estado.GetSnapshotJornada(),
+            Productos = Estado.Productos,
+            Clientes  = Estado.Clientes
+        });
     }
 
     private void OnSynced()
@@ -297,35 +286,29 @@ else
     {
         if (Estado.Jornada == null) return;
         _excluido = excluido;
-        var req = new ToggleExclusionRequest
+
+        // Actualizar estado local inmediatamente (sin esperar red)
+        var metodo = excluido ? MetodoPago.Transferencia : MetodoPago.Efectivo;
+        if (Estado.Exclusiones.TryGetValue(ClienteId, out var ex))
         {
-            ExcluidoDeEfectivo    = excluido,
-            MetodoPagoAlternativo = excluido ? MetodoPago.Transferencia : MetodoPago.Efectivo
-        };
-        var resp = await Api.ToggleExclusionAsync(Estado.Jornada.Id, ClienteId, req);
-        if (resp.IsSuccessStatusCode)
-        {
-            if (Estado.Exclusiones.TryGetValue(ClienteId, out var ex))
-            {
-                ex.ExcluidoDeEfectivo    = excluido;
-                ex.MetodoPagoAlternativo = req.MetodoPagoAlternativo;
-            }
-            else
-            {
-                Estado.Exclusiones[ClienteId] = new ClienteJornadaDto
-                {
-                    ClienteId             = ClienteId,
-                    ExcluidoDeEfectivo    = excluido,
-                    MetodoPagoAlternativo = req.MetodoPagoAlternativo
-                };
-            }
-            Estado.Notificar();
+            ex.ExcluidoDeEfectivo    = excluido;
+            ex.MetodoPagoAlternativo = metodo;
         }
         else
         {
-            _excluido = !excluido;
-            Snackbar.Add("No se pudo actualizar la exclusión", Severity.Error);
+            Estado.Exclusiones[ClienteId] = new ClienteJornadaDto
+            {
+                ClienteId             = ClienteId,
+                ExcluidoDeEfectivo    = excluido,
+                MetodoPagoAlternativo = metodo
+            };
         }
+        Estado.Notificar();
+
+        // Persistir snapshot y encolar sincronización
+        await GuardarSnapshotLocalAsync();
+        await OfflineSync.EnqueueExclusionAsync(
+            Estado.Jornada.Id, Estado.Jornada.TenantId, ClienteId, excluido, metodo);
     }
 
     private async Task AgregarRonda()
@@ -343,6 +326,7 @@ else
                     Estado.Jornada!.Rondas.Add(nueva);
                     _rondaActivaId = nueva.Id;
                     Estado.Notificar();
+                    await GuardarSnapshotLocalAsync();
                 }
                 Snackbar.Add("Vuelta agregada", Severity.Success);
             }
@@ -359,23 +343,6 @@ else
         => tipo == TipoMedida.Gramaje ? qty.ToString("0.##") : ((int)qty).ToString();
 
     private void Regresar() => Nav.NavigateTo("/repartidor/jornada");
-
-    private async Task ActualizarCacheLocal()
-    {
-        if (Estado.Jornada == null) return;
-        var negocioId = Estado.Jornada.TenantId;
-        if (negocioId == 0) return;
-        try
-        {
-            await LocalStorage.SetItemAsync($"tc_j_{negocioId}", new
-            {
-                Jornada   = Estado.Jornada,
-                Productos = Estado.Productos,
-                Clientes  = Estado.Clientes
-            });
-        }
-        catch { }
-    }
 
     public void Dispose()
     {
