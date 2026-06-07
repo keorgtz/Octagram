@@ -44,8 +44,16 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cRGFzaGJvYXJkQWRtaW4ucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Pages/Admin/GestionGruposProductoDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cR2VzdGlvbkdydXBvc1Byb2R1Y3RvRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Pages/Admin/GestionNegocios.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cR2VzdGlvbk5lZ29jaW9zLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Pages/Admin/GestionSeccionesDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cR2VzdGlvblNlY2Npb25lc0RpYWxvZy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Pages/Admin/GestionUsuarios.razor]
@@ -66,6 +74,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Pages/Gerente/GestionClientes.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcR2VyZW50ZVxHZXN0aW9uQ2xpZW50ZXMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Pages/Gerente/GestionGrupos.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcR2VyZW50ZVxHZXN0aW9uR3J1cG9zLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/kevin/KeorSoft/Development/Web/OctagramDelivery/OctagramDelivery.Client/Pages/Gerente/GestionProductos.razor]

@@ -18,6 +18,9 @@ public class AppDbContext : DbContext
     public DbSet<DeliveryDayCustomer> DeliveryDayCustomers { get; set; } = null!;
     public DbSet<DeliveryRound> DeliveryRounds { get; set; } = null!;
     public DbSet<DeliveryDetail> DeliveryDetails { get; set; } = null!;
+    public DbSet<GrupoProducto> GruposProducto { get; set; } = null!;
+    public DbSet<Seccion> Secciones { get; set; } = null!;
+    public DbSet<SeccionStock> SeccionStocks { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -80,5 +83,32 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<DeliveryDetail>().Property(d => d.CantidadEntregada).HasPrecision(18, 3);
         modelBuilder.Entity<DeliveryDetail>().Property(d => d.CantidadDevuelta).HasPrecision(18, 3);
         modelBuilder.Entity<DeliveryDetail>().Property(d => d.PrecioUnitario).HasPrecision(18, 2);
+
+        // GrupoProducto
+        modelBuilder.Entity<Tenant>()
+            .HasMany(t => t.GruposProducto).WithOne(g => g.Tenant)
+            .HasForeignKey(g => g.TenantId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Product>()
+            .HasOne(p => p.GrupoProducto).WithMany(g => g.Productos)
+            .HasForeignKey(p => p.GrupoProductoId).OnDelete(DeleteBehavior.NoAction).IsRequired(false);
+
+        // Seccion
+        modelBuilder.Entity<Tenant>()
+            .HasMany(t => t.Secciones).WithOne(s => s.Tenant)
+            .HasForeignKey(s => s.TenantId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Customer>()
+            .HasOne(c => c.Seccion).WithMany(s => s.Clientes)
+            .HasForeignKey(c => c.SeccionId).OnDelete(DeleteBehavior.NoAction).IsRequired(false);
+
+        // SeccionStock — clave compuesta
+        modelBuilder.Entity<SeccionStock>().HasKey(ss => new { ss.SeccionId, ss.ProductoId });
+        modelBuilder.Entity<SeccionStock>()
+            .HasOne(ss => ss.Seccion).WithMany(s => s.Stocks)
+            .HasForeignKey(ss => ss.SeccionId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<SeccionStock>()
+            .HasOne(ss => ss.Producto).WithMany(p => p.SeccionStocks)
+            .HasForeignKey(ss => ss.ProductoId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<SeccionStock>()
+            .Property(ss => ss.CantidadStock).HasPrecision(18, 3);
     }
 }

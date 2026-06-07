@@ -1,0 +1,265 @@
+@inject ApiService Api
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <span class="material-symbols-rounded" style="color:var(--in);font-size:20px;">inventory</span>
+            <div>
+                <div style="font-size:15px;font-weight:700;">Secciones</div>
+                <div style="font-size:11px;color:var(--gray-muted);margin-top:1px;">@NegocioNombre</div>
+            </div>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        @if (_cargando)
+        {
+            <div style="display:flex;justify-content:center;padding:32px;">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            </div>
+        }
+        else
+        {
+            <!-- Formulario nueva sección -->
+            @if (_mostrarFormNuevo)
+            {
+                <div class="neg-inline-form" style="margin-bottom:16px;">
+                    <div style="font-size:12px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">
+                        Nueva sección
+                    </div>
+                    <MudTextField @bind-Value="_nuevoNombre" Label="Nombre de la sección"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense"
+                                  Style="width:100%;max-width:340px;" Class="mb-3" />
+                    <div style="display:flex;gap:8px;">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                   OnClick="CrearSeccion" Disabled="string.IsNullOrWhiteSpace(_nuevoNombre)">
+                            Crear
+                        </MudButton>
+                        <MudButton Variant="Variant.Text" Size="Size.Small"
+                                   OnClick="@(() => { _mostrarFormNuevo = false; _nuevoNombre = string.Empty; })">
+                            Cancelar
+                        </MudButton>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <MudButton StartIcon="@Icons.Material.Rounded.Add" Variant="Variant.Outlined"
+                           Color="Color.Primary" Size="Size.Small" Class="mb-3"
+                           OnClick="@(() => _mostrarFormNuevo = true)">
+                    Nueva sección
+                </MudButton>
+            }
+
+            <!-- Lista de secciones -->
+            @foreach (var sec in _secciones)
+            {
+                var estaExpandida = _expandidaId == sec.Id;
+                <div class="neg-item-card" style="flex-direction:column;align-items:stretch;margin-bottom:8px;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        @if (_editandoId == sec.Id)
+                        {
+                            <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                                <MudTextField @bind-Value="_editNombre" Variant="Variant.Outlined"
+                                              Margin="Margin.Dense" Style="flex:1;" />
+                                <MudIconButton Icon="@Icons.Material.Rounded.Check" Color="Color.Success"
+                                               Size="Size.Small" OnClick="() => GuardarEdicion(sec)" />
+                                <MudIconButton Icon="@Icons.Material.Rounded.Close" Color="Color.Default"
+                                               Size="Size.Small" OnClick="CancelarEdicion" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+                                <span class="material-symbols-rounded" style="color:var(--in);font-size:20px;">inventory</span>
+                                <div style="min-width:0;flex:1;">
+                                    <div style="font-size:14px;font-weight:600;">@sec.Nombre</div>
+                                    <div style="font-size:11px;color:var(--gray-muted);">
+                                        @sec.ClienteIds.Count cliente@(sec.ClienteIds.Count != 1 ? "s" : "") ·
+                                        @sec.Stocks.Count producto@(sec.Stocks.Count != 1 ? "s" : "") con stock
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0;">
+                                <MudIconButton Icon="@Icons.Material.Rounded.Edit" Size="Size.Small"
+                                               Color="Color.Primary" OnClick="() => IniciarEdicion(sec)" />
+                                <MudIconButton Icon="@(estaExpandida ? Icons.Material.Rounded.ExpandLess : Icons.Material.Rounded.ExpandMore)"
+                                               Size="Size.Small" Color="Color.Secondary"
+                                               OnClick="() => _expandidaId = estaExpandida ? 0 : sec.Id" />
+                                <MudIconButton Icon="@Icons.Material.Rounded.Delete" Size="Size.Small"
+                                               Color="Color.Error" OnClick="() => EliminarSeccion(sec)" />
+                            </div>
+                        }
+                    </div>
+
+                    @if (estaExpandida)
+                    {
+                        <div style="padding:12px 8px 4px;border-top:1px solid var(--gray-line);margin-top:8px;">
+                            <!-- Clientes -->
+                            <div style="font-size:11px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">
+                                Clientes asignados
+                            </div>
+                            @foreach (var cli in _clientes)
+                            {
+                                var enSec = sec.ClienteIds.Contains(cli.Id);
+                                <div class="grupo-cliente-row @(enSec ? "selected" : "")"
+                                     @onclick="() => ToggleCliente(sec, cli.Id)">
+                                    <MudCheckBox T="bool" Value="enSec" Dense="true" Color="Color.Primary"
+                                                 ValueChanged="_ => ToggleCliente(sec, cli.Id)" />
+                                    <span style="flex:1;font-size:13px;">@cli.Nombre</span>
+                                    @if (cli.SeccionId.HasValue && cli.SeccionId != sec.Id)
+                                    {
+                                        <span style="font-size:10px;color:var(--gray-muted);">@cli.SeccionNombre</span>
+                                    }
+                                </div>
+                            }
+
+                            <!-- Stock por producto -->
+                            <div style="font-size:11px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 6px;">
+                                Stock por producto
+                            </div>
+                            @foreach (var prod in _productos)
+                            {
+                                var stock = sec.Stocks.FirstOrDefault(s => s.ProductoId == prod.Id);
+                                var qty = stock?.CantidadStock ?? 0;
+                                <div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
+                                    <span style="flex:1;font-size:12px;">@prod.Nombre</span>
+                                    <MudNumericField T="decimal" Value="qty"
+                                                     ValueChanged="v => SetStock(sec, prod.Id, v)"
+                                                     Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                     Min="0" Format="0.###"
+                                                     Style="width:90px;" />
+                                    <span style="font-size:10px;color:var(--gray-muted);">@(prod.TipoMedida == OctagramDelivery.Domain.Enums.TipoMedida.Gramaje ? "kg" : "pzs")</span>
+                                </div>
+                            }
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                       OnClick="() => GuardarSeccion(sec)" Style="margin-top:10px;">
+                                Guardar cambios
+                            </MudButton>
+                        </div>
+                    }
+                </div>
+            }
+
+            @if (_secciones.Count == 0)
+            {
+                <div class="empty-state" style="padding:24px 0;">
+                    <span class="material-symbols-rounded">inventory</span>
+                    <p>Sin secciones configuradas.</p>
+                </div>
+            }
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cerrar">Cerrar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public int NegocioId { get; set; }
+    [Parameter] public string NegocioNombre { get; set; } = "";
+
+    private bool _cargando = true;
+    private List<SeccionDto> _secciones = new();
+    private List<CustomerDto> _clientes = new();
+    private List<ProductDto> _productos = new();
+
+    private bool _mostrarFormNuevo;
+    private string _nuevoNombre = "";
+    private int _editandoId;
+    private string _editNombre = "";
+    private int _expandidaId;
+
+    // Cambios locales de stock y clientes antes de guardar
+    private Dictionary<int, Dictionary<int, decimal>> _stocksTemp = new(); // seccionId → (prodId → qty)
+    private Dictionary<int, HashSet<int>> _clientesTemp = new();           // seccionId → clienteIds
+
+    protected override async Task OnInitializedAsync() => await Cargar();
+
+    private async Task Cargar()
+    {
+        _cargando = true;
+        StateHasChanged();
+        var tasks = Task.WhenAll(
+            Api.GetSeccionesAsync(NegocioId).ContinueWith(t => _secciones = t.Result ?? new()),
+            Api.GetClientesAsync(NegocioId).ContinueWith(t => _clientes   = t.Result ?? new()),
+            Api.GetProductosAsync(NegocioId).ContinueWith(t => _productos  = t.Result ?? new())
+        );
+        await tasks;
+        // Inicializar cambios locales desde datos cargados
+        foreach (var sec in _secciones)
+        {
+            _stocksTemp[sec.Id] = sec.Stocks.ToDictionary(s => s.ProductoId, s => s.CantidadStock);
+            _clientesTemp[sec.Id] = sec.ClienteIds.ToHashSet();
+        }
+        _cargando = false;
+    }
+
+    private async Task CrearSeccion()
+    {
+        var resp = await Api.CreateSeccionAsync(NegocioId, new CreateSeccionRequest { Nombre = _nuevoNombre.Trim() });
+        if (resp.IsSuccessStatusCode)
+        {
+            _nuevoNombre = "";
+            _mostrarFormNuevo = false;
+            Snackbar.Add("Sección creada", Severity.Success);
+            await Cargar();
+        }
+        else Snackbar.Add("Error al crear sección", Severity.Error);
+    }
+
+    private void IniciarEdicion(SeccionDto s) { _editandoId = s.Id; _editNombre = s.Nombre; }
+    private void CancelarEdicion() { _editandoId = 0; _editNombre = ""; }
+
+    private async Task GuardarEdicion(SeccionDto s)
+    {
+        var resp = await Api.UpdateSeccionAsync(NegocioId, s.Id, new CreateSeccionRequest { Nombre = _editNombre.Trim() });
+        if (resp.IsSuccessStatusCode) { _editandoId = 0; Snackbar.Add("Actualizado", Severity.Success); await Cargar(); }
+        else Snackbar.Add("Error al actualizar", Severity.Error);
+    }
+
+    private async Task EliminarSeccion(SeccionDto s)
+    {
+        var resp = await Api.DeleteSeccionAsync(NegocioId, s.Id);
+        if (resp.IsSuccessStatusCode) { Snackbar.Add("Sección eliminada", Severity.Success); await Cargar(); }
+        else Snackbar.Add("Error al eliminar", Severity.Error);
+    }
+
+    private void ToggleCliente(SeccionDto sec, int clienteId)
+    {
+        if (!_clientesTemp.ContainsKey(sec.Id)) _clientesTemp[sec.Id] = new();
+        if (!_clientesTemp[sec.Id].Remove(clienteId)) _clientesTemp[sec.Id].Add(clienteId);
+        sec.ClienteIds = _clientesTemp[sec.Id].ToList();
+    }
+
+    private void SetStock(SeccionDto sec, int productoId, decimal qty)
+    {
+        if (!_stocksTemp.ContainsKey(sec.Id)) _stocksTemp[sec.Id] = new();
+        _stocksTemp[sec.Id][productoId] = qty;
+    }
+
+    private async Task GuardarSeccion(SeccionDto sec)
+    {
+        var stocks = (_stocksTemp.TryGetValue(sec.Id, out var s) ? s : new())
+            .Where(kv => kv.Value > 0)
+            .Select(kv => new UpsertSeccionStockRequest { ProductoId = kv.Key, CantidadStock = kv.Value })
+            .ToList();
+
+        var clienteIds = _clientesTemp.TryGetValue(sec.Id, out var c) ? c.ToList() : sec.ClienteIds;
+
+        var t1 = Api.UpsertSeccionStocksAsync(NegocioId, sec.Id, stocks);
+        var t2 = Api.AsignarClientesSeccionAsync(NegocioId, sec.Id,
+            new AsignarClientesSeccionRequest { ClienteIds = clienteIds });
+        await Task.WhenAll(t1, t2);
+
+        if ((await t1).IsSuccessStatusCode && (await t2).IsSuccessStatusCode)
+        {
+            Snackbar.Add("Sección guardada", Severity.Success);
+            await Cargar();
+        }
+        else Snackbar.Add("Error al guardar", Severity.Error);
+    }
+
+    private void Cerrar() => MudDialog.Close();
+}

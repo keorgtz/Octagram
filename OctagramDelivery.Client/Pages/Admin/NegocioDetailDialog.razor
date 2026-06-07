@@ -504,6 +504,34 @@
             </MudTabPanel>
 
             <!-- ══════════════════════════════ TAB PERMISOS ══════════════════════════════ -->
+            <!-- ══════════════════════════════ TAB GRUPOS DE PRODUCTO ══════════════════════════════ -->
+            <MudTabPanel Text="Grupos" Icon="@Icons.Material.Rounded.Category">
+                <div style="padding:16px 0;display:flex;flex-direction:column;align-items:flex-start;gap:12px;">
+                    <p style="font-size:13px;color:var(--gray-muted);">
+                        Organiza los productos en grupos para ver totales agrupados en el reporte de jornada.
+                    </p>
+                    <MudButton StartIcon="@Icons.Material.Rounded.Category"
+                               Variant="Variant.Filled" Color="Color.Secondary"
+                               OnClick="AbrirGruposProducto">
+                        Gestionar grupos de producto
+                    </MudButton>
+                </div>
+            </MudTabPanel>
+
+            <!-- ══════════════════════════════ TAB SECCIONES ══════════════════════════════ -->
+            <MudTabPanel Text="Secciones" Icon="@Icons.Material.Rounded.Inventory">
+                <div style="padding:16px 0;display:flex;flex-direction:column;align-items:flex-start;gap:12px;">
+                    <p style="font-size:13px;color:var(--gray-muted);">
+                        Define secciones con stock por producto y asigna clientes para detectar sobrantes en la jornada.
+                    </p>
+                    <MudButton StartIcon="@Icons.Material.Rounded.Inventory"
+                               Variant="Variant.Filled" Color="Color.Tertiary"
+                               OnClick="AbrirSecciones">
+                        Gestionar secciones y stock
+                    </MudButton>
+                </div>
+            </MudTabPanel>
+
             <MudTabPanel Text="Permisos" Icon="@Icons.Material.Rounded.AdminPanelSettings">
                 <div style="padding:16px 0;">
                     @if (_cargandoUsuarios)
@@ -646,6 +674,28 @@
     }
 
     private void Close() => MudDialog.Close();
+
+    private async Task AbrirGruposProducto()
+    {
+        var param = new DialogParameters<GestionGruposProductoDialog>
+        {
+            { x => x.NegocioId, TenantId },
+            { x => x.NegocioNombre, NombreNegocio }
+        };
+        await Dialog.ShowAsync<GestionGruposProductoDialog>("Grupos de producto", param,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+    }
+
+    private async Task AbrirSecciones()
+    {
+        var param = new DialogParameters<GestionSeccionesDialog>
+        {
+            { x => x.NegocioId, TenantId },
+            { x => x.NegocioNombre, NombreNegocio }
+        };
+        await Dialog.ShowAsync<GestionSeccionesDialog>("Secciones", param,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+    }
 
     // ── Usuarios ──────────────────────────────────────────────────
     private async Task CargarUsuarios()

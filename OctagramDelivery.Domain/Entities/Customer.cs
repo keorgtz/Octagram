@@ -13,5 +13,7 @@ public class Customer
     public TimeSpan? HoraAproximada { get; set; }
     public bool IsActive { get; set; } = true;
     public string? Grupo { get; set; }
+    public int? SeccionId { get; set; }
+    public Seccion? Seccion { get; set; }
     public ICollection<CustomerProduct> CustomerProducts { get; set; } = new List<CustomerProduct>();
 }

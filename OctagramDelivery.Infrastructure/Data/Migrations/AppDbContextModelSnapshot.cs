@@ -83,6 +83,9 @@ namespace OctagramDelivery.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("SeccionId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Telefono")
                         .HasColumnType("nvarchar(max)");
 
@@ -90,6 +93,8 @@ namespace OctagramDelivery.Infrastructure.Data.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SeccionId");
 
                     b.HasIndex("TenantId");
 
@@ -269,6 +274,31 @@ namespace OctagramDelivery.Infrastructure.Data.Migrations
                     b.ToTable("DeliveryRounds");
                 });
 
+            modelBuilder.Entity("OctagramDelivery.Domain.Entities.GrupoProducto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("GruposProducto");
+                });
+
             modelBuilder.Entity("OctagramDelivery.Domain.Entities.PriceTier", b =>
                 {
                     b.Property<int>("Id")
@@ -306,6 +336,9 @@ namespace OctagramDelivery.Infrastructure.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("GrupoProductoId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -325,9 +358,55 @@ namespace OctagramDelivery.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("GrupoProductoId");
+
                     b.HasIndex("TenantId");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("OctagramDelivery.Domain.Entities.Seccion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("Secciones");
+                });
+
+            modelBuilder.Entity("OctagramDelivery.Domain.Entities.SeccionStock", b =>
+                {
+                    b.Property<int>("SeccionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductoId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("CantidadStock")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("decimal(18,3)");
+
+                    b.HasKey("SeccionId", "ProductoId");
+
+                    b.HasIndex("ProductoId");
+
+                    b.ToTable("SeccionStocks");
                 });
 
             modelBuilder.Entity("OctagramDelivery.Domain.Entities.Tenant", b =>
@@ -391,11 +470,18 @@ namespace OctagramDelivery.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("OctagramDelivery.Domain.Entities.Customer", b =>
                 {
+                    b.HasOne("OctagramDelivery.Domain.Entities.Seccion", "Seccion")
+                        .WithMany("Clientes")
+                        .HasForeignKey("SeccionId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("OctagramDelivery.Domain.Entities.Tenant", "Tenant")
                         .WithMany("Customers")
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Seccion");
 
                     b.Navigation("Tenant");
                 });
@@ -502,6 +588,17 @@ namespace OctagramDelivery.Infrastructure.Data.Migrations
                     b.Navigation("DeliveryDay");
                 });
 
+            modelBuilder.Entity("OctagramDelivery.Domain.Entities.GrupoProducto", b =>
+                {
+                    b.HasOne("OctagramDelivery.Domain.Entities.Tenant", "Tenant")
+                        .WithMany("GruposProducto")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("OctagramDelivery.Domain.Entities.PriceTier", b =>
                 {
                     b.HasOne("OctagramDelivery.Domain.Entities.Product", "Product")
@@ -515,13 +612,50 @@ namespace OctagramDelivery.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("OctagramDelivery.Domain.Entities.Product", b =>
                 {
+                    b.HasOne("OctagramDelivery.Domain.Entities.GrupoProducto", "GrupoProducto")
+                        .WithMany("Productos")
+                        .HasForeignKey("GrupoProductoId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("OctagramDelivery.Domain.Entities.Tenant", "Tenant")
                         .WithMany("Products")
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("GrupoProducto");
+
                     b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("OctagramDelivery.Domain.Entities.Seccion", b =>
+                {
+                    b.HasOne("OctagramDelivery.Domain.Entities.Tenant", "Tenant")
+                        .WithMany("Secciones")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("OctagramDelivery.Domain.Entities.SeccionStock", b =>
+                {
+                    b.HasOne("OctagramDelivery.Domain.Entities.Product", "Producto")
+                        .WithMany("SeccionStocks")
+                        .HasForeignKey("ProductoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OctagramDelivery.Domain.Entities.Seccion", "Seccion")
+                        .WithMany("Stocks")
+                        .HasForeignKey("SeccionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Producto");
+
+                    b.Navigation("Seccion");
                 });
 
             modelBuilder.Entity("OctagramDelivery.Domain.Entities.UsuarioNegocio", b =>
@@ -567,11 +701,25 @@ namespace OctagramDelivery.Infrastructure.Data.Migrations
                     b.Navigation("Details");
                 });
 
+            modelBuilder.Entity("OctagramDelivery.Domain.Entities.GrupoProducto", b =>
+                {
+                    b.Navigation("Productos");
+                });
+
             modelBuilder.Entity("OctagramDelivery.Domain.Entities.Product", b =>
                 {
                     b.Navigation("CustomerProducts");
 
                     b.Navigation("PriceTiers");
+
+                    b.Navigation("SeccionStocks");
+                });
+
+            modelBuilder.Entity("OctagramDelivery.Domain.Entities.Seccion", b =>
+                {
+                    b.Navigation("Clientes");
+
+                    b.Navigation("Stocks");
                 });
 
             modelBuilder.Entity("OctagramDelivery.Domain.Entities.Tenant", b =>
@@ -580,7 +728,11 @@ namespace OctagramDelivery.Infrastructure.Data.Migrations
 
                     b.Navigation("DeliveryDays");
 
+                    b.Navigation("GruposProducto");
+
                     b.Navigation("Products");
+
+                    b.Navigation("Secciones");
 
                     b.Navigation("UsuarioNegocios");
                 });

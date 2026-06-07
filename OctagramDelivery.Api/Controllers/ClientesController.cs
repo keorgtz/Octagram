@@ -21,6 +21,7 @@ public class ClientesController : ControllerBase
         var customers = await _ctx.Customers
             .Include(c => c.CustomerProducts).ThenInclude(cp => cp.Product).ThenInclude(p => p!.PriceTiers)
             .Include(c => c.CustomerProducts).ThenInclude(cp => cp.PriceTier)
+            .Include(c => c.Seccion)
             .Where(c => c.TenantId == negocioId && c.IsActive)
             .OrderBy(c => c.Nombre)
             .ToListAsync();
@@ -39,17 +40,21 @@ public class ClientesController : ControllerBase
             Telefono = req.Telefono,
             DiasEntrega = req.DiasEntrega,
             HoraAproximada = req.HoraAproximada,
-            Grupo = req.Grupo
+            Grupo = req.Grupo,
+            SeccionId = req.SeccionId
         };
         _ctx.Customers.Add(c);
         await _ctx.SaveChangesAsync();
+        await _ctx.Entry(c).Reference(x => x.Seccion).LoadAsync();
         return CreatedAtAction(nameof(GetAll), new { negocioId }, MapCustomer(c));
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int negocioId, int id, [FromBody] CreateCustomerRequest req)
     {
-        var c = await _ctx.Customers.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == negocioId);
+        var c = await _ctx.Customers
+            .Include(x => x.Seccion)
+            .FirstOrDefaultAsync(x => x.Id == id && x.TenantId == negocioId);
         if (c == null) return NotFound();
         c.Nombre = req.Nombre;
         c.Direccion = req.Direccion;
@@ -57,6 +62,7 @@ public class ClientesController : ControllerBase
         c.DiasEntrega = req.DiasEntrega;
         c.HoraAproximada = req.HoraAproximada;
         c.Grupo = req.Grupo;
+        c.SeccionId = req.SeccionId;
         await _ctx.SaveChangesAsync();
         return NoContent();
     }
@@ -163,6 +169,8 @@ public class ClientesController : ControllerBase
         HoraAproximada = c.HoraAproximada,
         IsActive = c.IsActive,
         Grupo = c.Grupo,
+        SeccionId = c.SeccionId,
+        SeccionNombre = c.Seccion?.Nombre,
         Productos = c.CustomerProducts.Select(cp => new CustomerProductDto
         {
             Id               = cp.Id,

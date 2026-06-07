@@ -1,0 +1,229 @@
+@inject ApiService Api
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <span class="material-symbols-rounded" style="color:var(--vi);font-size:20px;">category</span>
+            <div>
+                <div style="font-size:15px;font-weight:700;">Grupos de producto</div>
+                <div style="font-size:11px;color:var(--gray-muted);margin-top:1px;">@NegocioNombre</div>
+            </div>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        @if (_cargando)
+        {
+            <div style="display:flex;justify-content:center;padding:32px;">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            </div>
+        }
+        else
+        {
+            <!-- Formulario nuevo grupo -->
+            @if (_mostrarFormNuevo)
+            {
+                <div class="neg-inline-form" style="margin-bottom:16px;">
+                    <div style="font-size:12px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">
+                        Nuevo grupo
+                    </div>
+                    <MudTextField @bind-Value="_nuevoNombre" Label="Nombre del grupo"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense"
+                                  Style="width:100%;max-width:340px;" Class="mb-3" />
+                    <div style="display:flex;gap:8px;">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                   OnClick="CrearGrupo" Disabled="string.IsNullOrWhiteSpace(_nuevoNombre)">
+                            Crear
+                        </MudButton>
+                        <MudButton Variant="Variant.Text" Size="Size.Small"
+                                   OnClick="@(() => { _mostrarFormNuevo = false; _nuevoNombre = string.Empty; })">
+                            Cancelar
+                        </MudButton>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <MudButton StartIcon="@Icons.Material.Rounded.Add" Variant="Variant.Outlined"
+                           Color="Color.Primary" Size="Size.Small" Class="mb-3"
+                           OnClick="@(() => _mostrarFormNuevo = true)">
+                    Nuevo grupo
+                </MudButton>
+            }
+
+            <!-- Lista de grupos -->
+            @foreach (var grupo in _grupos)
+            {
+                <div class="neg-item-card" style="margin-bottom:8px;">
+                    @if (_editandoId == grupo.Id)
+                    {
+                        <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                            <MudTextField @bind-Value="_editNombre" Variant="Variant.Outlined"
+                                          Margin="Margin.Dense" Style="flex:1;" />
+                            <MudIconButton Icon="@Icons.Material.Rounded.Check" Color="Color.Success"
+                                           Size="Size.Small" OnClick="() => GuardarEdicion(grupo)" />
+                            <MudIconButton Icon="@Icons.Material.Rounded.Close" Color="Color.Default"
+                                           Size="Size.Small" OnClick="CancelarEdicion" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+                            <span class="material-symbols-rounded" style="color:var(--vi);font-size:20px;">category</span>
+                            <div style="min-width:0;flex:1;">
+                                <div style="font-size:14px;font-weight:600;">@grupo.Nombre</div>
+                                <div style="font-size:11px;color:var(--gray-muted);">
+                                    @grupo.ProductoCount producto@(grupo.ProductoCount != 1 ? "s" : "")
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0;">
+                            <MudIconButton Icon="@Icons.Material.Rounded.Edit" Size="Size.Small"
+                                           Color="Color.Primary" OnClick="() => IniciarEdicion(grupo)" />
+                            <MudIconButton Icon="@Icons.Material.Rounded.AssignmentTurnedIn" Size="Size.Small"
+                                           Color="Color.Secondary" title="Asignar productos"
+                                           OnClick="() => AbrirAsignacion(grupo)" />
+                            <MudIconButton Icon="@Icons.Material.Rounded.Delete" Size="Size.Small"
+                                           Color="Color.Error" OnClick="() => EliminarGrupo(grupo)" />
+                        </div>
+                    }
+                </div>
+            }
+
+            @if (_grupos.Count == 0)
+            {
+                <div class="empty-state" style="padding:24px 0;">
+                    <span class="material-symbols-rounded">category</span>
+                    <p>Sin grupos de producto.</p>
+                </div>
+            }
+
+            <!-- Panel de asignación de productos -->
+            @if (_asignandoGrupo != null)
+            {
+                <div class="neg-inline-form" style="margin-top:16px;">
+                    <div style="font-size:12px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">
+                        Productos en «@_asignandoGrupo.Nombre»
+                    </div>
+                    @foreach (var prod in _productos)
+                    {
+                        var sel = _seleccionados.Contains(prod.Id);
+                        <div class="grupo-cliente-row @(sel ? "selected" : "")"
+                             @onclick="() => ToggleProducto(prod.Id)">
+                            <MudCheckBox T="bool" Value="sel" Dense="true" Color="Color.Primary"
+                                         ValueChanged="_ => ToggleProducto(prod.Id)" />
+                            <span style="flex:1;font-size:13px;">@prod.Nombre</span>
+                            @if (!string.IsNullOrEmpty(prod.GrupoNombre) && prod.GrupoNombre != _asignandoGrupo.Nombre)
+                            {
+                                <span style="font-size:10px;color:var(--gray-muted);">@prod.GrupoNombre</span>
+                            }
+                        </div>
+                    }
+                    <div style="display:flex;gap:8px;margin-top:10px;">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                   OnClick="GuardarAsignacion">
+                            Guardar
+                        </MudButton>
+                        <MudButton Variant="Variant.Text" Size="Size.Small"
+                                   OnClick="@(() => _asignandoGrupo = null)">
+                            Cancelar
+                        </MudButton>
+                    </div>
+                </div>
+            }
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cerrar">Cerrar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public int NegocioId { get; set; }
+    [Parameter] public string NegocioNombre { get; set; } = "";
+
+    private bool _cargando = true;
+    private List<GrupoProductoDto> _grupos = new();
+    private List<ProductDto> _productos = new();
+
+    private bool _mostrarFormNuevo;
+    private string _nuevoNombre = "";
+    private int _editandoId;
+    private string _editNombre = "";
+    private GrupoProductoDto? _asignandoGrupo;
+    private HashSet<int> _seleccionados = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Cargar();
+    }
+
+    private async Task Cargar()
+    {
+        _cargando = true;
+        StateHasChanged();
+        _grupos = await Api.GetGruposProductoAsync(NegocioId) ?? new();
+        _productos = await Api.GetProductosAsync(NegocioId) ?? new();
+        _cargando = false;
+    }
+
+    private async Task CrearGrupo()
+    {
+        var resp = await Api.CreateGrupoProductoAsync(NegocioId, new CreateGrupoProductoRequest { Nombre = _nuevoNombre.Trim() });
+        if (resp.IsSuccessStatusCode)
+        {
+            _nuevoNombre = "";
+            _mostrarFormNuevo = false;
+            Snackbar.Add("Grupo creado", Severity.Success);
+            await Cargar();
+        }
+        else Snackbar.Add("Error al crear grupo", Severity.Error);
+    }
+
+    private void IniciarEdicion(GrupoProductoDto g) { _editandoId = g.Id; _editNombre = g.Nombre; }
+    private void CancelarEdicion() { _editandoId = 0; _editNombre = ""; }
+
+    private async Task GuardarEdicion(GrupoProductoDto g)
+    {
+        var resp = await Api.UpdateGrupoProductoAsync(NegocioId, g.Id, new CreateGrupoProductoRequest { Nombre = _editNombre.Trim() });
+        if (resp.IsSuccessStatusCode)
+        {
+            _editandoId = 0;
+            Snackbar.Add("Grupo actualizado", Severity.Success);
+            await Cargar();
+        }
+        else Snackbar.Add("Error al actualizar", Severity.Error);
+    }
+
+    private async Task EliminarGrupo(GrupoProductoDto g)
+    {
+        var resp = await Api.DeleteGrupoProductoAsync(NegocioId, g.Id);
+        if (resp.IsSuccessStatusCode) { Snackbar.Add("Grupo eliminado", Severity.Success); await Cargar(); }
+        else Snackbar.Add("Error al eliminar", Severity.Error);
+    }
+
+    private void AbrirAsignacion(GrupoProductoDto g)
+    {
+        _asignandoGrupo = g;
+        _seleccionados = g.ProductoIds.ToHashSet();
+    }
+
+    private void ToggleProducto(int id) { if (!_seleccionados.Remove(id)) _seleccionados.Add(id); }
+
+    private async Task GuardarAsignacion()
+    {
+        if (_asignandoGrupo == null) return;
+        var resp = await Api.AsignarProductosGrupoAsync(NegocioId, _asignandoGrupo.Id,
+            new AsignarProductosGrupoRequest { ProductoIds = _seleccionados.ToList() });
+        if (resp.IsSuccessStatusCode)
+        {
+            _asignandoGrupo = null;
+            Snackbar.Add("Productos asignados", Severity.Success);
+            await Cargar();
+        }
+        else Snackbar.Add("Error al asignar", Severity.Error);
+    }
+
+    private void Cerrar() => MudDialog.Close();
+}

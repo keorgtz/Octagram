@@ -2270,3 +2270,71 @@ body,
 .grupo-cliente-row:hover { background: var(--page-bg, #F2F3F7); }
 .grupo-cliente-row.selected { background: var(--pr-100, #D9F7EA); }
 
+/* ── Secciones panel (JornadaPage) ──────────────────────────────────── */
+.secciones-panel {
+    margin: 8px 12px 16px;
+    border: 1px solid var(--gray-line, #E5E7EB);
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.secciones-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 14px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--gray-dark, #1C1E26);
+    -webkit-tap-highlight-color: transparent;
+}
+.secciones-header:hover { background: var(--page-bg, #F2F3F7); }
+
+.seccion-block {
+    border-top: 1px solid var(--gray-line, #E5E7EB);
+    padding: 8px 0;
+}
+
+.seccion-nombre {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--in, #6366F1);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.seccion-row {
+    display: flex;
+    align-items: center;
+    padding: 4px 14px;
+    gap: 8px;
+    font-size: 12px;
+}
+.seccion-row.excede { background: #FEF3C7; border-radius: 6px; margin: 0 8px; }
+
+.seccion-prod { flex: 1; color: var(--gray-dark, #1C1E26); font-size: 12px; }
+
+.seccion-vals { display: flex; gap: 12px; flex-shrink: 0; }
+
+.seccion-val {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--gray-muted, #6B7280);
+}
+
+/* ── Grupos de producto — totales en barra (EsGrupo = true) ─────────── */
+.jornada-mini-total.es-grupo .jornada-mini-label {
+    font-weight: 700;
+    color: var(--vi, #8B5CF6);
+}
+

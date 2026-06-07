@@ -167,9 +167,9 @@ else
                 {
                     foreach (var pt in totalesProd)
                     {
-                        <div class="jornada-mini-total">
+                        <div class="jornada-mini-total @(pt.EsGrupo ? "es-grupo" : "")">
                             <span class="jornada-mini-label">@pt.Nombre</span>
-                            <span class="jornada-mini-value" style="color:var(--gray-dark);">
+                            <span class="jornada-mini-value" style="color:@(pt.EsGrupo ? "var(--vi)" : "var(--gray-dark)");">
                                 @(pt.EsGramaje ? $"{pt.Total:0.##} kg" : $"{pt.Total:0.##} pzs")
                             </span>
                         </div>
@@ -314,6 +314,55 @@ else
             </div>
         }
     </div>
+
+    @if (!JornadaId.HasValue && _secciones.Count > 0)
+    {
+        var secResumenes = GetSeccionesResumen();
+        if (secResumenes.Count > 0)
+        {
+            <div class="secciones-panel">
+                <button class="secciones-header" @onclick="() => _mostrarSecciones = !_mostrarSecciones">
+                    <span class="material-symbols-rounded" style="font-size:18px;">inventory</span>
+                    <span style="flex:1;font-size:13px;font-weight:700;">Secciones · stock vs entrega</span>
+                    <span class="material-symbols-rounded" style="font-size:18px;transition:transform .2s;transform:rotate(@(_mostrarSecciones ? "180deg" : "0deg"));">expand_more</span>
+                </button>
+                @if (_mostrarSecciones)
+                {
+                    @foreach (var sec in secResumenes)
+                    {
+                        <div class="seccion-block">
+                            <div class="seccion-nombre">
+                                <span class="material-symbols-rounded" style="font-size:14px;color:var(--in);">category</span>
+                                @sec.Nombre
+                            </div>
+                            @foreach (var item in sec.Items)
+                            {
+                                var diff = item.Stock - item.Entregado + item.Devuelto;
+                                var excede = diff < 0;
+                                <div class="seccion-row @(excede ? "excede" : "")">
+                                    <span class="seccion-prod">@item.ProductoNombre</span>
+                                    <div class="seccion-vals">
+                                        <span class="seccion-val" title="Stock">
+                                            <span class="material-symbols-rounded" style="font-size:12px;">inventory_2</span>
+                                            @item.Stock.ToString("0.##")
+                                        </span>
+                                        <span class="seccion-val" title="Entregado">
+                                            <span class="material-symbols-rounded" style="font-size:12px;">local_shipping</span>
+                                            @item.Entregado.ToString("0.##")
+                                        </span>
+                                        <span class="seccion-val @(excede ? "text-am" : "text-em")" title="Diferencia">
+                                            <span class="material-symbols-rounded" style="font-size:12px;">@(excede ? "warning" : "check_circle")</span>
+                                            @(excede ? diff.ToString("0.##") : $"+{diff:0.##}")
+                                        </span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+        }
+    }
 }
 
 @code {
@@ -334,30 +383,101 @@ else
     private string? _grupoFiltro;
     private bool    _sincronizando;   // descargando datos desde la nube
     private bool    _sinDatosLocales; // offline y sin caché disponible
+    private List<SeccionDto>       _secciones       = new();
+    private List<GrupoProductoDto> _gruposProducto  = new();
+    private bool    _mostrarSecciones; // panel de secciones expandido
 
     private IEnumerable<CustomerDto> ClientesFiltrados =>
         Estado.Clientes
             .Where(c => string.IsNullOrWhiteSpace(_busquedaCliente) || c.Nombre.Contains(_busquedaCliente, StringComparison.OrdinalIgnoreCase))
             .Where(c => _grupoFiltro == null || c.Grupo == _grupoFiltro);
 
-    private record ProductTotal(string Nombre, decimal Total, bool EsGramaje);
+    private record ProductTotal(string Nombre, decimal Total, bool EsGramaje, bool EsGrupo = false);
+    private record SeccionItem(string ProductoNombre, decimal Stock, decimal Entregado, decimal Devuelto);
+    private record SeccionResumen(string Nombre, List<SeccionItem> Items);
 
     private List<ProductTotal> GetTotalesProductos()
     {
-        var result = new List<ProductTotal>();
         var clientes = _grupoFiltro == null
             ? Estado.Clientes
             : Estado.Clientes.Where(c => c.Grupo == _grupoFiltro).ToList();
+
+        // Si hay grupos configurados, mostrar totales por grupo
+        if (_gruposProducto.Count > 0)
+        {
+            var result = new List<ProductTotal>();
+            var grupoMap = _gruposProducto.ToDictionary(g => g.Id);
+
+            foreach (var grupo in _gruposProducto)
+            {
+                var productosGrupo = Estado.Productos.Where(p => p.GrupoProductoId == grupo.Id).ToList();
+                if (productosGrupo.Count == 0) continue;
+
+                decimal totalGrupo = 0;
+                bool esGramaje = productosGrupo.Any(p => p.TipoMedida == TipoMedida.Gramaje);
+                foreach (var prod in productosGrupo)
+                    foreach (var cli in clientes)
+                        foreach (var ronda in Estado.Jornada?.Rondas ?? new())
+                            totalGrupo += Estado.GetOrCreate(ronda.Id, cli.Id, prod.Id).Entregado;
+
+                if (totalGrupo > 0)
+                    result.Add(new(grupo.Nombre, totalGrupo, esGramaje, EsGrupo: true));
+            }
+
+            // Productos sin grupo
+            foreach (var prod in Estado.Productos.Where(p => p.GrupoProductoId == null))
+            {
+                decimal total = 0;
+                foreach (var cli in clientes)
+                    foreach (var ronda in Estado.Jornada?.Rondas ?? new())
+                        total += Estado.GetOrCreate(ronda.Id, cli.Id, prod.Id).Entregado;
+                if (total > 0)
+                    result.Add(new(prod.Nombre, total, prod.TipoMedida == TipoMedida.Gramaje));
+            }
+            return result;
+        }
+
+        // Sin grupos: mostrar por producto individual (comportamiento anterior)
+        var individual = new List<ProductTotal>();
         foreach (var prod in Estado.Productos)
         {
             decimal total = 0;
-            foreach (var cliente in clientes)
+            foreach (var cli in clientes)
                 foreach (var ronda in Estado.Jornada?.Rondas ?? new())
-                    total += Estado.GetOrCreate(ronda.Id, cliente.Id, prod.Id).Entregado;
+                    total += Estado.GetOrCreate(ronda.Id, cli.Id, prod.Id).Entregado;
             if (total > 0)
-                result.Add(new(prod.Nombre, total, prod.TipoMedida == TipoMedida.Gramaje));
+                individual.Add(new(prod.Nombre, total, prod.TipoMedida == TipoMedida.Gramaje));
         }
-        return result;
+        return individual;
+    }
+
+    private List<SeccionResumen> GetSeccionesResumen()
+    {
+        var resumen = new List<SeccionResumen>();
+        foreach (var sec in _secciones)
+        {
+            var clienteIds = Estado.Clientes
+                .Where(c => c.SeccionId == sec.Id)
+                .Select(c => c.Id).ToHashSet();
+            if (clienteIds.Count == 0 && sec.Stocks.Count == 0) continue;
+
+            var items = sec.Stocks.Select(stock =>
+            {
+                decimal entregado = 0, devuelto = 0;
+                foreach (var cliId in clienteIds)
+                    foreach (var ronda in Estado.Jornada?.Rondas ?? new())
+                    {
+                        var c = Estado.GetOrCreate(ronda.Id, cliId, stock.ProductoId);
+                        entregado += c.Entregado;
+                        devuelto  += c.Devuelto;
+                    }
+                return new SeccionItem(stock.ProductoNombre, stock.CantidadStock, entregado, devuelto);
+            }).Where(i => i.Stock > 0 || i.Entregado > 0).ToList();
+
+            if (items.Count > 0)
+                resumen.Add(new SeccionResumen(sec.Nombre, items));
+        }
+        return resumen;
     }
 
     protected override async Task OnInitializedAsync()
@@ -365,6 +485,7 @@ else
         Estado.OnChange += StateHasChanged;
         OfflineSync.OnConnectivityChanged += OnConectividadCambia;
         OfflineSync.OnSynced += OnDatosSincronizados;
+        OfflineSync.OnNegocioSynced += OnNegocioActualizado;
 
         var user = await AuthSvc.GetCurrentUser();
         _negocioId   = user?.NegocioIds.FirstOrDefault() ?? 0;
@@ -374,6 +495,13 @@ else
 
         await CargarSiNecesario();
         _cargando = false;
+
+        // Cargar datos del negocio (grupos, secciones) y arrancar sync periódico
+        if (_negocioId > 0 && !JornadaId.HasValue)
+        {
+            await CargarDatosNegocioAsync();
+            OfflineSync.StartPeriodicSync(_negocioId);
+        }
 
         // Si hay ops pendientes, reflejar estado en el indicador
         var pending = await OfflineSync.PendingCountAsync();
@@ -544,21 +672,34 @@ else
         StateHasChanged();
         try
         {
-            var jornada   = await Api.GetJornadaHoyAsync(_negocioId);
-            var productos  = await Api.GetProductosAsync(_negocioId) ?? new();
-            var clientesTodos = await Api.GetClientesAsync(_negocioId) ?? new();
-            var clientes   = clientesTodos.Where(TieneEntregaHoy).ToList();
+            // Descargar datos maestros y jornada en paralelo
+            var negSnap = OfflineSync.SyncNegocioDataAsync(_negocioId);
+            var jornadaTask = Api.GetJornadaHoyAsync(_negocioId);
+            await Task.WhenAll(negSnap, jornadaTask);
+
+            var jornada = jornadaTask.Result;
 
             if (jornada != null)
             {
+                var negocioSnap = await LocalData.GetNegocioSnapshotAsync(_negocioId);
+                var productos = negocioSnap?.Productos ?? await Api.GetProductosAsync(_negocioId) ?? new();
+                var clientesTodos = negocioSnap?.Clientes ?? await Api.GetClientesAsync(_negocioId) ?? new();
+                var clientes = clientesTodos.Where(TieneEntregaHoy).ToList();
+
                 await LocalData.SaveSnapshotAsync(_negocioId, new JornadaSnapshot
                 {
                     Jornada   = jornada,
                     Productos = productos,
-                    Clientes  = clientesTodos   // guardar TODOS para offline
+                    Clientes  = clientesTodos
                 });
 
-                // Sincronizar ops pendientes primero, luego aplicar estado del servidor
+                // Actualizar listas de grupos y secciones en memoria
+                if (negocioSnap != null)
+                {
+                    _gruposProducto = negocioSnap.GruposProducto;
+                    _secciones      = negocioSnap.Secciones;
+                }
+
                 await OfflineSync.ProcessQueueAsync();
                 Estado.Cargar(jornada, productos, clientes);
                 _loadedFromCache = false;
@@ -566,6 +707,13 @@ else
             }
             else
             {
+                // Sin jornada, pero actualizar datos maestros igual
+                var negocioSnap = await LocalData.GetNegocioSnapshotAsync(_negocioId);
+                if (negocioSnap != null)
+                {
+                    _gruposProducto = negocioSnap.GruposProducto;
+                    _secciones      = negocioSnap.Secciones;
+                }
                 Snackbar.Add("No hay jornada activa hoy", Severity.Info);
             }
         }
@@ -578,6 +726,35 @@ else
             _sincronizando = false;
             await InvokeAsync(StateHasChanged);
         }
+    }
+
+    /// <summary>Carga grupos y secciones: primero desde local, luego sincroniza en segundo plano si hay red.</summary>
+    private async Task CargarDatosNegocioAsync()
+    {
+        if (_negocioId == 0) return;
+        var snap = await LocalData.GetNegocioSnapshotAsync(_negocioId);
+        if (snap != null)
+        {
+            _gruposProducto = snap.GruposProducto;
+            _secciones      = snap.Secciones;
+        }
+        // Sincronizar en segundo plano si hay internet
+        if (OfflineSync.IsOnline)
+            _ = OfflineSync.SyncNegocioDataAsync(_negocioId);
+    }
+
+    private void OnNegocioActualizado()
+    {
+        _ = InvokeAsync(async () =>
+        {
+            var snap = await LocalData.GetNegocioSnapshotAsync(_negocioId);
+            if (snap != null)
+            {
+                _gruposProducto = snap.GruposProducto;
+                _secciones      = snap.Secciones;
+                StateHasChanged();
+            }
+        });
     }
 
     private bool TieneEntregaHoy(CustomerDto c)
@@ -724,5 +901,6 @@ else
         Estado.OnChange -= StateHasChanged;
         OfflineSync.OnConnectivityChanged -= OnConectividadCambia;
         OfflineSync.OnSynced -= OnDatosSincronizados;
+        OfflineSync.OnNegocioSynced -= OnNegocioActualizado;
     }
 }

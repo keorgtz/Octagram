@@ -20,6 +20,7 @@ public class ProductosController : ControllerBase
     {
         var products = await _ctx.Products
             .Include(p => p.PriceTiers)
+            .Include(p => p.GrupoProducto)
             .Where(p => p.TenantId == negocioId && p.IsActive)
             .OrderBy(p => p.Nombre)
             .ToListAsync();
@@ -35,21 +36,26 @@ public class ProductosController : ControllerBase
             TenantId = negocioId,
             Nombre = req.Nombre,
             TipoMedida = req.TipoMedida,
-            PrecioPorUnidad = req.PrecioPorUnidad
+            PrecioPorUnidad = req.PrecioPorUnidad,
+            GrupoProductoId = req.GrupoProductoId
         };
         _ctx.Products.Add(p);
         await _ctx.SaveChangesAsync();
+        await _ctx.Entry(p).Reference(x => x.GrupoProducto).LoadAsync();
         return CreatedAtAction(nameof(GetAll), new { negocioId }, MapProduct(p));
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int negocioId, int id, [FromBody] CreateProductRequest req)
     {
-        var p = await _ctx.Products.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == negocioId);
+        var p = await _ctx.Products
+            .Include(x => x.GrupoProducto)
+            .FirstOrDefaultAsync(x => x.Id == id && x.TenantId == negocioId);
         if (p == null) return NotFound();
         p.Nombre = req.Nombre;
         p.TipoMedida = req.TipoMedida;
         p.PrecioPorUnidad = req.PrecioPorUnidad;
+        p.GrupoProductoId = req.GrupoProductoId;
         await _ctx.SaveChangesAsync();
         return NoContent();
     }
@@ -126,6 +132,8 @@ public class ProductosController : ControllerBase
     {
         Id = p.Id, TenantId = p.TenantId, Nombre = p.Nombre,
         TipoMedida = p.TipoMedida, PrecioPorUnidad = p.PrecioPorUnidad, IsActive = p.IsActive,
+        GrupoProductoId = p.GrupoProductoId,
+        GrupoNombre = p.GrupoProducto?.Nombre,
         Perfiles = p.PriceTiers.OrderBy(t => t.Numero).Select(MapTier).ToList()
     };
 

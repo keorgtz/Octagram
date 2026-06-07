@@ -25,6 +25,8 @@ public class ProductDto
     public TipoMedida TipoMedida { get; set; }
     public decimal PrecioPorUnidad { get; set; }
     public bool IsActive { get; set; }
+    public int? GrupoProductoId { get; set; }
+    public string? GrupoNombre { get; set; }
     public List<PriceTierDto> Perfiles { get; set; } = new();
 }
 
@@ -33,4 +35,5 @@ public class CreateProductRequest
     public string Nombre { get; set; } = string.Empty;
     public TipoMedida TipoMedida { get; set; } = TipoMedida.Pieza;
     public decimal PrecioPorUnidad { get; set; }
+    public int? GrupoProductoId { get; set; }
 }

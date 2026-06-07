@@ -142,6 +142,44 @@ public class ApiService
         return _http.GetFromJsonAsync<List<JornadaResumenDto>>(q.ToString());
     }
 
+    // ── Grupos de producto ────────────────────────────────────────
+    public Task<List<GrupoProductoDto>?> GetGruposProductoAsync(int negocioId)
+        => _http.GetFromJsonAsync<List<GrupoProductoDto>>($"api/negocios/{negocioId}/grupos-producto");
+
+    public Task<HttpResponseMessage> CreateGrupoProductoAsync(int negocioId, CreateGrupoProductoRequest req)
+        => _http.PostAsJsonAsync($"api/negocios/{negocioId}/grupos-producto", req);
+
+    public Task<HttpResponseMessage> UpdateGrupoProductoAsync(int negocioId, int id, CreateGrupoProductoRequest req)
+        => _http.PutAsJsonAsync($"api/negocios/{negocioId}/grupos-producto/{id}", req);
+
+    public Task<HttpResponseMessage> DeleteGrupoProductoAsync(int negocioId, int id)
+        => _http.DeleteAsync($"api/negocios/{negocioId}/grupos-producto/{id}");
+
+    public Task<HttpResponseMessage> AsignarProductosGrupoAsync(int negocioId, int id, AsignarProductosGrupoRequest req)
+        => _http.PutAsJsonAsync($"api/negocios/{negocioId}/grupos-producto/{id}/productos", req);
+
+    // ── Secciones ─────────────────────────────────────────────────
+    public Task<List<SeccionDto>?> GetSeccionesAsync(int negocioId)
+        => _http.GetFromJsonAsync<List<SeccionDto>>($"api/negocios/{negocioId}/secciones");
+
+    public Task<HttpResponseMessage> CreateSeccionAsync(int negocioId, CreateSeccionRequest req)
+        => _http.PostAsJsonAsync($"api/negocios/{negocioId}/secciones", req);
+
+    public Task<HttpResponseMessage> UpdateSeccionAsync(int negocioId, int id, CreateSeccionRequest req)
+        => _http.PutAsJsonAsync($"api/negocios/{negocioId}/secciones/{id}", req);
+
+    public Task<HttpResponseMessage> DeleteSeccionAsync(int negocioId, int id)
+        => _http.DeleteAsync($"api/negocios/{negocioId}/secciones/{id}");
+
+    public Task<HttpResponseMessage> AsignarClientesSeccionAsync(int negocioId, int id, AsignarClientesSeccionRequest req)
+        => _http.PutAsJsonAsync($"api/negocios/{negocioId}/secciones/{id}/clientes", req);
+
+    public Task<HttpResponseMessage> UpsertSeccionStocksAsync(int negocioId, int id, List<UpsertSeccionStockRequest> req)
+        => _http.PutAsJsonAsync($"api/negocios/{negocioId}/secciones/{id}/stocks", req);
+
+    public Task<HttpResponseMessage> DeleteSeccionStockAsync(int negocioId, int id, int productoId)
+        => _http.DeleteAsync($"api/negocios/{negocioId}/secciones/{id}/stocks/{productoId}");
+
     // ── Reportes ─────────────────────────────────────────────────
     public Task<ReporteJornadaDto?> GetReporteJornadaAsync(int jornadaId)
         => _http.GetFromJsonAsync<ReporteJornadaDto>($"api/reportes/{jornadaId}");

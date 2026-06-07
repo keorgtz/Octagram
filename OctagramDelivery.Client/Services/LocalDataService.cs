@@ -14,6 +14,16 @@ public class JornadaSnapshot
     public DateTime GuardadoEn { get; set; } = DateTime.UtcNow;
 }
 
+/// <summary>Snapshot completo del negocio: productos, clientes, grupos y secciones.</summary>
+public class NegocioSnapshot
+{
+    public List<ProductDto> Productos { get; set; } = new();
+    public List<CustomerDto> Clientes { get; set; } = new();
+    public List<GrupoProductoDto> GruposProducto { get; set; } = new();
+    public List<SeccionDto> Secciones { get; set; } = new();
+    public DateTime SincronizadoEn { get; set; } = DateTime.UtcNow;
+}
+
 public enum PendingOpType { BulkSaveRonda, ToggleExclusion }
 
 public class PendingOperation
@@ -40,13 +50,13 @@ public class LocalDataService
 {
     private readonly ILocalStorageService _storage;
 
-    // Misma clave que antes para compatibilidad con caché existente
     private static string SnapKey(int negocioId) => $"tc_j_{negocioId}";
+    private static string NegocioKey(int negocioId) => $"tc_neg_{negocioId}";
     private const string OpsKey = "tc_ops";
 
     public LocalDataService(ILocalStorageService storage) => _storage = storage;
 
-    // ── Snapshot ─────────────────────────────────────────────────────────
+    // ── Snapshot de jornada ───────────────────────────────────────────────
 
     public async Task<JornadaSnapshot?> GetSnapshotAsync(int negocioId)
     {
@@ -57,6 +67,20 @@ public class LocalDataService
     public async Task SaveSnapshotAsync(int negocioId, JornadaSnapshot snap)
     {
         try { await _storage.SetItemAsync(SnapKey(negocioId), snap); }
+        catch { }
+    }
+
+    // ── Snapshot de negocio (datos maestros) ─────────────────────────────
+
+    public async Task<NegocioSnapshot?> GetNegocioSnapshotAsync(int negocioId)
+    {
+        try { return await _storage.GetItemAsync<NegocioSnapshot>(NegocioKey(negocioId)); }
+        catch { return null; }
+    }
+
+    public async Task SaveNegocioSnapshotAsync(int negocioId, NegocioSnapshot snap)
+    {
+        try { await _storage.SetItemAsync(NegocioKey(negocioId), snap); }
         catch { }
     }
 

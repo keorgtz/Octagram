@@ -13,4 +13,6 @@ public class Tenant
     public ICollection<Customer> Customers { get; set; } = new List<Customer>();
     public ICollection<Product> Products { get; set; } = new List<Product>();
     public ICollection<DeliveryDay> DeliveryDays { get; set; } = new List<DeliveryDay>();
+    public ICollection<GrupoProducto> GruposProducto { get; set; } = new List<GrupoProducto>();
+    public ICollection<Seccion> Secciones { get; set; } = new List<Seccion>();
 }

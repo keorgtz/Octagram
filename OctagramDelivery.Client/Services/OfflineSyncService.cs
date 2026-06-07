@@ -10,12 +10,15 @@ public class OfflineSyncService : IAsyncDisposable
     private readonly ApiService _api;
     private readonly IJSRuntime _js;
     private DotNetObjectReference<OfflineSyncService>? _jsRef;
+    private System.Threading.Timer? _syncTimer;
     private bool _initialized;
     private bool _syncing;
+    private bool _syncingNegocio;
 
     public bool IsOnline { get; private set; } = true;
     public event Action? OnConnectivityChanged;
     public event Action? OnSynced;
+    public event Action? OnNegocioSynced;
 
     public OfflineSyncService(LocalDataService local, ApiService api, IJSRuntime js)
     {
@@ -53,7 +56,47 @@ public class OfflineSyncService : IAsyncDisposable
         OnConnectivityChanged?.Invoke();
     }
 
-    // ── Encolar operaciones ───────────────────────────────────────────────
+    // ── Sincronización datos maestros del negocio ─────────────────────────
+
+    /// <summary>Descarga productos, clientes, grupos y secciones y los guarda en local.</summary>
+    public async Task<NegocioSnapshot?> SyncNegocioDataAsync(int negocioId)
+    {
+        if (negocioId == 0 || !IsOnline || _syncingNegocio) return null;
+        _syncingNegocio = true;
+        try
+        {
+            var productos = await _api.GetProductosAsync(negocioId) ?? new();
+            var clientes = await _api.GetClientesAsync(negocioId) ?? new();
+            var grupos = await _api.GetGruposProductoAsync(negocioId) ?? new();
+            var secciones = await _api.GetSeccionesAsync(negocioId) ?? new();
+
+            var snap = new NegocioSnapshot
+            {
+                Productos = productos,
+                Clientes = clientes,
+                GruposProducto = grupos,
+                Secciones = secciones
+            };
+            await _local.SaveNegocioSnapshotAsync(negocioId, snap);
+            OnNegocioSynced?.Invoke();
+            return snap;
+        }
+        catch { return null; }
+        finally { _syncingNegocio = false; }
+    }
+
+    /// <summary>Inicia la sincronización periódica del negocio (cada 5 minutos mientras esté online).</summary>
+    public void StartPeriodicSync(int negocioId)
+    {
+        _syncTimer?.Dispose();
+        _syncTimer = new System.Threading.Timer(
+            async _ => { if (IsOnline) await SyncNegocioDataAsync(negocioId); },
+            null,
+            TimeSpan.FromMinutes(5),
+            TimeSpan.FromMinutes(5));
+    }
+
+    // ── Encolar operaciones de jornada ────────────────────────────────────
 
     public async Task EnqueueRondaSaveAsync(int rondaId, int jornadaId, int negocioId, List<DetalleUpsertItem> detalles)
     {
@@ -82,7 +125,7 @@ public class OfflineSyncService : IAsyncDisposable
         if (IsOnline) _ = ProcessQueueAsync();
     }
 
-    // ── Procesar cola ─────────────────────────────────────────────────────
+    // ── Procesar cola de operaciones pendientes ───────────────────────────
 
     public async Task ProcessQueueAsync()
     {
@@ -135,6 +178,7 @@ public class OfflineSyncService : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        _syncTimer?.Dispose();
         _jsRef?.Dispose();
         await ValueTask.CompletedTask;
     }
