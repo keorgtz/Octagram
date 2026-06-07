@@ -13,15 +13,18 @@
             <p class="page-subtitle">Vista general de todos los negocios y repartidores</p>
         </div>
         <div class="page-header-actions">
+            <MudDatePicker @bind-Date="_fecha" Label="Fecha"
+                           Variant="Variant.Outlined" Margin="Margin.Dense"
+                           DateFormat="dd/MM/yyyy" Style="max-width:150px;" />
+            <MudButton StartIcon="@Icons.Material.Rounded.Search"
+                       Variant="Variant.Outlined" Color="Color.Primary"
+                       OnClick="Cargar">Buscar</MudButton>
             <MudButton StartIcon="@Icons.Material.Rounded.Store"
                        Variant="Variant.Outlined" Color="Color.Primary"
                        Href="/admin/negocios">Negocios</MudButton>
             <MudButton StartIcon="@Icons.Material.Rounded.ManageAccounts"
                        Variant="Variant.Outlined" Color="Color.Primary"
                        Href="/admin/usuarios">Usuarios</MudButton>
-            <MudIconButton Icon="@Icons.Material.Rounded.Refresh"
-                           Color="Color.Primary" title="Actualizar"
-                           OnClick="Cargar" />
         </div>
     </div>
 
@@ -50,7 +53,7 @@
                 <div class="kpi-value">@_data.TotalRepartidoresActivos</div>
             </div>
             <div class="kpi-card" style="--accent-color:var(--primary);">
-                <div class="kpi-label">Efectivo Global Hoy</div>
+                <div class="kpi-label">Efectivo Global @(_fecha.HasValue ? DateOnly.FromDateTime(_fecha.Value).ToString("d MMM", _mx) : "Hoy")</div>
                 <div class="kpi-value" style="font-size:22px;">@_data.TotalEfectivoGlobal.ToString("C0", _mx)</div>
             </div>
         </div>
@@ -158,14 +161,16 @@
     private static readonly System.Globalization.CultureInfo _mx = new("es-MX");
 
     private DashboardAdminDto? _data;
-    private bool _cargando = true;
+    private bool      _cargando = true;
+    private DateTime? _fecha    = DateTime.Today;
 
     protected override async Task OnInitializedAsync() => await Cargar();
 
     private async Task Cargar()
     {
         _cargando = true;
-        _data = await Api.GetDashboardAdminAsync();
+        var fechaParam = _fecha.HasValue ? DateOnly.FromDateTime(_fecha.Value) : (DateOnly?)null;
+        _data = await Api.GetDashboardAdminAsync(fechaParam);
         _cargando = false;
     }
 }

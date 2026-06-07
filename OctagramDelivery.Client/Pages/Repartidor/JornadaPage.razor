@@ -102,7 +102,10 @@ else
         </div>
 
         @{
-            var (bruto, neto, efect, _, _) = Estado.Totales();
+            var clientesGrupoIds = _grupoFiltro == null
+                ? Estado.Clientes.Select(c => c.Id)
+                : Estado.Clientes.Where(c => c.Grupo == _grupoFiltro).Select(c => c.Id);
+            var (bruto, neto, efect, _, _) = Estado.TotalesFiltrados(clientesGrupoIds);
         }
         <div class="jornada-mobile-totales">
             @if (_mostrarDinero)
@@ -207,13 +210,16 @@ else
     }
     @if (_grupoFiltro != null)
     {
-        var clientesGrupo = Estado.Clientes.Where(c => c.Grupo == _grupoFiltro).ToList();
-        decimal netoGrupo = 0;
-        foreach (var cg in clientesGrupo) { var (n, _) = Estado.TotalesCliente(cg.Id); netoGrupo += n; }
+        var clientesGrupoList = Estado.Clientes.Where(c => c.Grupo == _grupoFiltro).ToList();
+        var (gBruto, gNeto, gEfect, _, _) = Estado.TotalesFiltrados(clientesGrupoList.Select(c => c.Id));
         <div class="jornada-grupo-banner">
             <span class="material-symbols-rounded" style="font-size:18px;">group</span>
-            <span>@_grupoFiltro · @clientesGrupo.Count cliente@(clientesGrupo.Count == 1 ? "" : "s")</span>
-            <span style="margin-left:auto;font-size:13px;">@netoGrupo.ToString("C", _mx)</span>
+            <span>@_grupoFiltro · @clientesGrupoList.Count cliente@(clientesGrupoList.Count == 1 ? "" : "s")</span>
+            <div style="margin-left:auto;display:flex;gap:12px;font-size:12px;flex-wrap:wrap;">
+                <span>Bruto: <strong class="tabnum text-em">@gBruto.ToString("C0", _mx)</strong></span>
+                <span>Neto: <strong class="tabnum text-vi">@gNeto.ToString("C0", _mx)</strong></span>
+                <span>Efectivo: <strong class="tabnum text-in">@gEfect.ToString("C0", _mx)</strong></span>
+            </div>
         </div>
     }
 
@@ -299,10 +305,13 @@ else
     private List<ProductTotal> GetTotalesProductos()
     {
         var result = new List<ProductTotal>();
+        var clientes = _grupoFiltro == null
+            ? Estado.Clientes
+            : Estado.Clientes.Where(c => c.Grupo == _grupoFiltro).ToList();
         foreach (var prod in Estado.Productos)
         {
             decimal total = 0;
-            foreach (var cliente in Estado.Clientes)
+            foreach (var cliente in clientes)
                 foreach (var ronda in Estado.Jornada?.Rondas ?? new())
                     total += Estado.GetOrCreate(ronda.Id, cliente.Id, prod.Id).Entregado;
             if (total > 0)

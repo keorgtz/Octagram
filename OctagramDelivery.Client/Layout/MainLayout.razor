@@ -45,11 +45,24 @@ else if (_user.Rol == UserRole.Repartidor)
         <div class="status-bar">
             @if (!_isOnline)
             {
-                <span><span class="status-dot" style="background:#EF4444;"></span><span style="color:#EF4444;">Sin conexión</span></span>
+                <span class="sync-pending-badge">
+                    <span class="material-symbols-rounded" style="font-size:12px;">wifi_off</span>
+                    Sin conexión
+                </span>
+            }
+            else if (_pendingCount > 0)
+            {
+                <span class="sync-pending-badge">
+                    <span class="material-symbols-rounded" style="font-size:12px;">sync</span>
+                    Sincronizando @_pendingCount pend.
+                </span>
             }
             else
             {
-                <span><span class="status-dot"></span>Conectado</span>
+                <span class="sync-ok-badge">
+                    <span class="material-symbols-rounded" style="font-size:12px;">cloud_done</span>
+                    Sincronizado
+                </span>
             }
             <span>TortiCloud · @DateTime.Now.ToString("ddd d MMM", new System.Globalization.CultureInfo("es-MX"))</span>
         </div>
@@ -74,6 +87,20 @@ else
                 <span class="offline-badge">
                     <span class="material-symbols-rounded" style="font-size:12px;">wifi_off</span>
                     Sin conexión
+                </span>
+            }
+            else if (_pendingCount > 0)
+            {
+                <span class="sync-pending-badge">
+                    <span class="material-symbols-rounded" style="font-size:12px;">sync</span>
+                    @_pendingCount pend.
+                </span>
+            }
+            else
+            {
+                <span class="sync-ok-badge">
+                    <span class="material-symbols-rounded" style="font-size:12px;">cloud_done</span>
+                    Guardado
                 </span>
             }
             <div class="titlebar-user hide-mobile">
@@ -103,6 +130,7 @@ else
     private bool _loading = true;
     private bool _sidebarOpen = true;
     private bool _isOnline = true;
+    private int  _pendingCount = 0;
 
     private MudTheme _theme = new()
     {
@@ -146,17 +174,28 @@ else
         }
 
         OfflineSync.OnConnectivityChanged += OnConnectivityChanged;
+        OfflineSync.OnSynced             += OnSynced;
         await OfflineSync.InitAsync();
-        _isOnline = OfflineSync.IsOnline;
+        _isOnline     = OfflineSync.IsOnline;
+        _pendingCount = (int)await OfflineSync.PendingCountAsync();
     }
 
     private void OnConnectivityChanged()
     {
         _isOnline = OfflineSync.IsOnline;
-        InvokeAsync(StateHasChanged);
+        InvokeAsync(async () => { _pendingCount = (int)await OfflineSync.PendingCountAsync(); StateHasChanged(); });
     }
 
-    public void Dispose() => OfflineSync.OnConnectivityChanged -= OnConnectivityChanged;
+    private void OnSynced()
+    {
+        InvokeAsync(async () => { _pendingCount = (int)await OfflineSync.PendingCountAsync(); StateHasChanged(); });
+    }
+
+    public void Dispose()
+    {
+        OfflineSync.OnConnectivityChanged -= OnConnectivityChanged;
+        OfflineSync.OnSynced             -= OnSynced;
+    }
 
     private void ToggleSidebar() => _sidebarOpen = !_sidebarOpen;
     private void CloseSidebar()  => _sidebarOpen = false;

@@ -96,10 +96,12 @@ public class ReportesController : ControllerBase
             if (excluido) totalExcl  += cliNeto;
             else          totalEfect += cliNeto;
 
+            var grupoCliente = allDetails.First(x => x.Det.CustomerId == cliId).Det.Customer?.Grupo;
             clientesReporte.Add(new ReporteClienteDto
             {
                 ClienteId          = cliId,
                 Nombre             = nombre,
+                Grupo              = grupoCliente,
                 ExcluidoDeEfectivo = excluido,
                 MetodoPago         = excInfo?.MetodoPagoAlternativo ?? MetodoPago.Efectivo,
                 TotalBruto         = cliBruto,
@@ -124,6 +126,7 @@ public class ReportesController : ControllerBase
         return Ok(new ReporteJornadaDto
         {
             JornadaId        = jornada.Id,
+            TenantId         = jornada.TenantId,
             Fecha            = jornada.Fecha,
             NegocioNombre    = jornada.Tenant?.Nombre ?? "",
             RepartidorNombre = jornada.Driver?.FullName ?? "",

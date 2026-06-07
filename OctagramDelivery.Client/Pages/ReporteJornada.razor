@@ -70,35 +70,114 @@ else
             }
         </div>
 
+        <!-- Filtro de grupos -->
+        @{
+            var grupos = _reporte.Clientes.Where(c => !string.IsNullOrEmpty(c.Grupo))
+                                          .Select(c => c.Grupo!).Distinct().OrderBy(g => g).ToList();
+            var clientesFiltrados = _grupoFiltro == null
+                ? _reporte.Clientes
+                : _reporte.Clientes.Where(c => c.Grupo == _grupoFiltro).ToList();
+            var prodsFiltrados = _grupoFiltro == null
+                ? _reporte.TotalesPorProducto
+                : _reporte.TotalesPorProducto.Select(tp => new ReporteTotalProductoDto
+                  {
+                      ProductoId        = tp.ProductoId,
+                      Nombre            = tp.Nombre,
+                      CantidadEntregada = clientesFiltrados.Sum(c => c.Productos.FirstOrDefault(p => p.ProductoId == tp.ProductoId)?.CantidadEntregada ?? 0),
+                      CantidadDevuelta  = clientesFiltrados.Sum(c => c.Productos.FirstOrDefault(p => p.ProductoId == tp.ProductoId)?.CantidadDevuelta  ?? 0),
+                      TotalBruto        = clientesFiltrados.Sum(c => c.Productos.FirstOrDefault(p => p.ProductoId == tp.ProductoId)?.CantidadEntregada * c.Productos.FirstOrDefault(p => p.ProductoId == tp.ProductoId)?.PrecioUnitario ?? 0),
+                      TotalNeto         = clientesFiltrados.Sum(c => c.Productos.FirstOrDefault(p => p.ProductoId == tp.ProductoId)?.Subtotal ?? 0)
+                  }).Where(p => p.CantidadEntregada > 0 || p.CantidadDevuelta > 0).ToList();
+        }
+        @if (grupos.Count > 0)
+        {
+            <div class="jornada-grupo-chips" style="margin-bottom:8px;">
+                <button class="jornada-grupo-chip @(_grupoFiltro == null ? "on" : "")"
+                        @onclick="() => _grupoFiltro = null">Todos</button>
+                @foreach (var g in grupos)
+                {
+                    var gLocal = g;
+                    <button class="jornada-grupo-chip @(_grupoFiltro == gLocal ? "on" : "")"
+                            @onclick="() => _grupoFiltro = (_grupoFiltro == gLocal ? null : gLocal)">@g</button>
+                }
+            </div>
+        }
+        @if (_grupoFiltro != null)
+        {
+            var gNeto  = clientesFiltrados.Sum(c => c.TotalNeto);
+            var gEfect = clientesFiltrados.Where(c => !c.ExcluidoDeEfectivo).Sum(c => c.TotalNeto);
+            <div class="jornada-grupo-banner" style="margin-bottom:12px;">
+                <span class="material-symbols-rounded" style="font-size:18px;">group</span>
+                <span>@_grupoFiltro · @clientesFiltrados.Count cliente@(clientesFiltrados.Count == 1 ? "" : "s")</span>
+                <div style="margin-left:auto;display:flex;gap:16px;font-size:13px;">
+                    <span>Neto: <strong class="tabnum text-vi">@gNeto.ToString("C", _mx)</strong></span>
+                    <span>Efectivo: <strong class="tabnum text-in">@gEfect.ToString("C", _mx)</strong></span>
+                </div>
+            </div>
+        }
+
         <!-- Totales por producto -->
-        @if (_reporte.TotalesPorProducto.Count > 0)
+        @if (prodsFiltrados.Count > 0)
         {
             <div class="data-card" style="margin-bottom:20px;">
                 <div class="data-card-header">
                     <h3 class="data-card-title">Resumen por Producto</h3>
                 </div>
-                <MudTable Items="_reporte.TotalesPorProducto" Hover="true" Dense="true" Elevation="0">
-                    <HeaderContent>
-                        <MudTh>Producto</MudTh>
-                        <MudTh Style="text-align:right;">Entregado</MudTh>
-                        <MudTh Style="text-align:right;">Devuelto</MudTh>
-                        <MudTh Style="text-align:right;">Bruto</MudTh>
-                        <MudTh Style="text-align:right;">Neto</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd><span class="fw-500">@context.Nombre</span></MudTd>
-                        <MudTd Style="text-align:right;" class="tabnum">@context.CantidadEntregada.ToString("0.##")</MudTd>
-                        <MudTd Style="text-align:right;" class="tabnum text-or">@context.CantidadDevuelta.ToString("0.##")</MudTd>
-                        <MudTd Style="text-align:right;" class="tabnum text-em">@context.TotalBruto.ToString("C", _mx)</MudTd>
-                        <MudTd Style="text-align:right;" class="tabnum text-vi fw-700">@context.TotalNeto.ToString("C", _mx)</MudTd>
-                    </RowTemplate>
-                </MudTable>
+                <!-- Desktop -->
+                <div class="desk-only">
+                    <MudTable Items="prodsFiltrados" Hover="true" Dense="true" Elevation="0">
+                        <HeaderContent>
+                            <MudTh>Producto</MudTh>
+                            <MudTh Style="text-align:right;">Entregado</MudTh>
+                            <MudTh Style="text-align:right;">Devuelto</MudTh>
+                            <MudTh Style="text-align:right;">Bruto</MudTh>
+                            <MudTh Style="text-align:right;">Neto</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd><span class="fw-500">@context.Nombre</span></MudTd>
+                            <MudTd Style="text-align:right;" class="tabnum">@context.CantidadEntregada.ToString("0.##")</MudTd>
+                            <MudTd Style="text-align:right;" class="tabnum text-or">@context.CantidadDevuelta.ToString("0.##")</MudTd>
+                            <MudTd Style="text-align:right;" class="tabnum text-em">@context.TotalBruto.ToString("C", _mx)</MudTd>
+                            <MudTd Style="text-align:right;" class="tabnum text-vi fw-700">@context.TotalNeto.ToString("C", _mx)</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </div>
+                <!-- Móvil -->
+                <div class="mob-cards">
+                    @foreach (var p in prodsFiltrados)
+                    {
+                        <div class="mob-lc">
+                            <div class="lc-row">
+                                <div class="lc-left">
+                                    <div class="mob-lc-name">@p.Nombre</div>
+                                    <div class="lc-tags">
+                                        <span class="lc-tag">@p.CantidadEntregada.ToString("0.##") entregadas</span>
+                                        @if (p.CantidadDevuelta > 0)
+                                        {
+                                            <span class="lc-tag amber">@p.CantidadDevuelta.ToString("0.##") devueltas</span>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="lc-right">
+                                    <div class="lc-amount vi">@p.TotalNeto.ToString("C", _mx)</div>
+                                    <div class="lc-amount-sub">neto</div>
+                                </div>
+                            </div>
+                            <div class="mob-lc-stats">
+                                <div class="mob-lc-stat">
+                                    <span class="mob-lc-key">Bruto</span>
+                                    <span class="mob-lc-val em tabnum">@p.TotalBruto.ToString("C", _mx)</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
             </div>
         }
 
         <!-- Detalle por cliente -->
         <h3 class="data-card-title" style="margin-bottom:12px;">Detalle por Cliente</h3>
-        @foreach (var cliente in _reporte.Clientes)
+        @foreach (var cliente in clientesFiltrados)
         {
             <div class="reporte-cliente-section">
                 <div class="reporte-cliente-header">
@@ -146,6 +225,7 @@ else
 
     private ReporteJornadaDto? _reporte;
     private bool               _cargando = true;
+    private string?            _grupoFiltro;
 
     protected override async Task OnInitializedAsync()
     {

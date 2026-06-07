@@ -98,6 +98,27 @@ public class JornadaStateService
         return (bruto, bruto - dev, efect, dev, excl);
     }
 
+    public (decimal Bruto, decimal Neto, decimal Efectivo, decimal Devuelto, decimal Excluido) TotalesFiltrados(IEnumerable<int> clienteIds)
+    {
+        decimal bruto = 0, dev = 0, efect = 0, excl = 0;
+        foreach (var cliId in clienteIds)
+        {
+            var excluido = Exclusiones.TryGetValue(cliId, out var ex) && ex.ExcluidoDeEfectivo;
+            decimal neto = 0;
+            foreach (var ronda in Jornada?.Rondas ?? new())
+                foreach (var prod in Productos)
+                {
+                    var c = GetOrCreate(ronda.Id, cliId, prod.Id);
+                    bruto += c.Entregado * c.Precio;
+                    dev   += c.Devuelto  * c.Precio;
+                    neto  += (c.Entregado - c.Devuelto) * c.Precio;
+                }
+            if (excluido) excl  += neto;
+            else          efect += neto;
+        }
+        return (bruto, bruto - dev, efect, dev, excl);
+    }
+
     public (decimal Neto, decimal Bruto) TotalesCliente(int clienteId)
     {
         decimal bruto = 0, neto = 0;

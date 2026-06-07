@@ -135,6 +135,7 @@ public class JornadaResumenDto
 public class ReporteJornadaDto
 {
     public int JornadaId { get; set; }
+    public int TenantId { get; set; }
     public DateOnly Fecha { get; set; }
     public string NegocioNombre { get; set; } = "";
     public string RepartidorNombre { get; set; } = "";
@@ -152,6 +153,7 @@ public class ReporteClienteDto
 {
     public int ClienteId { get; set; }
     public string Nombre { get; set; } = "";
+    public string? Grupo { get; set; }
     public bool ExcluidoDeEfectivo { get; set; }
     public MetodoPago MetodoPago { get; set; }
     public decimal TotalBruto { get; set; }

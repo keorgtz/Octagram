@@ -22,6 +22,23 @@
     }
     else
     {
+        @if (_jornadas.Count > 0)
+        {
+            <div class="historial-summary">
+                <div class="historial-summary-item">
+                    <span class="historial-summary-label">Jornadas</span>
+                    <span class="historial-summary-value">@_jornadas.Count</span>
+                </div>
+                <div class="historial-summary-item">
+                    <span class="historial-summary-label">Total Neto</span>
+                    <span class="historial-summary-value text-vi tabnum">@_jornadas.Sum(j => j.TotalNeto).ToString("C", _mx)</span>
+                </div>
+                <div class="historial-summary-item">
+                    <span class="historial-summary-label">Promedio</span>
+                    <span class="historial-summary-value tabnum" style="color:var(--gray-dark);">@(_jornadas.Average(j => j.TotalNeto).ToString("C0", _mx))</span>
+                </div>
+            </div>
+        }
         <div class="data-card data-card-table">
             <!-- Desktop -->
             <div class="desk-only">

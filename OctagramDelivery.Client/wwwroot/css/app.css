@@ -1537,7 +1537,9 @@ body,
     }
 
     /* Grids → columna única en tablet y móvil */
-    .neg-clientes-grid   { grid-template-columns: 1fr; min-height: unset; }
+    .neg-clientes-grid   { grid-template-columns: 1fr; min-height: unset; border-radius: 8px; }
+    .neg-clientes-left   { border-right: none; border-bottom: 1px solid var(--gray-line,#E5E7EB); max-height: 220px; }
+    .neg-clientes-right  { padding: 12px 4px; }
     .grupos-grid         { grid-template-columns: 1fr; gap: 10px; }
     .jornadas-activas-grid { grid-template-columns: 1fr; }
 
@@ -2124,6 +2126,47 @@ body,
     padding: 3px 10px;
     white-space: nowrap;
 }
+.sync-ok-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--em, #10B981);
+    background: var(--em-bg, #F0FDF4);
+    border-radius: 20px;
+    padding: 3px 10px;
+    white-space: nowrap;
+}
+.sync-pending-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #92400E;
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    border-radius: 20px;
+    padding: 3px 10px;
+    white-space: nowrap;
+}
+
+/* ── Historial summary bar ── */
+.historial-summary {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    background: #fff;
+    border-radius: 12px;
+    padding: 12px 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06);
+    margin-bottom: 12px;
+}
+.historial-summary-item { display: flex; flex-direction: column; gap: 1px; }
+.historial-summary-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--gray-muted,#6B7280); }
+.historial-summary-value { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--gray-dark,#1C1E26); line-height: 1.2; }
 
 /* ── Badge solo-lectura ── */
 .badge-solo-lectura {
