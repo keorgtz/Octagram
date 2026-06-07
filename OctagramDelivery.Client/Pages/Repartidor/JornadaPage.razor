@@ -29,30 +29,59 @@
 }
 else if (Estado.Jornada == null)
 {
-    <div style="padding:32px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;">
-        <span class="material-symbols-rounded" style="font-size:64px;color:var(--gray-muted);">delivery_dining</span>
-        <h2 style="color:var(--gray-dark);margin:0;">Sin jornada activa</h2>
-        <p style="color:var(--gray-muted);margin:0;">No hay una jornada abierta para hoy.</p>
-        @if (_negocioId > 0 && !_soloLectura && _puedeAbrir)
-        {
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AbrirJornada"
-                       StartIcon="@Icons.Material.Rounded.PlayCircle" Style="margin-top:4px;">
-                Abrir Jornada de Hoy
-            </MudButton>
-        }
-        else if (!_puedeAbrir)
-        {
-            <MudButton Variant="Variant.Outlined" Color="Color.Primary"
-                       StartIcon="@Icons.Material.Rounded.ArrowBack"
-                       OnClick='() => Nav.NavigateTo("/gerente/jornadas")'>
-                Ver jornadas activas
-            </MudButton>
-        }
-        else if (_negocioId == 0)
-        {
-            <MudAlert Severity="Severity.Warning">No tienes un negocio asignado.</MudAlert>
-        }
-    </div>
+    @if (_sinDatosLocales)
+    {
+        <!-- Sin datos locales: offline sin caché -->
+        <div style="padding:32px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;">
+            <span class="material-symbols-rounded" style="font-size:64px;color:var(--gray-muted);">cloud_off</span>
+            <h2 style="color:var(--gray-dark);margin:0;">Sin datos locales</h2>
+            <p style="color:var(--gray-muted);margin:0;max-width:280px;">
+                No hay datos guardados en este dispositivo. Conéctate a internet y sincroniza.
+            </p>
+            @if (OfflineSync.IsOnline)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           StartIcon="@Icons.Material.Rounded.CloudSync"
+                           Disabled="_sincronizando"
+                           OnClick="SincronizarDatosAsync"
+                           Style="margin-top:4px;">
+                    @(_sincronizando ? "Sincronizando…" : "Bajar datos de la nube")
+                </MudButton>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Warning" Dense="true">Sin conexión a internet</MudAlert>
+            }
+        </div>
+    }
+    else
+    {
+        <!-- Sin jornada activa (confirmado por la API) -->
+        <div style="padding:32px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;">
+            <span class="material-symbols-rounded" style="font-size:64px;color:var(--gray-muted);">delivery_dining</span>
+            <h2 style="color:var(--gray-dark);margin:0;">Sin jornada activa</h2>
+            <p style="color:var(--gray-muted);margin:0;">No hay una jornada abierta para hoy.</p>
+            @if (_negocioId > 0 && !_soloLectura && _puedeAbrir)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AbrirJornada"
+                           StartIcon="@Icons.Material.Rounded.PlayCircle" Style="margin-top:4px;">
+                    Abrir Jornada de Hoy
+                </MudButton>
+            }
+            else if (!_puedeAbrir)
+            {
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                           StartIcon="@Icons.Material.Rounded.ArrowBack"
+                           OnClick='() => Nav.NavigateTo("/gerente/jornadas")'>
+                    Ver jornadas activas
+                </MudButton>
+            }
+            else if (_negocioId == 0)
+            {
+                <MudAlert Severity="Severity.Warning">No tienes un negocio asignado.</MudAlert>
+            }
+        </div>
+    }
 }
 else
 {
@@ -173,6 +202,14 @@ else
             }
             @if (!JornadaId.HasValue)
             {
+                @if (OfflineSync.IsOnline)
+                {
+                    <button class="icon-btn @(_sincronizando ? "syncing" : "")"
+                            title="@(_sincronizando ? "Sincronizando…" : "Sincronizar datos desde la nube")"
+                            @onclick="SincronizarDatosAsync" disabled="@_sincronizando">
+                        <span class="material-symbols-rounded">@(_sincronizando ? "sync" : "cloud_sync")</span>
+                    </button>
+                }
                 <a href="/repartidor/historial" class="icon-btn" title="Historial">
                     <span class="material-symbols-rounded">history</span>
                 </a>
@@ -285,16 +322,18 @@ else
     private static readonly System.Globalization.CultureInfo _mx =
         System.Globalization.CultureInfo.GetCultureInfo("es-MX");
 
-    private bool   _cargando   = true;
+    private bool   _cargando        = true;
     private bool   _soloLectura;
     private bool   _puedeAbrir;
     private bool   _initialized;
     private int    _negocioId;
-    private string _saveText       = "Guardado ✓";
-    private string _saveClass      = "save-ok";
+    private string _saveText        = "Guardado ✓";
+    private string _saveClass       = "save-ok";
     private string  _busquedaCliente = string.Empty;
     private bool    _mostrarDinero   = true;
     private string? _grupoFiltro;
+    private bool    _sincronizando;   // descargando datos desde la nube
+    private bool    _sinDatosLocales; // offline y sin caché disponible
 
     private IEnumerable<CustomerDto> ClientesFiltrados =>
         Estado.Clientes
@@ -374,39 +413,56 @@ else
 
     private async Task CargarJornada()
     {
+        _sinDatosLocales = false;
+
         if (JornadaId.HasValue)
         {
-            // Vista gerente: siempre desde API
             await CargarDesdeApi();
             return;
         }
 
-        // Vista repartidor: local primero → API en segundo plano
+        // 1. Intentar local primero (no requiere red → instante)
         bool tieneLocal = await CargarDesdeLocal();
+
         if (tieneLocal)
         {
-            // Datos disponibles al instante; refrescar desde API en segundo plano
-            if (OfflineSync.IsOnline)
-                _ = RefrescarDesdeApiAsync();
+            // Datos disponibles al instante; API en segundo plano si hay conexión
+            _ = RefrescarDesdeApiAsync();
         }
         else
         {
-            // Sin caché local → esperar API (primera vez o caché expirada)
+            // Sin caché → intentar API (primera vez u otro dispositivo)
             await CargarDesdeApi();
+
+            // Si sigue sin jornada y no hay red → indicar "sin datos locales"
+            if (!Estado.Cargado)
+                _sinDatosLocales = !OfflineSync.IsOnline;
         }
     }
 
     private async Task<bool> CargarDesdeLocal()
     {
         if (_negocioId == 0) return false;
-        var snap = await LocalData.GetSnapshotAsync(_negocioId);
-        if (snap?.Jornada == null) return false;
-        if (snap.Jornada.Fecha != DateOnly.FromDateTime(DateTime.Today)) return false;
+        try
+        {
+            var snap = await LocalData.GetSnapshotAsync(_negocioId);
+            if (snap?.Jornada?.Id is not > 0) return false;
 
-        var clientes = snap.Clientes.Where(TieneEntregaHoy).ToList();
-        Estado.Cargar(snap.Jornada, snap.Productos, clientes);
-        _loadedFromCache = true;
-        return true;
+            // Aceptar si es de hoy O si la jornada sigue abierta (tolerancia a
+            // diferencias de zona horaria y reinicios entre días)
+            var esDeHoy    = snap.Jornada.Fecha == DateOnly.FromDateTime(DateTime.Today);
+            var estaAbierta = snap.Jornada.Estado == JornadaEstado.Abierta;
+            if (!esDeHoy && !estaAbierta) return false;
+
+            var clientes = snap.Clientes.Any()
+                ? snap.Clientes.Where(TieneEntregaHoy).ToList()
+                : new();
+
+            Estado.Cargar(snap.Jornada, snap.Productos, clientes);
+            _loadedFromCache = true;
+            return true;
+        }
+        catch { return false; }
     }
 
     private async Task CargarDesdeApi()
@@ -439,15 +495,17 @@ else
                     });
 
                 Estado.Cargar(jornada, productos, clientes);
-                _loadedFromCache = false;
+                _loadedFromCache  = false;
+                _sinDatosLocales  = false;
             }
         }
         catch { }
     }
 
-    /// <summary>Descarga desde la API en segundo plano. No reemplaza el estado en memoria si hay ops pendientes.</summary>
+    /// <summary>Descarga datos actualizados en segundo plano y actualiza el snapshot local.</summary>
     private async Task RefrescarDesdeApiAsync()
     {
+        if (_negocioId == 0) return;
         try
         {
             var jornada = await Api.GetJornadaHoyAsync(_negocioId);
@@ -457,7 +515,7 @@ else
             var clientes  = (await Api.GetClientesAsync(_negocioId) ?? new())
                             .Where(TieneEntregaHoy).ToList();
 
-            // Siempre actualizar caché local con los datos del servidor
+            // Siempre actualizar snapshot local con datos frescos del servidor
             await LocalData.SaveSnapshotAsync(_negocioId, new JornadaSnapshot
             {
                 Jornada   = jornada,
@@ -465,7 +523,7 @@ else
                 Clientes  = clientes
             });
 
-            // Solo sobreescribir estado en memoria si no hay cambios locales pendientes
+            // Solo sobreescribir estado en memoria si no hay ediciones locales pendientes
             var pending = await LocalData.CountPendingAsync();
             if (pending == 0)
             {
@@ -475,6 +533,51 @@ else
             }
         }
         catch { }
+    }
+
+    /// <summary>Descarga TODOS los datos desde la nube y los persiste en local. Botón manual.</summary>
+    private async Task SincronizarDatosAsync()
+    {
+        if (_negocioId == 0 || _sincronizando) return;
+        _sincronizando   = true;
+        _sinDatosLocales = false;
+        StateHasChanged();
+        try
+        {
+            var jornada   = await Api.GetJornadaHoyAsync(_negocioId);
+            var productos  = await Api.GetProductosAsync(_negocioId) ?? new();
+            var clientesTodos = await Api.GetClientesAsync(_negocioId) ?? new();
+            var clientes   = clientesTodos.Where(TieneEntregaHoy).ToList();
+
+            if (jornada != null)
+            {
+                await LocalData.SaveSnapshotAsync(_negocioId, new JornadaSnapshot
+                {
+                    Jornada   = jornada,
+                    Productos = productos,
+                    Clientes  = clientesTodos   // guardar TODOS para offline
+                });
+
+                // Sincronizar ops pendientes primero, luego aplicar estado del servidor
+                await OfflineSync.ProcessQueueAsync();
+                Estado.Cargar(jornada, productos, clientes);
+                _loadedFromCache = false;
+                Snackbar.Add("Datos sincronizados ✓", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("No hay jornada activa hoy", Severity.Info);
+            }
+        }
+        catch
+        {
+            Snackbar.Add("Error de conexión al sincronizar", Severity.Error);
+        }
+        finally
+        {
+            _sincronizando = false;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private bool TieneEntregaHoy(CustomerDto c)
@@ -524,30 +627,58 @@ else
 
     private async Task CerrarJornada()
     {
+        if (!OfflineSync.IsOnline)
+        {
+            Snackbar.Add("Necesitas conexión para cerrar la jornada", Severity.Warning);
+            return;
+        }
         var (_, _, efect, _, _) = Estado.Totales();
         var confirm = await Dialog.ShowMessageBox("Cerrar jornada",
             $"Efectivo a rendir: {efect.ToString("C", _mx)}. ¿Confirmar cierre?",
             yesText: "Confirmar cierre", cancelText: "Cancelar");
         if (confirm != true) return;
-
-        var resp = await Api.CerrarJornadaAsync(Estado.Jornada!.Id);
-        if (resp.IsSuccessStatusCode)
+        try
         {
-            Estado.Jornada.Estado = JornadaEstado.Cerrada;
-            Estado.Notificar();
-            Snackbar.Add($"Jornada cerrada. Efectivo: {efect.ToString("C", _mx)}", Severity.Success);
+            var resp = await Api.CerrarJornadaAsync(Estado.Jornada!.Id);
+            if (resp.IsSuccessStatusCode)
+            {
+                Estado.Jornada.Estado = JornadaEstado.Cerrada;
+                Estado.Notificar();
+                // Actualizar snapshot local con el nuevo estado
+                await LocalData.SaveSnapshotAsync(_negocioId, new JornadaSnapshot
+                {
+                    Jornada   = Estado.GetSnapshotJornada(),
+                    Productos = Estado.Productos,
+                    Clientes  = Estado.Clientes
+                });
+                Snackbar.Add($"Jornada cerrada. Efectivo: {efect.ToString("C", _mx)}", Severity.Success);
+            }
         }
+        catch { Snackbar.Add("Error de conexión al cerrar jornada", Severity.Error); }
     }
 
     private async Task AbrirJornada()
     {
-        var resp = await Api.AbrirJornadaAsync(new OpenJornadaRequest { TenantId = _negocioId });
-        if (resp.IsSuccessStatusCode)
+        if (!OfflineSync.IsOnline)
         {
-            Estado.Limpiar();
-            _loadedFromCache = false;
-            await CargarJornada();
+            Snackbar.Add("Necesitas conexión para abrir una jornada", Severity.Warning);
+            return;
         }
+        try
+        {
+            var resp = await Api.AbrirJornadaAsync(new OpenJornadaRequest { TenantId = _negocioId });
+            if (resp.IsSuccessStatusCode)
+            {
+                Estado.Limpiar();
+                _loadedFromCache = false;
+                await CargarJornada();
+            }
+            else
+            {
+                Snackbar.Add("No se pudo abrir la jornada", Severity.Error);
+            }
+        }
+        catch { Snackbar.Add("Error de conexión al abrir jornada", Severity.Error); }
     }
 
     private static string GetMetodoPagoLabel(MetodoPago mp) => mp switch
@@ -560,9 +691,22 @@ else
 
     private void OnConectividadCambia()
     {
-        // Cuando se recupera la conexión, refrescar desde API en segundo plano
-        if (OfflineSync.IsOnline && !JornadaId.HasValue)
-            _ = RefrescarDesdeApiAsync();
+        if (!JornadaId.HasValue)
+        {
+            if (OfflineSync.IsOnline)
+            {
+                // Si estábamos en modo "sin datos", intentar cargar ahora que hay red
+                if (_sinDatosLocales || !Estado.Cargado)
+                    InvokeAsync(async () => { await CargarJornada(); StateHasChanged(); });
+                else
+                    _ = RefrescarDesdeApiAsync();
+            }
+            else
+            {
+                // Se perdió la conexión — actualizar indicadores en la UI
+                InvokeAsync(StateHasChanged);
+            }
+        }
     }
 
     private async void OnDatosSincronizados()

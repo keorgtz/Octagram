@@ -184,6 +184,8 @@ a { color: var(--primary); text-decoration: none; }
 }
 .icon-btn:hover { background: var(--gray-foot, #F9FAFB); color: var(--gray-dark, #1C1E26); }
 .icon-btn .material-symbols-rounded { font-size: 20px; }
+.icon-btn.syncing { color: var(--primary); }
+.icon-btn.syncing .material-symbols-rounded { animation: spin .9s linear infinite; }
 
 /* ── User avatar ── */
 .user-avatar {
