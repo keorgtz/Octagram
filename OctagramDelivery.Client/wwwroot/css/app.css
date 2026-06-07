@@ -1512,6 +1512,55 @@ body,
 .desk-only { display: block; }
 .mob-cards  { display: none; }
 
+/* ── Tablet + Móvil (≤ 960px): tarjetas en lugar de tablas ── */
+@media (max-width: 960px) {
+
+    /* Renderizado dual: ocultar tabla desktop, mostrar cards */
+    .desk-only { display: none !important; }
+    .mob-cards { display: flex !important; flex-direction: column; padding: 4px 0; }
+
+    /* Data-card con tabla: fondo transparente en tablet/móvil */
+    .data-card-table {
+        background: transparent !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        overflow: visible !important;
+    }
+
+    /* Encabezado del data-card-table mantiene fondo de tarjeta */
+    .data-card-table .data-card-header {
+        background: var(--white, #fff) !important;
+        border-radius: 14px !important;
+        margin-bottom: 8px !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06) !important;
+        border-bottom: none !important;
+    }
+
+    /* Grids → columna única en tablet y móvil */
+    .neg-clientes-grid   { grid-template-columns: 1fr; min-height: unset; }
+    .grupos-grid         { grid-template-columns: 1fr; gap: 10px; }
+    .jornadas-activas-grid { grid-template-columns: 1fr; }
+
+    /* KPI compacto en tablet */
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+    /* Dashboards: sección negocio MudCard → transparente, header como pill */
+    .mud-card {
+        background: transparent !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        border: none !important;
+    }
+    .mud-card-header {
+        background: #fff !important;
+        border-radius: 12px !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06) !important;
+        border-bottom: none !important;
+        margin-bottom: 8px !important;
+    }
+    .mud-card-content { padding: 0 !important; }
+}
+
 /* ── Móvil (≤ 640px): bottom nav, sin sidebar ── */
 @media (max-width: 640px) {
 
@@ -1550,44 +1599,12 @@ body,
     .page-header-actions { flex-wrap: wrap; width: 100%; gap: 6px; }
 
     /* KPI compacto */
-    .kpi-grid  { grid-template-columns: repeat(2, 1fr); gap: 8px; }
     .kpi-card  { padding: 12px 12px 10px; border-radius: 14px; }
     .kpi-value { font-size: 20px; }
     .kpi-label { font-size: 10px; }
 
-    /* ═══════════════════════════════════════════════════
-       Tablas → Tarjetas en móvil
-       ═══════════════════════════════════════════════════ */
-
-    /* Data-card con tabla: fondo transparente, las row-cards proveen el visual */
-    .data-card-table {
-        background: transparent !important;
-        box-shadow: none !important;
-        border-radius: 0 !important;
-        overflow: visible !important;
-    }
-
-    /* Encabezado del data-card-table mantiene fondo de tarjeta */
-    .data-card-table .data-card-header {
-        background: var(--white, #fff) !important;
-        border-radius: 14px !important;
-        margin-bottom: 8px !important;
-        box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06) !important;
-        border-bottom: none !important;
-    }
-
-    /* Renderizado dual: ocultar tabla desktop, mostrar cards mobile */
-    .desk-only { display: none !important; }
-    .mob-cards { display: flex !important; flex-direction: column; padding: 4px 0; }
-
-    /* Grid clientes → columna única */
-    .neg-clientes-grid   { grid-template-columns: 1fr; min-height: unset; }
-
     /* Login card */
-    .login-card          { padding: 28px 22px 24px; border-radius: 12px; }
-
-    /* Jornadas monitor grid → 1 col */
-    .jornadas-activas-grid { grid-template-columns: 1fr; }
+    .login-card { padding: 28px 22px 24px; border-radius: 12px; }
 
     /* Dialogs → bottom sheet */
     .mud-dialog-container { align-items: flex-end !important; padding: 0 !important; }
@@ -2208,6 +2225,3 @@ body,
 .grupo-cliente-row:hover { background: var(--page-bg, #F2F3F7); }
 .grupo-cliente-row.selected { background: var(--pr-100, #D9F7EA); }
 
-@media (max-width: 640px) {
-    .grupos-grid { grid-template-columns: 1fr; gap: 10px; }
-}
