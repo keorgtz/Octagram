@@ -81,10 +81,10 @@ else
                 <div class="cj-grupo-acordion">
                     <button class="cj-grupo-header @(expandido ? "abierto" : "")"
                             @onclick="() => ToggleGrupo(grupo.Id)">
-                        <span class="material-symbols-rounded" style="font-size:18px;color:var(--vi);">@icono</span>
-                        <span style="flex:1;font-size:14px;font-weight:700;">@grupo.Nombre</span>
+                        <span class="material-symbols-rounded" style="font-size:20px;color:var(--vi,#8B5CF6);flex-shrink:0;">@icono</span>
+                        <span class="cj-grupo-nombre">@grupo.Nombre</span>
                         <span class="cj-grupo-count">@grupo.Productos.Count</span>
-                        <span class="material-symbols-rounded" style="font-size:20px;color:var(--gray-muted);transition:transform .2s;transform:rotate(@(expandido ? "180deg" : "0deg"));">expand_more</span>
+                        <span class="material-symbols-rounded cj-grupo-chevron">expand_more</span>
                     </button>
                     @if (expandido)
                     {

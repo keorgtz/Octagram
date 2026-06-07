@@ -2399,62 +2399,120 @@ body,
     color: var(--vi, #8B5CF6);
 }
 
-/* ── Botón editar carga en hoja de reparto ──────────────────────────── */
-.hoja-edit-btn {
+/* ── Stock editable inline en hoja de reparto ───────────────────────── */
+.hoja-stat-cargado-btn {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    border: 1px solid rgba(255,255,255,.4);
+    width: 100%;
+    padding: 6px 4px;
     border-radius: 8px;
-    background: rgba(255,255,255,.15);
-    color: #fff;
+    background: #EEF2FF;
+    border: 1.5px solid var(--in, #6366F1);
     cursor: pointer;
+    text-align: center;
     -webkit-tap-highlight-color: transparent;
-    transition: background .15s;
-    flex-shrink: 0;
+    transition: background .12s;
 }
-.hoja-edit-btn:hover { background: rgba(255,255,255,.3); }
-.hoja-edit-btn .material-symbols-rounded { font-size: 16px; }
+.hoja-stat-cargado-btn:active { background: #E0E7FF; }
+.hoja-stat-cargado-btn .hoja-stat-label { color: var(--in, #6366F1); }
+.hoja-stat-cargado-btn .hoja-stat-num  { color: var(--in, #6366F1); }
 
-/* ── Accordion de grupos en ClienteJornadaPage ──────────────────────── */
+.hoja-edit-inline {
+    font-size: 10px !important;
+    vertical-align: middle;
+    margin-left: 1px;
+    opacity: .75;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ACCORDION DE GRUPOS — ClienteJornadaPage — MeridianUI
+   ══════════════════════════════════════════════════════════════ */
+
 .cj-grupo-acordion {
-    margin-bottom: 4px;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 0 0 1px var(--gray-line, #E5E7EB);
+    /* flex gap del contenedor cj-productos da el espaciado entre acordiones */
 }
 
 .cj-grupo-header {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     width: 100%;
-    padding: 12px 14px;
-    background: #fff;
+    min-height: 56px;
+    padding: 13px 14px 13px 18px;
+    background: none;
     border: none;
-    border-top: 1px solid var(--gray-line, #E5E7EB);
-    cursor: pointer;
     text-align: left;
     color: var(--gray-dark, #1C1E26);
+    cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+    transition: background .15s;
 }
-.cj-grupo-header:first-of-type { border-top: none; }
-.cj-grupo-header.abierto { background: #F5F3FF; }
+/* Franja violeta izquierda — indicador de grupo */
+.cj-grupo-header::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--vi, #8B5CF6);
+}
+.cj-grupo-header:active { background: #F5F3FF; }
+.cj-grupo-header.abierto {
+    background: #F5F3FF;
+    border-bottom: 1px solid var(--gray-line, #E5E7EB);
+}
+.cj-grupo-header.abierto::before { background: var(--vi-dk, #7C3AED); }
 
+/* Nombre del grupo */
+.cj-grupo-nombre {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gray-dark, #1C1E26);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.cj-grupo-header.abierto .cj-grupo-nombre { color: var(--vi, #8B5CF6); }
+
+/* Badge con cantidad de productos */
 .cj-grupo-count {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 22px;
+    min-width: 24px;
     height: 22px;
-    padding: 0 6px;
-    background: var(--vi-pl, #EDE9FE);
-    color: var(--vi, #8B5CF6);
+    padding: 0 8px;
+    background: var(--vi, #8B5CF6);
+    color: #fff;
     border-radius: 20px;
     font-size: 11px;
     font-weight: 700;
+    flex-shrink: 0;
+}
+.cj-grupo-header:not(.abierto) .cj-grupo-count {
+    background: #EDE9FE;
+    color: var(--vi, #8B5CF6);
 }
 
-/* Tarjetas dentro de un grupo: sin margen lateral propio, heredan el padding del acordión */
+/* Chevron de colapso */
+.cj-grupo-chevron {
+    font-size: 20px !important;
+    color: var(--gray-muted, #6B7280);
+    flex-shrink: 0;
+    transition: transform .2s ease;
+}
+.cj-grupo-header.abierto .cj-grupo-chevron {
+    transform: rotate(180deg);
+    color: var(--vi, #8B5CF6);
+}
+
+/* Tarjetas de producto dentro de un grupo: planas, sin sombra propia */
 .cj-producto-en-grupo {
     border-radius: 0 !important;
     box-shadow: none !important;

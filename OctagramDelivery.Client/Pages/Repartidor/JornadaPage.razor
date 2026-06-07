@@ -321,87 +321,81 @@ else
         if (secResumenes.Count > 0)
         {
             <div class="hoja-reparto">
-                <!-- Título -->
+                <!-- Título + indicador de modo -->
                 <div class="hoja-reparto-title">
                     <span class="material-symbols-rounded" style="font-size:18px;">assignment</span>
-                    <span>Hoja de Reparto</span>
+                    <span style="flex:1;">Hoja de Reparto</span>
+                    @if (_hojaRondaId.HasValue)
+                    {
+                        var etRonda = Estado.Jornada?.Rondas.FirstOrDefault(r => r.Id == _hojaRondaId.Value)?.Etiqueta ?? "";
+                        <span style="font-size:11px;opacity:.8;font-weight:400;">@etRonda · toca Cargado para editar</span>
+                    }
+                    else
+                    {
+                        <span style="font-size:11px;opacity:.7;font-weight:400;">Todas las vueltas</span>
+                    }
                 </div>
 
                 <!-- Selector de vuelta -->
-                @if ((Estado.Jornada?.Rondas.Count ?? 0) > 1)
-                {
-                    <div class="hoja-vuelta-bar">
-                        <button class="hoja-vuelta-chip @(_hojaRondaId == null ? "on" : "")"
-                                @onclick="() => _hojaRondaId = null">Todas</button>
-                        @foreach (var ronda in Estado.Jornada!.Rondas)
-                        {
-                            var rId = ronda.Id;
-                            <button class="hoja-vuelta-chip @(_hojaRondaId == rId ? "on" : "")"
-                                    @onclick="() => _hojaRondaId = rId">@ronda.Etiqueta</button>
-                        }
-                    </div>
-                }
+                <div class="hoja-vuelta-bar">
+                    <button class="hoja-vuelta-chip @(_hojaRondaId == null ? "on" : "")"
+                            @onclick="() => _hojaRondaId = null">Todas</button>
+                    @foreach (var ronda in Estado.Jornada?.Rondas ?? new())
+                    {
+                        var rId = ronda.Id;
+                        <button class="hoja-vuelta-chip @(_hojaRondaId == rId ? "on" : "")"
+                                @onclick="() => _hojaRondaId = rId">@ronda.Etiqueta</button>
+                    }
+                </div>
 
-                <!-- Secciones -->
+                <!-- Secciones con stock editable inline -->
                 @foreach (var sec in secResumenes)
                 {
                     <div class="hoja-seccion-card">
                         <div class="hoja-seccion-title">
                             <span class="material-symbols-rounded" style="font-size:16px;">map</span>
-                            <span style="flex:1;">@sec.Nombre</span>
-                            @if (_hojaRondaId.HasValue)
-                            {
-                                <button class="hoja-edit-btn"
-                                        title="Editar carga de esta sección para esta vuelta"
-                                        @onclick="() => EditarCargaSeccionAsync(sec)"
-                                        @onclick:stopPropagation="true">
-                                    <span class="material-symbols-rounded">edit</span>
-                                </button>
-                            }
+                            <span>@sec.Nombre</span>
                         </div>
                         @foreach (var item in sec.Items)
                         {
-                            var netoSec  = item.Entregado - item.Devuelto;
-                            var diff     = item.Stock - netoSec;
-                            var excede   = diff < 0;
-                            var exacto   = diff == 0;
+                            var netoSec    = item.Entregado - item.Devuelto;
+                            var diff       = item.Stock - netoSec;
+                            var excede     = diff < 0;
+                            var exacto     = diff == 0;
                             var estadoClass = excede ? "excede" : exacto ? "exacto" : "falta";
+                            var puedeEditar = _hojaRondaId.HasValue;
                             <div class="hoja-prod-row">
                                 <span class="hoja-prod-nombre">@item.ProductoNombre</span>
                                 <div class="hoja-prod-stats">
-                                    <div class="hoja-stat">
-                                        <span class="hoja-stat-label">Cargado</span>
-                                        <span class="hoja-stat-num">@item.Stock.ToString("0.##")</span>
-                                    </div>
+                                    <!-- Cargado: editable inline con numpad cuando hay vuelta seleccionada -->
+                                    @if (puedeEditar)
+                                    {
+                                        <button class="hoja-stat-cargado-btn"
+                                                @onclick="() => AbrirNumpadStock(_hojaRondaId!.Value, sec.Id, item)">
+                                            <span class="hoja-stat-label">
+                                                Cargado <span class="material-symbols-rounded hoja-edit-inline">edit</span>
+                                            </span>
+                                            <span class="hoja-stat-num">@item.Stock.ToString("0.##")</span>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <div class="hoja-stat">
+                                            <span class="hoja-stat-label">Cargado</span>
+                                            <span class="hoja-stat-num">@item.Stock.ToString("0.##")</span>
+                                        </div>
+                                    }
                                     <div class="hoja-stat">
                                         <span class="hoja-stat-label">Entregado</span>
                                         <span class="hoja-stat-num">@netoSec.ToString("0.##")</span>
                                     </div>
                                     <div class="hoja-stat @estadoClass">
                                         <span class="hoja-stat-label">
-                                            @if (excede)
-                                            {
-                                                <span class="material-symbols-rounded" style="font-size:11px;vertical-align:middle;">warning</span>@(" Excedido")
-                                            }
-                                            else if (exacto)
-                                            {
-                                                <span class="material-symbols-rounded" style="font-size:11px;vertical-align:middle;">check_circle</span>@(" Cuadrado")
-                                            }
-                                            else
-                                            {
-                                                <span class="material-symbols-rounded" style="font-size:11px;vertical-align:middle;">inventory_2</span>@(" Devolver")
-                                            }
+                                            @if (excede) { <span class="material-symbols-rounded" style="font-size:10px;vertical-align:middle;">warning</span>@(" Excede") }
+                                            else if (exacto) { <span class="material-symbols-rounded" style="font-size:10px;vertical-align:middle;">check_circle</span>@(" OK") }
+                                            else { <span class="material-symbols-rounded" style="font-size:10px;vertical-align:middle;">inventory_2</span>@(" Devolver") }
                                         </span>
-                                        <span class="hoja-stat-num">
-                                            @if (exacto)
-                                            {
-                                                <span>—</span>
-                                            }
-                                            else
-                                            {
-                                                <span>@Math.Abs(diff).ToString("0.##")</span>
-                                            }
-                                        </span>
+                                        <span class="hoja-stat-num">@(exacto ? "—" : Math.Abs(diff).ToString("0.##"))</span>
                                     </div>
                                 </div>
                             </div>
@@ -412,6 +406,13 @@ else
         }
     }
 }
+
+<!-- Numpad flotante para editar stock de sección por ronda -->
+<NumpadDialog @bind-Visible="_stockNumpadVisible"
+              Titulo="@_stockNumpadTitulo"
+              ValorInicial="@_stockNumpadValorInicial"
+              PermiteDecimal="@_stockNumpadDecimal"
+              OnConfirmar="OnStockNumpadConfirmar" />
 
 @code {
     [Parameter] public int? JornadaId { get; set; }
@@ -435,6 +436,15 @@ else
     private List<GrupoProductoDto> _gruposProducto  = new();
     private int?    _hojaRondaId;      // null = todas las vueltas
 
+    // Numpad inline para editar stock de sección por ronda
+    private bool    _stockNumpadVisible;
+    private string  _stockNumpadTitulo = "";
+    private decimal? _stockNumpadValorInicial;
+    private bool    _stockNumpadDecimal;
+    private int     _stockNumpadRondaId;
+    private int     _stockNumpadSeccionId;
+    private int     _stockNumpadProductoId;
+
     private IEnumerable<CustomerDto> ClientesFiltrados =>
         Estado.Clientes
             .Where(c => string.IsNullOrWhiteSpace(_busquedaCliente) || c.Nombre.Contains(_busquedaCliente, StringComparison.OrdinalIgnoreCase))
@@ -444,7 +454,7 @@ else
     private Dictionary<string, decimal> _stocksRonda = new();
 
     private record ProductTotal(string Nombre, decimal Total, bool EsGramaje, bool EsGrupo = false);
-    private record SeccionItem(string ProductoNombre, decimal Stock, decimal Entregado, decimal Devuelto);
+    private record SeccionItem(int ProductoId, string ProductoNombre, bool EsGramaje, decimal Stock, decimal Entregado, decimal Devuelto);
     private record SeccionResumen(int Id, string Nombre, List<SeccionItem> Items);
 
     private List<ProductTotal> GetTotalesProductos()
@@ -539,7 +549,12 @@ else
                         entregado += c.Entregado;
                         devuelto  += c.Devuelto;
                     }
-                return new SeccionItem(stock.ProductoNombre, cantidadStock, entregado, devuelto);
+                var prodDto = Estado.Productos.FirstOrDefault(p => p.Id == stock.ProductoId);
+                return new SeccionItem(
+                    stock.ProductoId,
+                    stock.ProductoNombre,
+                    prodDto?.TipoMedida == TipoMedida.Gramaje,
+                    cantidadStock, entregado, devuelto);
             }).Where(i => i.Stock > 0 || i.Entregado > 0 || i.Devuelto > 0).ToList();
 
             if (items.Count > 0)
@@ -548,41 +563,22 @@ else
         return resumen;
     }
 
-    private async Task EditarCargaSeccionAsync(SeccionResumen sec)
+    private void AbrirNumpadStock(int rondaId, int seccionId, SeccionItem item)
     {
-        if (!_hojaRondaId.HasValue || Estado.Jornada == null) return;
-        var ronda = Estado.Jornada.Rondas.FirstOrDefault(r => r.Id == _hojaRondaId.Value);
-        var seccionDto = _secciones.FirstOrDefault(s => s.Id == sec.Id);
-        if (ronda == null || seccionDto == null) return;
+        _stockNumpadRondaId    = rondaId;
+        _stockNumpadSeccionId  = seccionId;
+        _stockNumpadProductoId = item.ProductoId;
+        _stockNumpadTitulo     = $"Carga · {item.ProductoNombre}";
+        _stockNumpadValorInicial = item.Stock;
+        _stockNumpadDecimal    = item.EsGramaje;
+        _stockNumpadVisible    = true;
+    }
 
-        var productosSeccion = seccionDto.Stocks
-            .OrderBy(s => s.ProductoId)
-            .Select(s => Estado.Productos.FirstOrDefault(p => p.Id == s.ProductoId)
-                         ?? new ProductDto { Id = s.ProductoId, Nombre = s.ProductoNombre })
-            .ToList();
-
-        var stocksActuales = seccionDto.Stocks.ToDictionary(
-            s => s.ProductoId,
-            s => GetStockParaRonda(_hojaRondaId.Value, seccionDto.Id, s.ProductoId, s.CantidadStock));
-
-        var parameters = new DialogParameters<EditarCargaSeccionDialog>
-        {
-            { x => x.SeccionNombre, sec.Nombre },
-            { x => x.RondaEtiqueta, ronda.Etiqueta },
-            { x => x.Stocks, stocksActuales },
-            { x => x.Productos, productosSeccion }
-        };
-
-        var dialog = await Dialog.ShowAsync<EditarCargaSeccionDialog>("Editar carga", parameters);
-        var result = await dialog.Result;
-
-        if (result is { Canceled: false } && result.Data is Dictionary<int, decimal> nuevosStocks)
-        {
-            foreach (var (prodId, qty) in nuevosStocks)
-                _stocksRonda[$"{_hojaRondaId.Value}_{seccionDto.Id}_{prodId}"] = qty;
-            await GuardarStocksRondaAsync();
-            StateHasChanged();
-        }
+    private async Task OnStockNumpadConfirmar(decimal valor)
+    {
+        _stocksRonda[$"{_stockNumpadRondaId}_{_stockNumpadSeccionId}_{_stockNumpadProductoId}"] = valor;
+        await GuardarStocksRondaAsync();
+        StateHasChanged();
     }
 
     private async Task GuardarStocksRondaAsync()
@@ -866,6 +862,10 @@ else
             _gruposProducto = snap.GruposProducto;
             _secciones      = snap.Secciones;
         }
+        // Auto-seleccionar primera vuelta en hoja de reparto cuando hay secciones configuradas
+        if (_secciones.Count > 0 && _hojaRondaId == null)
+            _hojaRondaId = Estado.Jornada?.Rondas.FirstOrDefault()?.Id;
+
         // Sincronizar en segundo plano si hay internet
         if (OfflineSync.IsOnline)
             _ = OfflineSync.SyncNegocioDataAsync(_negocioId);
