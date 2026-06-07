@@ -2270,67 +2270,128 @@ body,
 .grupo-cliente-row:hover { background: var(--page-bg, #F2F3F7); }
 .grupo-cliente-row.selected { background: var(--pr-100, #D9F7EA); }
 
-/* ── Secciones panel (JornadaPage) ──────────────────────────────────── */
-.secciones-panel {
-    margin: 8px 12px 16px;
-    border: 1px solid var(--gray-line, #E5E7EB);
+/* ── Hoja de Reparto (JornadaPage) ──────────────────────────────────── */
+.hoja-reparto {
+    margin: 8px 12px 20px;
     border-radius: 14px;
     overflow: hidden;
     background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 1px var(--gray-line, #E5E7EB);
 }
 
-.secciones-header {
+.hoja-reparto-title {
     display: flex;
     align-items: center;
     gap: 8px;
-    width: 100%;
     padding: 10px 14px;
+    background: var(--in, #6366F1);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+.hoja-vuelta-bar {
+    display: flex;
+    gap: 6px;
+    padding: 8px 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-bottom: 1px solid var(--gray-line, #E5E7EB);
+    scrollbar-width: none;
+}
+.hoja-vuelta-bar::-webkit-scrollbar { display: none; }
+
+.hoja-vuelta-chip {
+    flex-shrink: 0;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--gray-line, #E5E7EB);
     background: none;
-    border: none;
+    color: var(--gray-muted, #6B7280);
+    font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
-    color: var(--gray-dark, #1C1E26);
     -webkit-tap-highlight-color: transparent;
+    transition: background .15s, color .15s;
 }
-.secciones-header:hover { background: var(--page-bg, #F2F3F7); }
+.hoja-vuelta-chip.on {
+    background: var(--in, #6366F1);
+    border-color: var(--in, #6366F1);
+    color: #fff;
+}
 
-.seccion-block {
+.hoja-seccion-card {
     border-top: 1px solid var(--gray-line, #E5E7EB);
-    padding: 8px 0;
+    padding-bottom: 4px;
 }
+.hoja-seccion-card:first-of-type { border-top: none; }
 
-.seccion-nombre {
+.hoja-seccion-title {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 14px 6px;
-    font-size: 12px;
+    padding: 8px 14px 6px;
+    font-size: 11px;
     font-weight: 700;
     color: var(--in, #6366F1);
     text-transform: uppercase;
-    letter-spacing: .04em;
+    letter-spacing: .05em;
 }
 
-.seccion-row {
-    display: flex;
-    align-items: center;
-    padding: 4px 14px;
-    gap: 8px;
+.hoja-prod-row {
+    padding: 6px 12px 8px;
+    border-top: 1px solid var(--page-bg, #F2F3F7);
+}
+
+.hoja-prod-nombre {
+    display: block;
     font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-dark, #1C1E26);
+    margin-bottom: 6px;
 }
-.seccion-row.excede { background: #FEF3C7; border-radius: 6px; margin: 0 8px; }
 
-.seccion-prod { flex: 1; color: var(--gray-dark, #1C1E26); font-size: 12px; }
+.hoja-prod-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+}
 
-.seccion-vals { display: flex; gap: 12px; flex-shrink: 0; }
-
-.seccion-val {
+.hoja-stat {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 3px;
-    font-size: 11px;
-    font-variant-numeric: tabular-nums;
-    color: var(--gray-muted, #6B7280);
+    padding: 6px 4px;
+    border-radius: 8px;
+    background: var(--page-bg, #F2F3F7);
+    text-align: center;
 }
+.hoja-stat.exacto { background: #D1FAE5; }
+.hoja-stat.falta  { background: #FEF3C7; }
+.hoja-stat.excede { background: #FEE2E2; }
+
+.hoja-stat-label {
+    font-size: 10px;
+    color: var(--gray-muted, #6B7280);
+    line-height: 1.2;
+    margin-bottom: 2px;
+    white-space: nowrap;
+}
+.hoja-stat.exacto .hoja-stat-label { color: #065F46; }
+.hoja-stat.falta  .hoja-stat-label { color: #92400E; }
+.hoja-stat.excede .hoja-stat-label { color: #991B1B; }
+
+.hoja-stat-num {
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--gray-dark, #1C1E26);
+    line-height: 1;
+}
+.hoja-stat.exacto .hoja-stat-num { color: #059669; }
+.hoja-stat.falta  .hoja-stat-num { color: #D97706; }
+.hoja-stat.excede .hoja-stat-num { color: #DC2626; }
 
 /* ── Grupos de producto — totales en barra (EsGrupo = true) ─────────── */
 .jornada-mini-total.es-grupo .jornada-mini-label {

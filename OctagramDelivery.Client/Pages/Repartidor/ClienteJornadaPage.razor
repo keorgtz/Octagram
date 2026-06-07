@@ -1,6 +1,6 @@
 @page "/repartidor/jornada/cliente/{ClienteId:int}"
 @attribute [Authorize(Roles = $"{nameof(UserRole.Repartidor)},{nameof(UserRole.Gerente)},{nameof(UserRole.Supervisor)},{nameof(UserRole.Admin)}")]
-@implements IDisposable
+@implements IAsyncDisposable
 @inject ApiService Api
 @inject AuthService AuthSvc
 @inject ISnackbar Snackbar
@@ -213,29 +213,39 @@ else
         else                    _numpadCelda.Devuelto  = Math.Min(valor, _numpadCelda.Entregado);
         Estado.HayCambiosPendientes = true;
         Estado.Notificar();
-        ProgramarGuardado();
+        _ = GuardarLocalInmediatoAsync();
     }
 
-    private void ProgramarGuardado()
+    // Guarda en localStorage inmediatamente, sin esperar ningún timer.
+    // El envío a la API se debouncea por separado para no saturar la cola.
+    private async Task GuardarLocalInmediatoAsync()
     {
         _saveText  = "Guardando…";
         _saveClass = "save-pending";
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
+
+        await GuardarSnapshotLocalAsync();
+
+        _saveText  = "Guardado ✓";
+        _saveClass = "save-ok";
+        Estado.HayCambiosPendientes = false;
+
+        ProgramarEnvioApi();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void ProgramarEnvioApi()
+    {
         _saveTimer?.Dispose();
         _saveTimer = new System.Threading.Timer(async _ =>
         {
-            await InvokeAsync(GuardarAsync);
+            await InvokeAsync(EnviarCambiosApiAsync);
         }, null, 2000, System.Threading.Timeout.Infinite);
     }
 
-    private async Task GuardarAsync()
+    private async Task EnviarCambiosApiAsync()
     {
         if (Estado.Jornada == null) return;
-
-        // 1. Guardar snapshot en local inmediatamente (no requiere red)
-        await GuardarSnapshotLocalAsync();
-
-        // 2. Encolar sincronización con el servidor por cada ronda
         foreach (var ronda in Estado.Jornada.Rondas)
         {
             var detalles = _productosDelCliente.Select(p =>
@@ -251,16 +261,9 @@ else
                     GramajePreset     = c.GramajePreset
                 };
             }).ToList();
-
             await OfflineSync.EnqueueRondaSaveAsync(
                 ronda.Id, Estado.Jornada.Id, Estado.Jornada.TenantId, detalles);
         }
-
-        // El guardado local siempre es exitoso → confirmar al usuario
-        _saveText  = "Guardado ✓";
-        _saveClass = "save-ok";
-        Estado.HayCambiosPendientes = false;
-        await InvokeAsync(StateHasChanged);
     }
 
     /// <summary>Persiste el estado actual de la jornada en localStorage para disponibilidad offline.</summary>
@@ -344,10 +347,12 @@ else
 
     private void Regresar() => Nav.NavigateTo("/repartidor/jornada");
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         Estado.OnChange -= StateHasChanged;
         OfflineSync.OnSynced -= OnSynced;
         _saveTimer?.Dispose();
+        // Garantizar que el último estado quede en localStorage aunque el usuario salga rápido
+        try { await GuardarSnapshotLocalAsync(); } catch { }
     }
 }

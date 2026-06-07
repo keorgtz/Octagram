@@ -317,48 +317,87 @@ else
 
     @if (!JornadaId.HasValue && _secciones.Count > 0)
     {
-        var secResumenes = GetSeccionesResumen();
+        var secResumenes = GetSeccionesResumen(_hojaRondaId);
         if (secResumenes.Count > 0)
         {
-            <div class="secciones-panel">
-                <button class="secciones-header" @onclick="() => _mostrarSecciones = !_mostrarSecciones">
-                    <span class="material-symbols-rounded" style="font-size:18px;">inventory</span>
-                    <span style="flex:1;font-size:13px;font-weight:700;">Secciones · stock vs entrega</span>
-                    <span class="material-symbols-rounded" style="font-size:18px;transition:transform .2s;transform:rotate(@(_mostrarSecciones ? "180deg" : "0deg"));">expand_more</span>
-                </button>
-                @if (_mostrarSecciones)
+            <div class="hoja-reparto">
+                <!-- Título -->
+                <div class="hoja-reparto-title">
+                    <span class="material-symbols-rounded" style="font-size:18px;">assignment</span>
+                    <span>Hoja de Reparto</span>
+                </div>
+
+                <!-- Selector de vuelta -->
+                @if ((Estado.Jornada?.Rondas.Count ?? 0) > 1)
                 {
-                    @foreach (var sec in secResumenes)
-                    {
-                        <div class="seccion-block">
-                            <div class="seccion-nombre">
-                                <span class="material-symbols-rounded" style="font-size:14px;color:var(--in);">category</span>
-                                @sec.Nombre
-                            </div>
-                            @foreach (var item in sec.Items)
-                            {
-                                var diff = item.Stock - item.Entregado + item.Devuelto;
-                                var excede = diff < 0;
-                                <div class="seccion-row @(excede ? "excede" : "")">
-                                    <span class="seccion-prod">@item.ProductoNombre</span>
-                                    <div class="seccion-vals">
-                                        <span class="seccion-val" title="Stock">
-                                            <span class="material-symbols-rounded" style="font-size:12px;">inventory_2</span>
-                                            @item.Stock.ToString("0.##")
+                    <div class="hoja-vuelta-bar">
+                        <button class="hoja-vuelta-chip @(_hojaRondaId == null ? "on" : "")"
+                                @onclick="() => _hojaRondaId = null">Todas</button>
+                        @foreach (var ronda in Estado.Jornada!.Rondas)
+                        {
+                            var rId = ronda.Id;
+                            <button class="hoja-vuelta-chip @(_hojaRondaId == rId ? "on" : "")"
+                                    @onclick="() => _hojaRondaId = rId">@ronda.Etiqueta</button>
+                        }
+                    </div>
+                }
+
+                <!-- Secciones -->
+                @foreach (var sec in secResumenes)
+                {
+                    <div class="hoja-seccion-card">
+                        <div class="hoja-seccion-title">
+                            <span class="material-symbols-rounded" style="font-size:16px;">map</span>
+                            <span>@sec.Nombre</span>
+                        </div>
+                        @foreach (var item in sec.Items)
+                        {
+                            var netoSec  = item.Entregado - item.Devuelto;
+                            var diff     = item.Stock - netoSec;
+                            var excede   = diff < 0;
+                            var exacto   = diff == 0;
+                            var estadoClass = excede ? "excede" : exacto ? "exacto" : "falta";
+                            <div class="hoja-prod-row">
+                                <span class="hoja-prod-nombre">@item.ProductoNombre</span>
+                                <div class="hoja-prod-stats">
+                                    <div class="hoja-stat">
+                                        <span class="hoja-stat-label">Cargado</span>
+                                        <span class="hoja-stat-num">@item.Stock.ToString("0.##")</span>
+                                    </div>
+                                    <div class="hoja-stat">
+                                        <span class="hoja-stat-label">Entregado</span>
+                                        <span class="hoja-stat-num">@netoSec.ToString("0.##")</span>
+                                    </div>
+                                    <div class="hoja-stat @estadoClass">
+                                        <span class="hoja-stat-label">
+                                            @if (excede)
+                                            {
+                                                <span class="material-symbols-rounded" style="font-size:11px;vertical-align:middle;">warning</span>@(" Excedido")
+                                            }
+                                            else if (exacto)
+                                            {
+                                                <span class="material-symbols-rounded" style="font-size:11px;vertical-align:middle;">check_circle</span>@(" Cuadrado")
+                                            }
+                                            else
+                                            {
+                                                <span class="material-symbols-rounded" style="font-size:11px;vertical-align:middle;">inventory_2</span>@(" Devolver")
+                                            }
                                         </span>
-                                        <span class="seccion-val" title="Entregado">
-                                            <span class="material-symbols-rounded" style="font-size:12px;">local_shipping</span>
-                                            @item.Entregado.ToString("0.##")
-                                        </span>
-                                        <span class="seccion-val @(excede ? "text-am" : "text-em")" title="Diferencia">
-                                            <span class="material-symbols-rounded" style="font-size:12px;">@(excede ? "warning" : "check_circle")</span>
-                                            @(excede ? diff.ToString("0.##") : $"+{diff:0.##}")
+                                        <span class="hoja-stat-num">
+                                            @if (exacto)
+                                            {
+                                                <span>—</span>
+                                            }
+                                            else
+                                            {
+                                                <span>@Math.Abs(diff).ToString("0.##")</span>
+                                            }
                                         </span>
                                     </div>
                                 </div>
-                            }
-                        </div>
-                    }
+                            </div>
+                        }
+                    </div>
                 }
             </div>
         }
@@ -385,7 +424,7 @@ else
     private bool    _sinDatosLocales; // offline y sin caché disponible
     private List<SeccionDto>       _secciones       = new();
     private List<GrupoProductoDto> _gruposProducto  = new();
-    private bool    _mostrarSecciones; // panel de secciones expandido
+    private int?    _hojaRondaId;      // null = todas las vueltas
 
     private IEnumerable<CustomerDto> ClientesFiltrados =>
         Estado.Clientes
@@ -451,8 +490,13 @@ else
         return individual;
     }
 
-    private List<SeccionResumen> GetSeccionesResumen()
+    private List<SeccionResumen> GetSeccionesResumen(int? rondaId = null)
     {
+        var todasRondas = Estado.Jornada?.Rondas ?? new();
+        var rondas = rondaId.HasValue
+            ? todasRondas.Where(r => r.Id == rondaId.Value).ToList()
+            : todasRondas;
+
         var resumen = new List<SeccionResumen>();
         foreach (var sec in _secciones)
         {
@@ -465,14 +509,14 @@ else
             {
                 decimal entregado = 0, devuelto = 0;
                 foreach (var cliId in clienteIds)
-                    foreach (var ronda in Estado.Jornada?.Rondas ?? new())
+                    foreach (var ronda in rondas)
                     {
                         var c = Estado.GetOrCreate(ronda.Id, cliId, stock.ProductoId);
                         entregado += c.Entregado;
                         devuelto  += c.Devuelto;
                     }
                 return new SeccionItem(stock.ProductoNombre, stock.CantidadStock, entregado, devuelto);
-            }).Where(i => i.Stock > 0 || i.Entregado > 0).ToList();
+            }).Where(i => i.Stock > 0 || i.Entregado > 0 || i.Devuelto > 0).ToList();
 
             if (items.Count > 0)
                 resumen.Add(new SeccionResumen(sec.Nombre, items));
