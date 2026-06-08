@@ -1,0 +1,340 @@
+@page "/dashboard"
+@attribute [Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Gerente)},{nameof(UserRole.Supervisor)}")]
+@implements IAsyncDisposable
+@inject ApiService Api
+@inject AuthService AuthSvc
+@inject HubService Hub
+@inject NavigationManager Nav
+
+<PageTitle>Dashboard · TortiCloud</PageTitle>
+
+<div class="page-content">
+
+    <div class="page-header">
+        <div>
+            <h1 class="h-page-title">Dashboard</h1>
+            <p class="page-subtitle">@_subtitulo</p>
+        </div>
+        <div class="page-header-actions">
+            @if (_enVivo)
+            {
+                <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
+                            color:var(--em);padding:4px 10px;background:var(--em-bg,#F0FDF4);
+                            border-radius:20px;">
+                    <span style="width:7px;height:7px;border-radius:50%;background:var(--em);
+                                 display:inline-block;animation:pulse 2s infinite;"></span>
+                    En vivo
+                </div>
+            }
+            <MudDatePicker Date="_fecha" DateChanged="OnFechaChanged"
+                           Variant="Variant.Outlined" Margin="Margin.Dense"
+                           Style="max-width:160px;" />
+            <MudIconButton Icon="@Icons.Material.Rounded.Refresh"
+                           Color="Color.Primary" title="Actualizar"
+                           OnClick="Cargar" />
+            @if (_esAdmin)
+            {
+                <MudButton StartIcon="@Icons.Material.Rounded.Store"
+                           Variant="Variant.Outlined" Color="Color.Primary"
+                           Href="/admin/negocios">Negocios</MudButton>
+                <MudButton StartIcon="@Icons.Material.Rounded.ManageAccounts"
+                           Variant="Variant.Outlined" Color="Color.Primary"
+                           Href="/admin/usuarios">Usuarios</MudButton>
+            }
+        </div>
+    </div>
+
+    @if (_cargando)
+    {
+        <div class="loading-state">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        </div>
+    }
+    else
+    {
+        <div class="kpi-grid">
+            @if (_esAdmin && _adminData != null)
+            {
+                <div class="kpi-card" style="--accent-color:var(--primary);">
+                    <div class="kpi-label">Negocios</div>
+                    <div class="kpi-value">@_adminData.TotalNegocios</div>
+                </div>
+                <div class="kpi-card" style="--accent-color:var(--em);">
+                    <div class="kpi-label">Repartidores Activos</div>
+                    <div class="kpi-value">@_adminData.TotalRepartidoresActivos</div>
+                </div>
+                <div class="kpi-card" style="--accent-color:var(--vi);">
+                    <div class="kpi-label">Neto Global</div>
+                    <div class="kpi-value" style="font-size:22px;">@_negocios.Sum(n => n.TotalNeto).ToString("C0", _mx)</div>
+                </div>
+                <div class="kpi-card" style="--accent-color:var(--in);">
+                    <div class="kpi-label">Efectivo Global</div>
+                    <div class="kpi-value" style="font-size:22px;">@_adminData.TotalEfectivoGlobal.ToString("C0", _mx)</div>
+                </div>
+            }
+            else
+            {
+                @if (_negocios.Count > 1)
+                {
+                    <div class="kpi-card" style="--accent-color:var(--primary);">
+                        <div class="kpi-label">Negocios</div>
+                        <div class="kpi-value">@_negocios.Count</div>
+                    </div>
+                }
+                <div class="kpi-card" style="--accent-color:var(--em);">
+                    <div class="kpi-label">Activos</div>
+                    <div class="kpi-value">@_negocios.Sum(n => n.RepartidoresActivos)</div>
+                </div>
+                <div class="kpi-card" style="--accent-color:var(--am);">
+                    <div class="kpi-label">Cerrados</div>
+                    <div class="kpi-value">@_negocios.Sum(n => n.RepartidoresCerrados)</div>
+                </div>
+                <div class="kpi-card" style="--accent-color:var(--vi);">
+                    <div class="kpi-label">Venta Neta</div>
+                    <div class="kpi-value" style="font-size:22px;">@_negocios.Sum(n => n.TotalNeto).ToString("C0", _mx)</div>
+                </div>
+                <div class="kpi-card" style="--accent-color:var(--in);">
+                    <div class="kpi-label">Efectivo en Calle</div>
+                    <div class="kpi-value" style="font-size:22px;">@_negocios.Sum(n => n.TotalEfectivoEnCalle).ToString("C0", _mx)</div>
+                </div>
+            }
+        </div>
+
+        @if (!_negocios.Any())
+        {
+            <div class="empty-state">
+                <span class="material-symbols-rounded">inventory_2</span>
+                <p>No hay datos para la fecha seleccionada.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var neg in _negocios)
+            {
+                <MudCard Class="mb-3">
+                    @if (_negocios.Count > 1)
+                    {
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                                    <span style="font-size:14px;font-weight:700;color:var(--gray-dark);text-transform:uppercase;letter-spacing:0.03em;">
+                                        @neg.TenantNombre
+                                    </span>
+                                    <div class="neg-stats">
+                                        <span class="neg-stat">
+                                            <span class="material-symbols-rounded fill" style="font-size:14px;color:var(--em);">circle</span>
+                                            <strong class="text-em">@neg.RepartidoresActivos</strong>
+                                            <span style="font-size:11px;color:var(--gray-muted);">activos</span>
+                                        </span>
+                                        <span class="neg-stat">
+                                            <span class="material-symbols-rounded fill" style="font-size:14px;color:var(--gray-muted);">circle</span>
+                                            <strong>@neg.RepartidoresCerrados</strong>
+                                            <span style="font-size:11px;color:var(--gray-muted);">cerrados</span>
+                                        </span>
+                                        <span class="tabnum fw-700 text-vi" style="font-size:14px;">
+                                            @neg.TotalNeto.ToString("C0", _mx)
+                                        </span>
+                                        <span class="tabnum fw-700 text-in" style="font-size:15px;">
+                                            @neg.TotalEfectivoEnCalle.ToString("C0", _mx)
+                                        </span>
+                                    </div>
+                                </div>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                    }
+                    <MudCardContent Style="padding:0;">
+                        <!-- Desktop: tabla completa -->
+                        <div class="desk-only">
+                            <MudTable Items="neg.Repartidores" Hover="true" Dense="true" Striped="false">
+                                <HeaderContent>
+                                    <MudTh>Repartidor</MudTh>
+                                    <MudTh Style="text-align:center;">Estado</MudTh>
+                                    <MudTh Style="text-align:center;">Clientes</MudTh>
+                                    <MudTh Style="text-align:right;">Entregado</MudTh>
+                                    <MudTh Style="text-align:right;">Devuelto</MudTh>
+                                    <MudTh Style="text-align:right;">Neto</MudTh>
+                                    <MudTh Style="text-align:right;">Efectivo</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd><span class="fw-500">@context.FullName</span></MudTd>
+                                    <MudTd Style="text-align:center;">
+                                        <MudChip T="string"
+                                                 Color="@(context.Estado == JornadaEstado.Abierta ? Color.Success : Color.Default)"
+                                                 Size="Size.Small" Variant="Variant.Filled">
+                                            @(context.Estado == JornadaEstado.Abierta ? "Activo" : "Cerrado")
+                                        </MudChip>
+                                    </MudTd>
+                                    <MudTd Style="text-align:center;color:var(--gray-muted);">
+                                        @context.ClientesAtendidos<span style="opacity:.5;">/</span>@context.TotalClientes
+                                    </MudTd>
+                                    <MudTd Style="text-align:right;" Class="tabnum text-em">
+                                        @context.TotalEntregado.ToString("C0", _mx)
+                                    </MudTd>
+                                    <MudTd Style="text-align:right;" Class="tabnum text-or">
+                                        @context.TotalDevuelto.ToString("C0", _mx)
+                                    </MudTd>
+                                    <MudTd Style="text-align:right;" Class="tabnum text-vi fw-600">
+                                        @context.TotalNeto.ToString("C0", _mx)
+                                    </MudTd>
+                                    <MudTd Style="text-align:right;" Class="tabnum text-in fw-700">
+                                        @context.TotalEfectivo.ToString("C0", _mx)
+                                    </MudTd>
+                                </RowTemplate>
+                                <NoRecordsContent>
+                                    <div class="empty-state" style="padding:24px;">
+                                        <span class="material-symbols-rounded">person_off</span>
+                                        <p>No hay repartidores para esta fecha.</p>
+                                    </div>
+                                </NoRecordsContent>
+                            </MudTable>
+                        </div>
+                        <!-- Móvil: tarjetas por repartidor -->
+                        <div class="mob-cards">
+                            @if (!neg.Repartidores.Any())
+                            {
+                                <div class="empty-state" style="padding:24px;">
+                                    <span class="material-symbols-rounded">person_off</span>
+                                    <p>No hay repartidores para esta fecha.</p>
+                                </div>
+                            }
+                            @foreach (var r in neg.Repartidores)
+                            {
+                                <div class="mob-lc">
+                                    <div class="lc-row">
+                                        <div class="lc-left">
+                                            <div class="mob-lc-name">@r.FullName</div>
+                                            <div class="lc-tags">
+                                                <span class="lc-tag @(r.Estado == JornadaEstado.Abierta ? "green" : "")">
+                                                    @(r.Estado == JornadaEstado.Abierta ? "Activo" : "Cerrado")
+                                                </span>
+                                                <span class="lc-tag">@r.ClientesAtendidos/@r.TotalClientes clientes</span>
+                                            </div>
+                                        </div>
+                                        <div class="lc-right">
+                                            <div class="lc-amount vi">@r.TotalNeto.ToString("C0", _mx)</div>
+                                            <div class="lc-amount-sub">@r.TotalEfectivo.ToString("C0", _mx) ef</div>
+                                        </div>
+                                    </div>
+                                    <div class="mob-lc-stats">
+                                        <div class="mob-lc-stat">
+                                            <span class="mob-lc-key">Entregado</span>
+                                            <span class="mob-lc-val em tabnum">@r.TotalEntregado.ToString("C0", _mx)</span>
+                                        </div>
+                                        <div class="mob-lc-stat">
+                                            <span class="mob-lc-key">Devuelto</span>
+                                            <span class="mob-lc-val or tabnum">@r.TotalDevuelto.ToString("C0", _mx)</span>
+                                        </div>
+                                        <div class="mob-lc-stat">
+                                            <span class="mob-lc-key">Neto</span>
+                                            <span class="mob-lc-val vi tabnum">@r.TotalNeto.ToString("C0", _mx)</span>
+                                        </div>
+                                        <div class="mob-lc-stat">
+                                            <span class="mob-lc-key">Efectivo</span>
+                                            <span class="mob-lc-val in tabnum">@r.TotalEfectivo.ToString("C0", _mx)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            }
+        }
+    }
+
+</div>
+
+@code {
+    private static readonly System.Globalization.CultureInfo _mx = new("es-MX");
+
+    private List<DashboardNegocioDto> _negocios = new();
+    private DashboardAdminDto?        _adminData;
+    private bool                      _cargando  = true;
+    private bool                      _esAdmin;
+    private bool                      _esGerente;
+    private List<int>                 _negocioIds = new();
+    private int                       _negocioId;
+    private DateTime?                 _fecha      = DateTime.Today;
+    private bool                      _enVivo;
+    private string                    _subtitulo  = "Resumen de operaciones por fecha";
+    private List<IDisposable>         _hubSubs    = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await AuthSvc.GetCurrentUser();
+        _esAdmin   = user?.Rol == UserRole.Admin;
+        _esGerente = user?.Rol == UserRole.Gerente;
+        _negocioIds = user?.NegocioIds ?? new();
+        _negocioId  = _negocioIds.FirstOrDefault();
+
+        if (user?.Rol == UserRole.Supervisor && _negocioId > 0
+            && !user.TienePermiso(Permiso.VerDashboard, _negocioId))
+        {
+            Nav.NavigateTo("/");
+            return;
+        }
+
+        if (_esAdmin)
+            _subtitulo = "Vista global de todos los negocios";
+
+        await Cargar();
+        await ConectarHub();
+    }
+
+    private async Task OnFechaChanged(DateTime? f) { _fecha = f; await Cargar(); }
+
+    private async Task Cargar()
+    {
+        _cargando = true;
+        var f = _fecha.HasValue
+            ? DateOnly.FromDateTime(_fecha.Value)
+            : DateOnly.FromDateTime(DateTime.Today);
+
+        if (_esAdmin)
+        {
+            _adminData = await Api.GetDashboardAdminAsync(f);
+            _negocios  = _adminData?.Negocios ?? new();
+        }
+        else if (_esGerente)
+        {
+            _negocios = await Api.GetDashboardGerenteAsync(f) ?? new();
+        }
+        else
+        {
+            var single = await Api.GetDashboardSupervisorAsync(_negocioId, f);
+            _negocios  = single != null ? [single] : new();
+            if (!string.IsNullOrEmpty(single?.TenantNombre))
+                _subtitulo = single.TenantNombre;
+        }
+
+        _cargando = false;
+    }
+
+    private async Task ConectarHub()
+    {
+        try
+        {
+            await Hub.ConnectAsync();
+
+            var ids = _negocioIds.Any()
+                ? _negocioIds
+                : _negocios.Select(n => n.TenantId).ToList();
+
+            foreach (var id in ids)
+                await Hub.JoinNegocioAsync(id);
+
+            _hubSubs.Add(Hub.On<object>("JornadaActualizada", async _ =>
+                await InvokeAsync(async () => { await Cargar(); StateHasChanged(); })));
+
+            _enVivo = true;
+            StateHasChanged();
+        }
+        catch { /* funciona sin SignalR */ }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        foreach (var s in _hubSubs) s.Dispose();
+        await Hub.DisposeAsync();
+    }
+}

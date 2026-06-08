@@ -14,5 +14,6 @@ public enum Permiso
     VerReportes      = 1 << 1,
     GestionClientes  = 1 << 2,
     GestionProductos = 1 << 3,
-    Todo             = VerDashboard | VerReportes | GestionClientes | GestionProductos
+    VerHojaReparto   = 1 << 4,
+    Todo             = VerDashboard | VerReportes | GestionClientes | GestionProductos | VerHojaReparto
 }

@@ -98,4 +98,8 @@ public class UserInfo
 
     public bool TienePermiso(Permiso permiso, int negocioId)
         => PermisosNegocio.TryGetValue(negocioId, out var flags) && flags.HasFlag(permiso);
+
+    // Admin y Gerente siempre pueden; Supervisor solo si tiene el permiso explícito.
+    public bool PuedeVerHojaReparto(int negocioId)
+        => Rol != UserRole.Supervisor || TienePermiso(Permiso.VerHojaReparto, negocioId);
 }

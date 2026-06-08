@@ -33,9 +33,9 @@ public class JornadasController : ControllerBase
 
     // GET /api/jornadas/hoy — jornada más reciente del repartidor hoy (backward compat)
     [HttpGet("hoy")]
-    public async Task<ActionResult<JornadaDto>> GetToday([FromQuery] int negocioId)
+    public async Task<ActionResult<JornadaDto>> GetToday([FromQuery] int negocioId, [FromQuery] DateOnly? fecha = null)
     {
-        var hoy = DateOnly.FromDateTime(DateTime.Today);
+        var hoy = fecha ?? DateOnly.FromDateTime(DateTime.UtcNow);
         var driverId = CallerId;
 
         var jornada = await _ctx.DeliveryDays
@@ -55,9 +55,9 @@ public class JornadasController : ControllerBase
 
     // GET /api/jornadas/mis-jornadas-hoy — todas las jornadas del repartidor hoy
     [HttpGet("mis-jornadas-hoy")]
-    public async Task<ActionResult<List<JornadaDto>>> GetMisJornadasHoy([FromQuery] int negocioId)
+    public async Task<ActionResult<List<JornadaDto>>> GetMisJornadasHoy([FromQuery] int negocioId, [FromQuery] DateOnly? fecha = null)
     {
-        var hoy = DateOnly.FromDateTime(DateTime.Today);
+        var hoy = fecha ?? DateOnly.FromDateTime(DateTime.UtcNow);
         var driverId = CallerId;
 
         var jornadas = await _ctx.DeliveryDays
@@ -91,7 +91,7 @@ public class JornadasController : ControllerBase
     [HttpPost("abrir")]
     public async Task<ActionResult<JornadaDto>> Abrir([FromBody] OpenJornadaRequest req)
     {
-        var hoy = DateOnly.FromDateTime(DateTime.Today);
+        var hoy = req.LocalFecha ?? DateOnly.FromDateTime(DateTime.UtcNow);
         var callerRole = CallerRole;
 
         // Admin/Gerente/Supervisor pueden abrir jornada para otro repartidor
@@ -314,7 +314,7 @@ public class JornadasController : ControllerBase
     // GET /api/jornadas/negocio-hoy — todas las jornadas de hoy para un negocio
     [HttpGet("negocio-hoy")]
     [Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Gerente)},{nameof(UserRole.Supervisor)}")]
-    public async Task<ActionResult<List<JornadaResumenDto>>> GetNegocioHoy([FromQuery] int negocioId)
+    public async Task<ActionResult<List<JornadaResumenDto>>> GetNegocioHoy([FromQuery] int negocioId, [FromQuery] DateOnly? fecha = null)
     {
         var callerRole    = CallerRole;
         var callerNegocios = CallerNegocioIds;
@@ -322,7 +322,7 @@ public class JornadasController : ControllerBase
         if (callerRole != UserRole.Admin && !callerNegocios.Contains(negocioId))
             return Forbid();
 
-        var hoy = DateOnly.FromDateTime(DateTime.Today);
+        var hoy = fecha ?? DateOnly.FromDateTime(DateTime.UtcNow);
 
         var jornadas = await _ctx.DeliveryDays
             .Include(d => d.Driver)

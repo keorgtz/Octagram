@@ -104,10 +104,16 @@ public class ApiService
 
     // ── Jornadas ──────────────────────────────────────────────────
     public Task<JornadaDto?> GetJornadaHoyAsync(int negocioId)
-        => _http.GetFromJsonAsync<JornadaDto>($"api/jornadas/hoy?negocioId={negocioId}");
+    {
+        var f = DateOnly.FromDateTime(DateTime.Now).ToString("yyyy-MM-dd");
+        return _http.GetFromJsonAsync<JornadaDto>($"api/jornadas/hoy?negocioId={negocioId}&fecha={f}");
+    }
 
     public Task<List<JornadaDto>?> GetMisJornadasHoyAsync(int negocioId)
-        => _http.GetFromJsonAsync<List<JornadaDto>>($"api/jornadas/mis-jornadas-hoy?negocioId={negocioId}");
+    {
+        var f = DateOnly.FromDateTime(DateTime.Now).ToString("yyyy-MM-dd");
+        return _http.GetFromJsonAsync<List<JornadaDto>>($"api/jornadas/mis-jornadas-hoy?negocioId={negocioId}&fecha={f}");
+    }
 
     public Task<JornadaDto?> GetJornadaByIdAsync(int id)
         => _http.GetFromJsonAsync<JornadaDto>($"api/jornadas/{id}");
@@ -134,7 +140,10 @@ public class ApiService
         => _http.GetFromJsonAsync<TotalesJornada>($"api/jornadas/{jornadaId}/totales");
 
     public Task<List<JornadaResumenDto>?> GetJornadasNegocioHoyAsync(int negocioId)
-        => _http.GetFromJsonAsync<List<JornadaResumenDto>>($"api/jornadas/negocio-hoy?negocioId={negocioId}");
+    {
+        var f = DateOnly.FromDateTime(DateTime.Now).ToString("yyyy-MM-dd");
+        return _http.GetFromJsonAsync<List<JornadaResumenDto>>($"api/jornadas/negocio-hoy?negocioId={negocioId}&fecha={f}");
+    }
 
     // ── Historial ─────────────────────────────────────────────────
     public Task<List<JornadaResumenDto>?> GetHistorialAsync(int? negocioId = null, int? repartidorId = null, int page = 1)

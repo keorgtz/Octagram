@@ -1,6 +1,6 @@
-@page "/gerente/grupos"
-@page "/supervisor/grupos"
+@page "/catalogos/grupos"
 @attribute [Authorize(Roles = $"{nameof(UserRole.Gerente)},{nameof(UserRole.Supervisor)},{nameof(UserRole.Admin)}")]
+@inject NavigationManager Nav
 @inject ApiService Api
 @inject AuthService AuthSvc
 @inject ISnackbar Snackbar
@@ -229,16 +229,24 @@
     protected override async Task OnInitializedAsync()
     {
         var user = await AuthSvc.GetCurrentUser();
-        _esGerente = user?.Rol == OctagramDelivery.Domain.Enums.UserRole.Gerente;
+        _esGerente = user?.Rol == UserRole.Gerente || user?.Rol == UserRole.Admin;
 
         if (_esGerente)
         {
-            _misNegocios = await Api.GetNegociosAsync() ?? new();
+            _misNegocios   = await Api.GetNegociosAsync() ?? new();
             _negocioActivo = _misNegocios.FirstOrDefault()?.Id ?? 0;
         }
         else
         {
             _negocioActivo = user?.NegocioIds.FirstOrDefault() ?? 0;
+        }
+
+        // Gate: Supervisor necesita GestionClientes (grupos son parte de la gestión de clientes)
+        if (user?.Rol == UserRole.Supervisor && _negocioActivo > 0
+            && !user.TienePermiso(Permiso.GestionClientes, _negocioActivo))
+        {
+            Nav.NavigateTo("/");
+            return;
         }
 
         if (_negocioActivo != 0) await Cargar();

@@ -1,4 +1,5 @@
 @page "/repartidor/jornada/cliente/{ClienteId:int}"
+@page "/jornada/{JornadaId:int}/cliente/{ClienteId:int}"
 @attribute [Authorize(Roles = $"{nameof(UserRole.Repartidor)},{nameof(UserRole.Gerente)},{nameof(UserRole.Supervisor)},{nameof(UserRole.Admin)}")]
 @implements IAsyncDisposable
 @inject ApiService Api
@@ -209,7 +210,8 @@ else
               OnConfirmar="OnNumpadConfirmar" />
 
 @code {
-    [Parameter] public int ClienteId { get; set; }
+    [Parameter] public int  ClienteId  { get; set; }
+    [Parameter] public int? JornadaId  { get; set; }
 
     private static readonly System.Globalization.CultureInfo _mx =
         System.Globalization.CultureInfo.GetCultureInfo("es-MX");
@@ -246,12 +248,25 @@ else
         OfflineSync.OnSynced += OnSynced;
 
         var currentUser = await AuthSvc.GetCurrentUser();
-        _soloLectura = currentUser?.Rol == UserRole.Supervisor;
+        // Supervisor → siempre solo lectura; Gerente/Admin en modo monitor (JornadaId) → solo lectura
+        _soloLectura = currentUser?.Rol == UserRole.Supervisor
+                    || (JornadaId.HasValue && currentUser?.Rol != UserRole.Repartidor);
+
+        // Gate de permiso: Supervisor sin VerHojaReparto no puede acceder
+        if (currentUser?.Rol == UserRole.Supervisor)
+        {
+            var negocioId = Estado.Jornada?.TenantId ?? 0;
+            if (negocioId > 0 && !currentUser.PuedeVerHojaReparto(negocioId))
+            {
+                Nav.NavigateTo("/");
+                return;
+            }
+        }
 
         if (!Estado.Cargado)
         {
-            // Estado no disponible: redirigir a JornadaPage para que cargue desde API o caché
-            Nav.NavigateTo("/repartidor/jornada");
+            // Estado no disponible: redirigir a la vista correcta para que recargue
+            Nav.NavigateTo(JornadaId.HasValue ? $"/gerente/jornada/{JornadaId}" : "/repartidor/jornada");
             return;
         }
 
@@ -465,7 +480,8 @@ else
     private static string FormatQty(decimal qty, TipoMedida tipo)
         => tipo == TipoMedida.Gramaje ? qty.ToString("0.##") : ((int)qty).ToString();
 
-    private void Regresar() => Nav.NavigateTo("/repartidor/jornada");
+    private void Regresar()
+        => Nav.NavigateTo(JornadaId.HasValue ? $"/gerente/jornada/{JornadaId}" : "/repartidor/jornada");
 
     public async ValueTask DisposeAsync()
     {

@@ -1,6 +1,6 @@
-@page "/gerente/clientes"
-@page "/supervisor/clientes"
+@page "/catalogos/clientes"
 @attribute [Authorize(Roles = $"{nameof(UserRole.Gerente)},{nameof(UserRole.Supervisor)},{nameof(UserRole.Admin)}")]
+@inject NavigationManager Nav
 @inject ApiService Api
 @inject AuthService AuthSvc
 @inject ISnackbar Snackbar
@@ -28,7 +28,7 @@
             }
             <MudButton StartIcon="@Icons.Material.Rounded.GroupWork"
                        Variant="Variant.Text" Color="Color.Default"
-                       Href="/gerente/grupos">
+                       Href="/catalogos/grupos">
                 Grupos
             </MudButton>
             <MudButton StartIcon="@(_modoSeleccion ? Icons.Material.Rounded.Close : Icons.Material.Rounded.Checklist)"
@@ -455,6 +455,14 @@
         else
         {
             _negocioActivo = user?.NegocioIds.FirstOrDefault() ?? 0;
+        }
+
+        // Gate: Supervisor necesita GestionClientes
+        if (user?.Rol == UserRole.Supervisor && _negocioActivo > 0
+            && !user.TienePermiso(Permiso.GestionClientes, _negocioActivo))
+        {
+            Nav.NavigateTo("/");
+            return;
         }
 
         if (_negocioActivo != 0) await Cargar();

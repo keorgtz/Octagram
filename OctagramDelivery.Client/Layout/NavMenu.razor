@@ -6,7 +6,7 @@
     {
         case UserRole.Admin:
             <div class="nav-section">
-                <NavLink class="nav-item" href="/admin/dashboard" Match="NavLinkMatch.All" ActiveClass="active">
+                <NavLink class="nav-item" href="/dashboard" Match="NavLinkMatch.All" ActiveClass="active">
                     <span class="material-symbols-rounded nav-item-icon">dashboard</span>
                     @if (SidebarOpen) { <span class="nav-item-label">Dashboard</span> }
                 </NavLink>
@@ -28,21 +28,26 @@
             <div class="nav-divider"></div>
             @if (SidebarOpen) { <div class="nav-category">Operaciones</div> }
             <div class="nav-section">
-                <NavLink class="nav-item" href="/gerente/dashboard" Match="NavLinkMatch.Prefix" ActiveClass="active">
-                    <span class="material-symbols-rounded nav-item-icon">bar_chart</span>
-                    @if (SidebarOpen) { <span class="nav-item-label">Vista General</span> }
-                </NavLink>
                 <NavLink class="nav-item" href="/gerente/jornadas" Match="NavLinkMatch.Prefix" ActiveClass="active">
                     <span class="material-symbols-rounded nav-item-icon">delivery_dining</span>
                     @if (SidebarOpen) { <span class="nav-item-label">Jornada en Vivo</span> }
                 </NavLink>
-                <NavLink class="nav-item" href="/gerente/clientes" Match="NavLinkMatch.Prefix" ActiveClass="active">
+            </div>
+
+            <div class="nav-divider"></div>
+            @if (SidebarOpen) { <div class="nav-category">Catálogos</div> }
+            <div class="nav-section">
+                <NavLink class="nav-item" href="/catalogos/clientes" Match="NavLinkMatch.Prefix" ActiveClass="active">
                     <span class="material-symbols-rounded nav-item-icon">people</span>
                     @if (SidebarOpen) { <span class="nav-item-label">Clientes</span> }
                 </NavLink>
-                <NavLink class="nav-item" href="/gerente/productos" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                <NavLink class="nav-item" href="/catalogos/productos" Match="NavLinkMatch.Prefix" ActiveClass="active">
                     <span class="material-symbols-rounded nav-item-icon">inventory_2</span>
                     @if (SidebarOpen) { <span class="nav-item-label">Productos</span> }
+                </NavLink>
+                <NavLink class="nav-item" href="/catalogos/grupos" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                    <span class="material-symbols-rounded nav-item-icon">folder_special</span>
+                    @if (SidebarOpen) { <span class="nav-item-label">Grupos</span> }
                 </NavLink>
             </div>
 
@@ -58,9 +63,9 @@
 
         case UserRole.Gerente:
             <div class="nav-section">
-                <NavLink class="nav-item" href="/gerente/dashboard" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                <NavLink class="nav-item" href="/dashboard" Match="NavLinkMatch.All" ActiveClass="active">
                     <span class="material-symbols-rounded nav-item-icon">dashboard</span>
-                    @if (SidebarOpen) { <span class="nav-item-label">Vista General</span> }
+                    @if (SidebarOpen) { <span class="nav-item-label">Dashboard</span> }
                 </NavLink>
                 <NavLink class="nav-item" href="/gerente/jornadas" Match="NavLinkMatch.Prefix" ActiveClass="active">
                     <span class="material-symbols-rounded nav-item-icon">delivery_dining</span>
@@ -71,13 +76,17 @@
             <div class="nav-divider"></div>
             @if (SidebarOpen) { <div class="nav-category">Catálogos</div> }
             <div class="nav-section">
-                <NavLink class="nav-item" href="/gerente/clientes" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                <NavLink class="nav-item" href="/catalogos/clientes" Match="NavLinkMatch.Prefix" ActiveClass="active">
                     <span class="material-symbols-rounded nav-item-icon">people</span>
                     @if (SidebarOpen) { <span class="nav-item-label">Clientes</span> }
                 </NavLink>
-                <NavLink class="nav-item" href="/gerente/productos" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                <NavLink class="nav-item" href="/catalogos/productos" Match="NavLinkMatch.Prefix" ActiveClass="active">
                     <span class="material-symbols-rounded nav-item-icon">inventory_2</span>
                     @if (SidebarOpen) { <span class="nav-item-label">Productos</span> }
+                </NavLink>
+                <NavLink class="nav-item" href="/catalogos/grupos" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                    <span class="material-symbols-rounded nav-item-icon">folder_special</span>
+                    @if (SidebarOpen) { <span class="nav-item-label">Grupos</span> }
                 </NavLink>
             </div>
 
@@ -93,9 +102,9 @@
 
         case UserRole.Supervisor:
             <div class="nav-section">
-                <NavLink class="nav-item" href="/gerente/dashboard" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                <NavLink class="nav-item" href="/dashboard" Match="NavLinkMatch.All" ActiveClass="active">
                     <span class="material-symbols-rounded nav-item-icon">dashboard</span>
-                    @if (SidebarOpen) { <span class="nav-item-label">Vista General</span> }
+                    @if (SidebarOpen) { <span class="nav-item-label">Dashboard</span> }
                 </NavLink>
                 <NavLink class="nav-item" href="/gerente/jornadas" Match="NavLinkMatch.Prefix" ActiveClass="active">
                     <span class="material-symbols-rounded nav-item-icon">delivery_dining</span>
@@ -106,20 +115,24 @@
             <div class="nav-divider"></div>
             @if (SidebarOpen) { <div class="nav-category">Catálogos</div> }
             <div class="nav-section">
-                <NavLink class="nav-item" href="/gerente/clientes" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                <NavLink class="nav-item" href="/catalogos/clientes" Match="NavLinkMatch.Prefix" ActiveClass="active">
                     <span class="material-symbols-rounded nav-item-icon">people</span>
                     @if (SidebarOpen) { <span class="nav-item-label">Clientes</span> }
                 </NavLink>
-                <NavLink class="nav-item" href="/gerente/productos" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                <NavLink class="nav-item" href="/catalogos/productos" Match="NavLinkMatch.Prefix" ActiveClass="active">
                     <span class="material-symbols-rounded nav-item-icon">inventory_2</span>
                     @if (SidebarOpen) { <span class="nav-item-label">Productos</span> }
+                </NavLink>
+                <NavLink class="nav-item" href="/catalogos/grupos" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                    <span class="material-symbols-rounded nav-item-icon">folder_special</span>
+                    @if (SidebarOpen) { <span class="nav-item-label">Grupos</span> }
                 </NavLink>
             </div>
 
             <div class="nav-divider"></div>
             @if (SidebarOpen) { <div class="nav-category">Reportes</div> }
             <div class="nav-section">
-                <NavLink class="nav-item" href="/gerente/historial" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                <NavLink class="nav-item" href="/supervisor/historial" Match="NavLinkMatch.Prefix" ActiveClass="active">
                     <span class="material-symbols-rounded nav-item-icon">history</span>
                     @if (SidebarOpen) { <span class="nav-item-label">Historial</span> }
                 </NavLink>

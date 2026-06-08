@@ -1,6 +1,6 @@
-@page "/gerente/productos"
-@page "/supervisor/productos"
+@page "/catalogos/productos"
 @attribute [Authorize(Roles = $"{nameof(UserRole.Gerente)},{nameof(UserRole.Supervisor)},{nameof(UserRole.Admin)}")]
+@inject NavigationManager Nav
 @inject ApiService Api
 @inject AuthService AuthSvc
 @inject ISnackbar Snackbar
@@ -363,6 +363,14 @@
         else
         {
             _negocioActivo = user?.NegocioIds.FirstOrDefault() ?? 0;
+        }
+
+        // Gate: Supervisor necesita GestionProductos
+        if (user?.Rol == UserRole.Supervisor && _negocioActivo > 0
+            && !user.TienePermiso(Permiso.GestionProductos, _negocioActivo))
+        {
+            Nav.NavigateTo("/");
+            return;
         }
 
         if (_negocioActivo != 0) await Cargar();

@@ -4,6 +4,8 @@
 @inject AuthService AuthSvc
 @inject NavigationManager Nav
 @inject ISnackbar Snackbar
+@inject HubService Hub
+@implements IAsyncDisposable
 
 <PageTitle>Jornadas · TortiCloud</PageTitle>
 
@@ -138,6 +140,10 @@
     // Índice precalculado: DriverId → lista ordenada por FechaApertura
     private Dictionary<int, List<JornadaResumenDto>> _jornadasPorDriver = new();
 
+    // SignalR subscriptions
+    private IDisposable? _subAbierta;
+    private IDisposable? _subCerrada;
+
     private int  GetNumJornada(JornadaResumenDto j)
         => _jornadasPorDriver.TryGetValue(j.DriverId, out var lst) ? lst.IndexOf(j) + 1 : 1;
 
@@ -165,11 +171,37 @@
         _cargando = false;
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _negocioActivo == 0) return;
+        try
+        {
+            await Hub.ConnectAsync();
+            await Hub.JoinNegocioAsync(_negocioActivo);
+            _subAbierta = Hub.On<object>("JornadaAbierta", async _ =>
+                await InvokeAsync(async () => { await Cargar(); StateHasChanged(); }));
+            _subCerrada = Hub.On<object>("JornadaCerrada", async _ =>
+                await InvokeAsync(async () => { await Cargar(); StateHasChanged(); }));
+        }
+        catch { /* sin conexión al hub, la página funciona igual sin tiempo real */ }
+    }
+
     private async Task CambiarNegocio(int id)
     {
+        var anterior = _negocioActivo;
         _negocioActivo = id;
         _repartidorId  = 0;
         await Task.WhenAll(Cargar(), CargarRepartidores());
+        // Reubicar el grupo en el hub si está conectado
+        try
+        {
+            if (Hub.IsConnected)
+            {
+                await Hub.LeaveNegocioAsync(anterior);
+                await Hub.JoinNegocioAsync(_negocioActivo);
+            }
+        }
+        catch { }
     }
 
     private async Task Cargar()
@@ -198,8 +230,9 @@
         {
             var resp = await Api.AbrirJornadaAsync(new OpenJornadaRequest
             {
-                TenantId = _negocioActivo,
-                DriverId = _repartidorId
+                TenantId   = _negocioActivo,
+                DriverId   = _repartidorId,
+                LocalFecha = DateOnly.FromDateTime(DateTime.Today)
             });
             if (resp.IsSuccessStatusCode)
             {
@@ -220,4 +253,11 @@
 
     private void Monitorear(int jornadaId)
         => Nav.NavigateTo($"/gerente/jornada/{jornadaId}");
+
+    public async ValueTask DisposeAsync()
+    {
+        _subAbierta?.Dispose();
+        _subCerrada?.Dispose();
+        await Hub.DisposeAsync();
+    }
 }

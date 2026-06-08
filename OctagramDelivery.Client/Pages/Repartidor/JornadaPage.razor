@@ -776,6 +776,14 @@ else
         _negocioId   = user?.NegocioIds.FirstOrDefault() ?? 0;
         _soloLectura = user?.Rol == UserRole.Supervisor;
         _puedeAbrir  = user?.Rol == UserRole.Repartidor;
+
+        // Gate de permiso: Supervisor sin VerHojaReparto no puede acceder
+        if (user?.Rol == UserRole.Supervisor && _negocioId > 0 && !user.PuedeVerHojaReparto(_negocioId))
+        {
+            Nav.NavigateTo("/");
+            return;
+        }
+
         _initialized = true;
 
         await CargarSiNecesario();
@@ -1127,7 +1135,9 @@ else
     }
 
     private void IrACliente(int clienteId)
-        => Nav.NavigateTo($"/repartidor/jornada/cliente/{clienteId}");
+        => Nav.NavigateTo(JornadaId.HasValue
+            ? $"/jornada/{JornadaId}/cliente/{clienteId}"
+            : $"/repartidor/jornada/cliente/{clienteId}");
 
     private List<string> GetChipsCliente(int clienteId)
     {
@@ -1205,7 +1215,11 @@ else
         }
         try
         {
-            var resp = await Api.AbrirJornadaAsync(new OpenJornadaRequest { TenantId = _negocioId });
+            var resp = await Api.AbrirJornadaAsync(new OpenJornadaRequest
+            {
+                TenantId   = _negocioId,
+                LocalFecha = DateOnly.FromDateTime(DateTime.Today)
+            });
             if (resp.IsSuccessStatusCode)
             {
                 var nueva = await resp.Content.ReadFromJsonAsync<JornadaDto>();

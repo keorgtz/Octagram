@@ -22,6 +22,8 @@ public class OpenJornadaRequest
     public int TenantId { get; set; }
     /// <summary>Solo Admin/Gerente pueden especificar un repartidor diferente al caller.</summary>
     public int? DriverId { get; set; }
+    /// <summary>Fecha local del cliente (yyyy-MM-dd). Evita desfase por zona horaria del servidor.</summary>
+    public DateOnly? LocalFecha { get; set; }
 }
 
 public class RondaDto

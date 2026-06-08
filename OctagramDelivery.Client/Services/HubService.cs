@@ -36,6 +36,12 @@ public class HubService : IAsyncDisposable
             await _connection!.InvokeAsync("JoinNegocioGroup", negocioId);
     }
 
+    public async Task LeaveNegocioAsync(int negocioId)
+    {
+        if (IsConnected)
+            await _connection!.InvokeAsync("LeaveNegocioGroup", negocioId);
+    }
+
     public IDisposable On<T>(string method, Action<T> handler)
         => _connection!.On(method, handler);
 

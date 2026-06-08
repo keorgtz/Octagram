@@ -71,21 +71,21 @@
     private IEnumerable<NavItem> GetMainItems() => UserRol switch
     {
         UserRole.Admin => [
-            new("/admin/dashboard",  "dashboard",       "Inicio",   "/admin/dashboard"),
-            new("/gerente/jornadas", "delivery_dining", "Jornadas", "/gerente/jornada"),
-            new("/admin/negocios",   "store",           "Negocios", "/admin/negocios"),
+            new("/dashboard",           "dashboard",       "Inicio",   "/dashboard"),
+            new("/gerente/jornadas",    "delivery_dining", "Jornadas", "/gerente/jornada"),
+            new("/admin/negocios",      "store",           "Negocios", "/admin/negocios"),
         ],
         UserRole.Gerente => [
-            new("/gerente/dashboard", "dashboard",       "Inicio",    "/gerente/dashboard"),
-            new("/gerente/jornadas",  "delivery_dining", "Jornadas",  "/gerente/jornada"),
-            new("/gerente/clientes",  "people",          "Clientes",  "/gerente/clientes"),
-            new("/gerente/historial", "history",         "Historial", "/gerente/historial"),
+            new("/dashboard",           "dashboard",       "Inicio",    "/dashboard"),
+            new("/gerente/jornadas",    "delivery_dining", "Jornadas",  "/gerente/jornada"),
+            new("/catalogos/clientes",  "people",          "Clientes",  "/catalogos/clientes"),
+            new("/gerente/historial",   "history",         "Historial", "/gerente/historial"),
         ],
         UserRole.Supervisor => [
-            new("/gerente/dashboard", "dashboard",       "Inicio",    "/gerente/dashboard"),
-            new("/gerente/jornadas",  "delivery_dining", "Jornadas",  "/gerente/jornada"),
-            new("/gerente/clientes",  "people",          "Clientes",  "/gerente/clientes"),
-            new("/gerente/historial", "history",         "Historial", "/gerente/historial"),
+            new("/dashboard",           "dashboard",       "Inicio",    "/dashboard"),
+            new("/gerente/jornadas",    "delivery_dining", "Jornadas",  "/gerente/jornada"),
+            new("/catalogos/clientes",  "people",          "Clientes",  "/catalogos/clientes"),
+            new("/supervisor/historial","history",         "Historial", "/supervisor/historial"),
         ],
         _ => []
     };
@@ -93,19 +93,19 @@
     private IEnumerable<NavItem> GetMoreItems() => UserRol switch
     {
         UserRole.Admin => [
-            new("/admin/usuarios",    "manage_accounts", "Usuarios",  "/admin/usuarios"),
-            new("/gerente/clientes",  "people",          "Clientes",  "/gerente/clientes"),
-            new("/gerente/grupos",    "group_work",      "Grupos",    "/gerente/grupos"),
-            new("/gerente/productos", "inventory_2",     "Productos", "/gerente/productos"),
-            new("/admin/historial",   "history",         "Historial", "/admin/historial"),
+            new("/admin/usuarios",      "manage_accounts", "Usuarios",  "/admin/usuarios"),
+            new("/catalogos/clientes",  "people",          "Clientes",  "/catalogos/clientes"),
+            new("/catalogos/grupos",    "folder_special",  "Grupos",    "/catalogos/grupos"),
+            new("/catalogos/productos", "inventory_2",     "Productos", "/catalogos/productos"),
+            new("/admin/historial",     "history",         "Historial", "/admin/historial"),
         ],
         UserRole.Gerente => [
-            new("/gerente/grupos",    "group_work",      "Grupos",    "/gerente/grupos"),
-            new("/gerente/productos", "inventory_2",     "Productos", "/gerente/productos"),
+            new("/catalogos/grupos",    "folder_special",  "Grupos",    "/catalogos/grupos"),
+            new("/catalogos/productos", "inventory_2",     "Productos", "/catalogos/productos"),
         ],
         UserRole.Supervisor => [
-            new("/gerente/grupos",    "group_work",      "Grupos",    "/gerente/grupos"),
-            new("/gerente/productos", "inventory_2",     "Productos", "/gerente/productos"),
+            new("/catalogos/grupos",    "folder_special",  "Grupos",    "/catalogos/grupos"),
+            new("/catalogos/productos", "inventory_2",     "Productos", "/catalogos/productos"),
         ],
         _ => []
     };
