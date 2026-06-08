@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OctagramDelivery · Resumen 2026-06-08</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block');
+
+:root {
+  --em: #10B981; --em-bg: #F0FDF4;
+  --am: #F59E0B; --am-bg: #FFFBEB;
+  --in: #6366F1; --in-bg: #EEF2FF;
+  --vi: #8B5CF6; --vi-bg: #F5F3FF;
+  --or: #F97316; --or-bg: #FFF7ED;
+  --primary: #1976D2; --primary-light: #BBDEFB;
+  --gray-dark: #1C1E26; --gray-700: #374151; --gray-muted: #6B7280;
+  --gray-line: #E5E7EB; --page-bg: #F2F3F7; --white: #FFFFFF;
+  --shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06);
+  --r-md: 10px; --r-lg: 14px; --r-xl: 20px;
+  --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --fs-11: 11px; --fs-12: 12px; --fs-13: 13px; --fs-14: 14px;
+  --fs-16: 16px; --fs-18: 18px; --fs-22: 22px;
+  --fw-regular: 400; --fw-medium: 500; --fw-semi: 600; --fw-bold: 700;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font); background: var(--page-bg); color: var(--gray-dark); line-height: 1.5; padding: 24px; max-width: 960px; margin: 0 auto; }
+
+.page-header { margin-bottom: 32px; }
+.page-header h1 { font-size: var(--fs-22); font-weight: var(--fw-bold); color: var(--gray-dark); }
+.page-header .subtitle { font-size: var(--fs-13); color: var(--gray-muted); margin-top: 4px; }
+
+.section { background: var(--white); border-radius: var(--r-lg); box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
+.section-title { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.section-title .icon { width: 32px; height: 32px; border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.section-title h2 { font-size: var(--fs-16); font-weight: var(--fw-semi); }
+
+.change-row { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--gray-line); }
+.change-row:last-child { border-bottom: none; }
+.change-badge { flex-shrink: 0; width: 64px; text-align: center; font-size: var(--fs-11); font-weight: var(--fw-semi); padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: .04em; }
+.change-badge.fix { background: var(--em-bg); color: var(--em); }
+.change-badge.add { background: var(--in-bg); color: var(--in); }
+.change-badge.update { background: var(--vi-bg); color: var(--vi); }
+.change-content { flex: 1; min-width: 0; }
+.change-content .title { font-size: var(--fs-14); font-weight: var(--fw-semi); color: var(--gray-dark); }
+.change-content .desc { font-size: var(--fs-12); color: var(--gray-muted); margin-top: 2px; }
+.change-content .files { font-size: var(--fs-11); color: var(--gray-muted); margin-top: 4px; font-family: 'Cascadia Mono', 'Consolas', monospace; }
+
+.perm-table { width: 100%; border-collapse: collapse; font-size: var(--fs-13); }
+.perm-table th { text-align: left; padding: 8px 12px; background: var(--page-bg); font-weight: var(--fw-semi); font-size: var(--fs-11); text-transform: uppercase; letter-spacing: .04em; color: var(--gray-muted); }
+.perm-table td { padding: 8px 12px; border-bottom: 1px solid var(--gray-line); }
+.perm-table tr:last-child td { border-bottom: none; }
+.perm-new { background: var(--in-bg); }
+.perm-flag { font-family: 'Cascadia Mono', 'Consolas', monospace; font-size: var(--fs-12); color: var(--in); }
+
+.tag { display: inline-block; font-size: var(--fs-11); font-weight: var(--fw-semi); padding: 2px 8px; border-radius: 999px; margin-right: 4px; }
+.tag.client { background: var(--in-bg); color: var(--in); }
+.tag.domain { background: var(--vi-bg); color: var(--vi); }
+.tag.docs { background: var(--am-bg); color: var(--am); }
+
+.pending-list { list-style: none; }
+.pending-list li { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--gray-line); font-size: var(--fs-13); }
+.pending-list li:last-child { border-bottom: none; }
+.pending-list .material-symbols-rounded { font-size: 18px; color: var(--am); flex-shrink: 0; margin-top: 1px; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>OctagramDelivery · Resumen de implementación</h1>
+  <div class="subtitle">8 de junio de 2026 · 4 sesiones de cambios</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SESIÓN 1: Rutas unificadas -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">
+    <div class="icon" style="background:var(--em-bg);color:var(--em);">
+      <span class="material-symbols-rounded">route</span>
+    </div>
+    <h2>Rutas canónicas y redirección de login</h2>
+  </div>
+
+  <div class="change-row">
+    <span class="change-badge fix">Fix</span>
+    <div class="change-content">
+      <div class="title">Redirección post-login unificada</div>
+      <div class="desc">Admin, Gerente y Supervisor ahora redirigen a <code>/dashboard</code> en lugar de rutas duplicadas (<code>/admin/dashboard</code>, <code>/gerente/dashboard</code>, <code>/supervisor/dashboard</code>).</div>
+      <div class="files">Login.razor · Home.razor</div>
+    </div>
+  </div>
+
+  <div class="change-row">
+    <span class="change-badge fix">Fix</span>
+    <div class="change-content">
+      <div class="title">Historial unificado a <code>/historial</code></div>
+      <div class="desc">Se eliminaron las 3 rutas duplicadas (<code>/admin/historial</code>, <code>/gerente/historial</code>, <code>/supervisor/historial</code>) y se unificaron en una sola ruta <code>/historial</code>. NavMenu y BottomNav actualizados.</div>
+      <div class="files">HistorialJornadas.razor · NavMenu.razor · BottomNav.razor</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SESIÓN 2: Admin sin restricciones -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">
+    <div class="icon" style="background:var(--in-bg);color:var(--in);">
+      <span class="material-symbols-rounded">admin_panel_settings</span>
+    </div>
+    <h2>Admin: acceso completo sin restricciones</h2>
+  </div>
+
+  <div class="change-row">
+    <span class="change-badge fix">Fix</span>
+    <div class="change-content">
+      <div class="title">Admin puede abrir jornadas</div>
+      <div class="desc"><code>_puedeAbrir</code> ahora incluye <code>UserRole.Admin</code>. Antes solo Repartidor podía abrir jornadas.</div>
+      <div class="files">JornadaPage.razor · línea 778</div>
+    </div>
+  </div>
+
+  <div class="change-row">
+    <span class="change-badge fix">Fix</span>
+    <div class="change-content">
+      <div class="title">Admin nunca está en modo solo lectura</div>
+      <div class="desc"><code>_soloLectura</code> en ClienteJornadaPage excluía Admin por error cuando accedía vía <code>/gerente/jornada/{id}/cliente/{id}</code>. Ahora Admin siempre puede editar entregas y stocks.</div>
+      <div class="files">ClienteJornadaPage.razor · línea 252-254</div>
+    </div>
+  </div>
+
+  <div class="change-row">
+    <span class="change-badge fix">Fix</span>
+    <div class="change-content">
+      <div class="title">Admin puede ver y editar stocks en hoja de reparto</div>
+      <div class="desc">Al acceder vía <code>/gerente/jornada/{id}</code>, el Admin ahora: (1) carga secciones del negocio desde API si no hay datos locales, (2) puede navegar a la vista de Stocks, (3) puede editar stocks con el numpad. Antes se forzaba <code>Vista.Reparto</code> y no se cargaban secciones.</div>
+      <div class="files">JornadaPage.razor · CargarDatosNegocioAsync · OnInitializedAsync</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SESIÓN 3: Permisos granulares -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">
+    <div class="icon" style="background:var(--vi-bg);color:var(--vi);">
+      <span class="material-symbols-rounded">shield</span>
+    </div>
+    <h2>Sistema de permisos: 3 permisos nuevos</h2>
+  </div>
+
+  <table class="perm-table">
+    <thead>
+      <tr>
+        <th>Permiso</th>
+        <th>Flag</th>
+        <th>Descripción</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>VerDashboard</code></td>
+        <td class="perm-flag">1</td>
+        <td>Acceso al dashboard</td>
+        <td>Existente</td>
+      </tr>
+      <tr>
+        <td><code>VerReportes</code></td>
+        <td class="perm-flag">2</td>
+        <td>Ver reportes de jornada</td>
+        <td>Existente</td>
+      </tr>
+      <tr>
+        <td><code>GestionClientes</code></td>
+        <td class="perm-flag">4</td>
+        <td>Crear/editar clientes</td>
+        <td>Existente</td>
+      </tr>
+      <tr>
+        <td><code>GestionProductos</code></td>
+        <td class="perm-flag">8</td>
+        <td>Crear/editar productos</td>
+        <td>Existente</td>
+      </tr>
+      <tr>
+        <td><code>VerHojaReparto</code></td>
+        <td class="perm-flag">16</td>
+        <td>Ver y monitorear hoja de reparto</td>
+        <td>Existente</td>
+      </tr>
+      <tr class="perm-new">
+        <td><code>GestionGrupos</code></td>
+        <td class="perm-flag">32</td>
+        <td>Crear/editar grupos de producto</td>
+        <td>✨ Nuevo</td>
+      </tr>
+      <tr class="perm-new">
+        <td><code>GestionSecciones</code></td>
+        <td class="perm-flag">64</td>
+        <td>Crear/editar secciones y stock</td>
+        <td>✨ Nuevo</td>
+      </tr>
+      <tr class="perm-new">
+        <td><code>AsignarJornada</code></td>
+        <td class="perm-flag">128</td>
+        <td>Abrir/cerrar jornadas para repartidores</td>
+        <td>✨ Nuevo</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:16px;">
+    <div class="change-row">
+      <span class="change-badge add">Add</span>
+      <div class="change-content">
+        <div class="title">Vista de permisos completa en NegocioDetailDialog</div>
+        <div class="desc">La pestaña "Permisos" ahora muestra los 8 permisos como checkboxes individuales. Antes solo mostraba 5.</div>
+        <div class="files">NegocioDetailDialog.razor · _permisosDisp</div>
+      </div>
+    </div>
+    <div class="change-row">
+      <span class="change-badge update">Update</span>
+      <div class="change-content">
+        <div class="title"><code>GestionGrupos</code> separado de <code>GestionProductos</code></div>
+        <div class="desc">GestionGrupos.razor usa su propio permiso en lugar de <code>GestionClientes</code>. NavMenu y BottomNav muestran "Grupos" independientemente de "Productos".</div>
+        <div class="files">GestionGrupos.razor · NavMenu.razor · BottomNav.razor</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SESIÓN 4: Stocks de reparto no mostraban productos -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">
+    <div class="icon" style="background:var(--or-bg);color:var(--or);">
+      <span class="material-symbols-rounded">bug_report</span>
+    </div>
+    <h2>Fix: Secciones sin productos en Stocks de Reparto</h2>
+  </div>
+
+  <div class="change-row">
+    <span class="change-badge fix">Fix</span>
+    <div class="change-content">
+      <div class="title">Secciones siempre se cargan desde la API</div>
+      <div class="desc">Antes, <code>CargarDatosNegocioAsync()</code> solo cargaba secciones desde la API cuando <code>_secciones.Count == 0</code>. Si el snapshot local tenía secciones (aunque fuera con stocks vacíos o desactualizados), no se actualizaban desde la API. Ahora siempre se obtienen secciones y grupos actualizados desde la API cuando hay conexión, garantizando que los productos asignados a secciones se muestren correctamente.</div>
+      <div class="files">JornadaPage.razor · CargarDatosNegocioAsync</div>
+    </div>
+  </div>
+
+  <div class="change-row">
+    <span class="change-badge fix">Fix</span>
+    <div class="change-content">
+      <div class="title">Eliminada dependencia de <code>SyncNegocioDataAsync</code> para carga de secciones</div>
+      <div class="desc">El método <code>SyncNegocioDataAsync</code> tiene un flag <code>_syncingNegocio</code> que bloquea llamadas concurrentes. Si la sincronización periódica estaba en progreso, <code>CargarDatosNegocioAsync</code> recibía <code>null</code> y no actualizaba los datos. Ahora se llama directamente a <code>Api.GetSeccionesAsync()</code> y <code>Api.GetGruposProductoAsync()</code>, evitando el bloqueo.</div>
+      <div class="files">JornadaPage.razor · CargarDatosNegocioAsync</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ARCHIVOS AFECTADOS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">
+    <div class="icon" style="background:var(--or-bg);color:var(--or);">
+      <span class="material-symbols-rounded">folder_open</span>
+    </div>
+    <h2>Archivos modificados</h2>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:var(--fs-12);">
+    <div><span class="tag client">Client</span> Login.razor</div>
+    <div><span class="tag client">Client</span> Home.razor</div>
+    <div><span class="tag client">Client</span> Dashboard.razor</div>
+    <div><span class="tag client">Client</span> NavMenu.razor</div>
+    <div><span class="tag client">Client</span> BottomNav.razor</div>
+    <div><span class="tag client">Client</span> JornadaPage.razor <span style="font-size:10px;color:var(--or);">★ edited 4x</span></div>
+    <div><span class="tag client">Client</span> ClienteJornadaPage.razor</div>
+    <div><span class="tag client">Client</span> HistorialJornadas.razor</div>
+    <div><span class="tag client">Client</span> GestionGrupos.razor</div>
+    <div><span class="tag client">Client</span> NegocioDetailDialog.razor</div>
+    <div><span class="tag domain">Domain</span> Enums.cs</div>
+    <div><span class="tag docs">Docs</span> CLAUDE.md</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- PENDIENTES -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">
+    <div class="icon" style="background:var(--am-bg);color:var(--am);">
+      <span class="material-symbols-rounded">pending_actions</span>
+    </div>
+    <h2>Pendientes y riesgos</h2>
+  </div>
+
+  <ul class="pending-list">
+    <li>
+      <span class="material-symbols-rounded">warning</span>
+      <div><strong>GestionSecciones y AsignarJornada aún no tienen gate en vistas.</strong> Los permisos existen en el enum y en la UI de configuración, pero las vistas de Secciones y JornadasActivasPage no verifican estos permisos para Supervisor. Se recomienda agregar los gates en una próxima sesión.</div>
+    </li>
+    <li>
+      <span class="material-symbols-rounded">info</span>
+      <div><strong>Permisos existentes de Supervisores.</strong> Los Supervisores que ya tenían permisos configurados con el enum anterior (5 permisos, Todo=31) conservan sus flags en la BD. El nuevo Todo=255 incluye los 3 permisos nuevos. Los Supervisores existentes necesitarán que se les asignen los nuevos permisos manualmente desde la UI de administración.</div>
+    </li>
+    <li>
+      <span class="material-symbols-rounded">info</span>
+      <div><strong>Admin en jornada ajena.</strong> Cuando Admin accede a <code>/gerente/jornada/{id}</code>, las secciones se cargan desde la API (no hay snapshot local). La primera carga puede ser ligeramente más lenta que para el Repartidor.</div>
+    </li>
+  </ul>
+</div>
+
+</body>
+</html>

@@ -1087,10 +1087,12 @@ else
         }
     }
 
-    /// <summary>Carga grupos y secciones: primero desde local, luego desde la API si no hay datos.</summary>
+    /// <summary>Carga grupos y secciones: primero desde local para mostrar rápido, luego desde la API para tener datos actualizados.</summary>
     private async Task CargarDatosNegocioAsync()
     {
         if (_negocioId == 0) return;
+
+        // 1. Cargar desde snapshot local (datos rápidos, pueden estar desactualizados)
         var snap = await LocalData.GetNegocioSnapshotAsync(_negocioId);
         if (snap != null)
         {
@@ -1098,15 +1100,27 @@ else
             _secciones      = snap.Secciones;
         }
 
-        // Si no hay secciones locales (ej. Admin accediendo a negocio ajeno), cargar desde la API
-        if (_secciones.Count == 0 && OfflineSync.IsOnline)
+        // 2. Siempre obtener datos actualizados desde la API si hay conexión
+        if (OfflineSync.IsOnline)
         {
-            var apiSnap = await OfflineSync.SyncNegocioDataAsync(_negocioId);
-            if (apiSnap != null)
+            try
             {
-                _gruposProducto = apiSnap.GruposProducto;
-                _secciones      = apiSnap.Secciones;
+                var secciones = await Api.GetSeccionesAsync(_negocioId) ?? new();
+                var grupos = await Api.GetGruposProductoAsync(_negocioId) ?? new();
+                _secciones = secciones;
+                _gruposProducto = grupos;
+
+                // Guardar en snapshot local para futuras cargas rápidas
+                var newSnap = new NegocioSnapshot
+                {
+                    Productos = snap?.Productos ?? new(),
+                    Clientes = snap?.Clientes ?? new(),
+                    GruposProducto = grupos,
+                    Secciones = secciones
+                };
+                await LocalData.SaveNegocioSnapshotAsync(_negocioId, newSnap);
             }
+            catch { /* si falla la API, usar datos locales */ }
         }
 
         // Si es supervisor en modo solo lectura → ir directamente a reparto
@@ -1119,10 +1133,6 @@ else
         // Auto-seleccionar primera vuelta cuando hay secciones
         if (_secciones.Count > 0 && _hojaRondaId == null)
             _hojaRondaId = Estado.Jornada?.Rondas.FirstOrDefault()?.Id;
-
-        // Sincronizar en segundo plano si hay internet (solo para repartidor en su jornada)
-        if (!JornadaId.HasValue && OfflineSync.IsOnline)
-            _ = OfflineSync.SyncNegocioDataAsync(_negocioId);
     }
 
     private void OnNegocioActualizado()
