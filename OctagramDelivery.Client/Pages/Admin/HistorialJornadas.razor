@@ -1,6 +1,4 @@
-@page "/admin/historial"
-@page "/gerente/historial"
-@page "/supervisor/historial"
+@page "/historial"
 @attribute [Authorize(Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Gerente)},{nameof(UserRole.Supervisor)}")]
 @inject ApiService Api
 @inject AuthService AuthSvc

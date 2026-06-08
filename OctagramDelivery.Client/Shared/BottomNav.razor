@@ -81,7 +81,7 @@
             new("/dashboard",           "dashboard",       "Inicio",    "/dashboard"),
             new("/gerente/jornadas",    "delivery_dining", "Jornadas",  "/gerente/jornada"),
             new("/catalogos/clientes",  "people",          "Clientes",  "/catalogos/clientes"),
-            new("/gerente/historial",   "history",         "Historial", "/gerente/historial"),
+            new("/historial",   "history",         "Historial", "/historial"),
         ],
         UserRole.Supervisor => BuildSupervisorMainItems(),
         _ => []
@@ -94,7 +94,7 @@
             new("/catalogos/clientes",  "people",          "Clientes",  "/catalogos/clientes"),
             new("/catalogos/grupos",    "folder_special",  "Grupos",    "/catalogos/grupos"),
             new("/catalogos/productos", "inventory_2",     "Productos", "/catalogos/productos"),
-            new("/admin/historial",     "history",         "Historial", "/admin/historial"),
+            new("/historial",     "history",         "Historial", "/historial"),
         ],
         UserRole.Gerente => [
             new("/catalogos/grupos",    "folder_special",  "Grupos",    "/catalogos/grupos"),
@@ -116,7 +116,7 @@
         if (User.TienePermiso(Permiso.GestionClientes, NegId))
             items.Add(new("/catalogos/clientes", "people", "Clientes", "/catalogos/clientes"));
         if (User.TienePermiso(Permiso.VerReportes, NegId))
-            items.Add(new("/supervisor/historial", "history", "Historial", "/supervisor/historial"));
+            items.Add(new("/historial", "history", "Historial", "/historial"));
         return items;
     }
 
