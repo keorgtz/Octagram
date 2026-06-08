@@ -627,11 +627,14 @@
 
     private static readonly (Permiso Perm, string Label)[] _permisosDisp =
     {
-        (Permiso.VerDashboard,     "Ver Dashboard"),
-        (Permiso.VerReportes,      "Ver Reportes"),
-        (Permiso.GestionClientes,  "Gestión Clientes"),
-        (Permiso.GestionProductos, "Gestión Productos"),
-        (Permiso.VerHojaReparto,   "Ver Hoja de Reparto"),
+        (Permiso.VerDashboard,      "Ver Dashboard"),
+        (Permiso.VerReportes,       "Ver Reportes"),
+        (Permiso.GestionClientes,   "Gestión Clientes"),
+        (Permiso.GestionProductos,  "Gestión Productos"),
+        (Permiso.GestionGrupos,     "Gestión Grupos"),
+        (Permiso.GestionSecciones,  "Gestión Secciones"),
+        (Permiso.VerHojaReparto,    "Ver Hoja de Reparto"),
+        (Permiso.AsignarJornada,    "Abrir/Cerrar Jornadas"),
     };
 
     private void TogglePermiso(int userId, Permiso permiso, int baseFlags, bool activo)

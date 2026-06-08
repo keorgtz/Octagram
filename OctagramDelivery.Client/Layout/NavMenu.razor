@@ -122,7 +122,7 @@
                 <div class="nav-divider"></div>
             }
 
-            @if (User.TienePermiso(Permiso.GestionClientes, NegId) || User.TienePermiso(Permiso.GestionProductos, NegId))
+            @if (User.TienePermiso(Permiso.GestionClientes, NegId) || User.TienePermiso(Permiso.GestionProductos, NegId) || User.TienePermiso(Permiso.GestionGrupos, NegId))
             {
                 @if (SidebarOpen) { <div class="nav-category">Catálogos</div> }
                 <div class="nav-section">
@@ -139,6 +139,9 @@
                             <span class="material-symbols-rounded nav-item-icon">inventory_2</span>
                             @if (SidebarOpen) { <span class="nav-item-label">Productos</span> }
                         </NavLink>
+                    }
+                    @if (User.TienePermiso(Permiso.GestionGrupos, NegId))
+                    {
                         <NavLink class="nav-item" href="/catalogos/grupos" Match="NavLinkMatch.Prefix" ActiveClass="active">
                             <span class="material-symbols-rounded nav-item-icon">folder_special</span>
                             @if (SidebarOpen) { <span class="nav-item-label">Grupos</span> }

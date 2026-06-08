@@ -248,9 +248,10 @@ else
         OfflineSync.OnSynced += OnSynced;
 
         var currentUser = await AuthSvc.GetCurrentUser();
-        // Supervisor → siempre solo lectura; Gerente/Admin en modo monitor (JornadaId) → solo lectura
+        // Supervisor → siempre solo lectura; Gerente en modo monitor (JornadaId) → solo lectura
+        // Admin nunca es solo lectura
         _soloLectura = currentUser?.Rol == UserRole.Supervisor
-                    || (JornadaId.HasValue && currentUser?.Rol != UserRole.Repartidor);
+                    || (JornadaId.HasValue && currentUser?.Rol != UserRole.Repartidor && currentUser?.Rol != UserRole.Admin);
 
         // Gate de permiso: Supervisor sin VerHojaReparto no puede acceder
         if (currentUser?.Rol == UserRole.Supervisor)

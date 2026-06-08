@@ -9,11 +9,15 @@ public enum MetodoPago  { Efectivo = 0, TarjetaCredito = 1, TarjetaDebito = 2, T
 [Flags]
 public enum Permiso
 {
-    Ninguno          = 0,
-    VerDashboard     = 1 << 0,
-    VerReportes      = 1 << 1,
-    GestionClientes  = 1 << 2,
-    GestionProductos = 1 << 3,
-    VerHojaReparto   = 1 << 4,
-    Todo             = VerDashboard | VerReportes | GestionClientes | GestionProductos | VerHojaReparto
+    Ninguno           = 0,
+    VerDashboard      = 1 << 0,   // 1
+    VerReportes       = 1 << 1,   // 2
+    GestionClientes   = 1 << 2,   // 4
+    GestionProductos  = 1 << 3,   // 8
+    VerHojaReparto    = 1 << 4,   // 16
+    GestionGrupos     = 1 << 5,   // 32
+    GestionSecciones  = 1 << 6,   // 64
+    AsignarJornada    = 1 << 7,   // 128
+    Todo              = VerDashboard | VerReportes | GestionClientes | GestionProductos
+                       | VerHojaReparto | GestionGrupos | GestionSecciones | AsignarJornada
 }

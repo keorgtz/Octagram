@@ -241,9 +241,9 @@
             _negocioActivo = user?.NegocioIds.FirstOrDefault() ?? 0;
         }
 
-        // Gate: Supervisor necesita GestionClientes (grupos son parte de la gestión de clientes)
+        // Gate: Supervisor necesita GestionGrupos
         if (user?.Rol == UserRole.Supervisor && _negocioActivo > 0
-            && !user.TienePermiso(Permiso.GestionClientes, _negocioActivo))
+            && !user.TienePermiso(Permiso.GestionGrupos, _negocioActivo))
         {
             Nav.NavigateTo("/");
             return;

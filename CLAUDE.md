@@ -34,6 +34,9 @@ Los helpers disponibles en `UserInfo`:
 | `GestionClientes` | Crear/editar clientes | Supervisor |
 | `GestionProductos` | Crear/editar productos | Supervisor |
 | `VerHojaReparto` | Ver y monitorear la hoja de reparto | Supervisor |
+| `GestionGrupos` | Crear/editar grupos de producto | Supervisor |
+| `GestionSecciones` | Crear/editar secciones y stock | Supervisor |
+| `AsignarJornada` | Abrir/cerrar jornadas para repartidores | Supervisor |
 
 Admin y Gerente **siempre** tienen acceso completo; no necesitan permisos adicionales.
 Repartidor **solo** accede a la hoja de reparto propia; no aplica el sistema de permisos de negocio.
@@ -41,7 +44,8 @@ Repartidor **solo** accede a la hoja de reparto propia; no aplica el sistema de 
 ### Patrón de vista unificada
 La hoja de reparto (`JornadaPage`, `ClienteJornadaPage`) es **una sola vista** para todos los roles:
 - Repartidor → edición completa, ruta propia `/repartidor/jornada`
-- Gerente/Admin monitoreando → mismo componente vía `/gerente/jornada/{id}`, solo lectura
+- Admin → edición completa, ruta `/gerente/jornada/{id}` (NO es solo lectura)
+- Gerente monitoreando → mismo componente vía `/gerente/jornada/{id}`, solo lectura
 - Supervisor con `VerHojaReparto` → mismo componente vía `/gerente/jornada/{id}`, solo lectura
 
 No crear vistas duplicadas por rol. Usar `_soloLectura`, `_puedeAbrir` y el parámetro `JornadaId` para adaptar el comportamiento dentro del mismo componente.
@@ -63,8 +67,9 @@ No crear vistas duplicadas por rol. Usar `_soloLectura`, `_puedeAbrir` y el par�
 | `/repartidor/jornada` | Repartidor | `Pages/Repartidor/JornadaPage.razor` (edición) |
 | `/jornada/{JornadaId:int}/cliente/{ClienteId:int}` | Admin, Gerente, Supervisor | `Pages/Repartidor/ClienteJornadaPage.razor` |
 | `/repartidor/jornada/cliente/{ClienteId:int}` | Repartidor | `Pages/Repartidor/ClienteJornadaPage.razor` |
+| `/historial` | Admin, Gerente, Supervisor | `Pages/Admin/HistorialJornadas.razor` |
 
-Routes **eliminadas** (no recrear): `/admin/dashboard`, `/gerente/dashboard`, `/supervisor/dashboard`, `/gerente/clientes`, `/supervisor/clientes`, `/gerente/productos`, `/gerente/grupos`.
+Routes **eliminadas** (no recrear): `/admin/dashboard`, `/gerente/dashboard`, `/supervisor/dashboard`, `/gerente/clientes`, `/supervisor/clientes`, `/gerente/productos`, `/gerente/grupos`, `/admin/historial`, `/gerente/historial`, `/supervisor/historial`.
 
 ---
 
@@ -147,13 +152,16 @@ El `Permiso` enum es `[Flags]` en `OctagramDelivery.Domain/Enums/Enums.cs`:
 [Flags]
 public enum Permiso
 {
-    Ninguno          = 0,
-    VerDashboard     = 1 << 0,   // 1
-    VerReportes      = 1 << 1,   // 2
-    GestionClientes  = 1 << 2,   // 4
-    GestionProductos = 1 << 3,   // 8
-    VerHojaReparto   = 1 << 4,   // 16
-    Todo             = 31
+    Ninguno           = 0,
+    VerDashboard      = 1 << 0,   // 1
+    VerReportes       = 1 << 1,   // 2
+    GestionClientes   = 1 << 2,   // 4
+    GestionProductos  = 1 << 3,   // 8
+    VerHojaReparto    = 1 << 4,   // 16
+    GestionGrupos     = 1 << 5,   // 32
+    GestionSecciones  = 1 << 6,   // 64
+    AsignarJornada    = 1 << 7,   // 128
+    Todo              = 255
 }
 ```
 

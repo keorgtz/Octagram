@@ -124,10 +124,9 @@
     {
         var items = new List<NavItem>();
         if (User.TienePermiso(Permiso.GestionProductos, NegId))
-        {
-            items.Add(new("/catalogos/grupos", "folder_special", "Grupos", "/catalogos/grupos"));
             items.Add(new("/catalogos/productos", "inventory_2", "Productos", "/catalogos/productos"));
-        }
+        if (User.TienePermiso(Permiso.GestionGrupos, NegId))
+            items.Add(new("/catalogos/grupos", "folder_special", "Grupos", "/catalogos/grupos"));
         return items;
     }
 }
