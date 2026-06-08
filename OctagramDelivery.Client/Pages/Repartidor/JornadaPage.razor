@@ -354,44 +354,45 @@ else
                 else
                 {
                     <div class="jstocks-secciones">
-                        @foreach (var sec in _secciones.Where(s => s.Stocks.Count > 0))
+                        @foreach (var sec in _secciones)
                         {
                             <div class="jstocks-seccion-card">
                                 <div class="jstocks-seccion-titulo">
                                     <span class="material-symbols-rounded" style="font-size:16px;color:var(--in,#6366F1);">map</span>
                                     <span>@sec.Nombre</span>
                                 </div>
-                                @foreach (var st in sec.Stocks.OrderBy(s => s.ProductoId))
+                                @if (sec.Stocks.Count > 0)
                                 {
-                                    var prodDto  = Estado.Productos.FirstOrDefault(p => p.Id == st.ProductoId);
-                                    var esGramaje = prodDto?.TipoMedida == TipoMedida.Gramaje;
-                                    var valorAct  = GetStockParaRonda(_hojaRondaId!.Value, sec.Id, st.ProductoId, st.CantidadStock);
-                                    var sItem     = new SeccionItem(st.ProductoId, st.ProductoNombre, esGramaje, valorAct, 0, 0);
-                                    <div class="jstocks-prod-row">
-                                        <span class="jstocks-prod-nombre">@st.ProductoNombre</span>
-                                        <div class="jstocks-prod-right">
-                                            <span class="jstocks-valor @(valorAct > 0 ? "activo" : "")">
-                                                @valorAct.ToString("0.##")
-                                                <span class="jstocks-unidad">@(esGramaje ? "kg" : "pzs")</span>
-                                            </span>
-                                            @if (!_soloLectura && Estado.Jornada?.Estado == JornadaEstado.Abierta)
-                                            {
-                                                <button class="jstocks-edit-btn"
-                                                        @onclick="() => AbrirNumpadStock(_hojaRondaId!.Value, sec.Id, sItem)">
-                                                    <span class="material-symbols-rounded">edit</span>
-                                                </button>
-                                            }
+                                    @foreach (var st in sec.Stocks.OrderBy(s => s.ProductoId))
+                                    {
+                                        var prodDto  = Estado.Productos.FirstOrDefault(p => p.Id == st.ProductoId);
+                                        var esGramaje = prodDto?.TipoMedida == TipoMedida.Gramaje;
+                                        var valorAct  = GetStockParaRonda(_hojaRondaId!.Value, sec.Id, st.ProductoId, st.CantidadStock);
+                                        var sItem     = new SeccionItem(st.ProductoId, st.ProductoNombre, esGramaje, valorAct, 0, 0);
+                                        <div class="jstocks-prod-row">
+                                            <span class="jstocks-prod-nombre">@st.ProductoNombre</span>
+                                            <div class="jstocks-prod-right">
+                                                <span class="jstocks-valor @(valorAct > 0 ? "activo" : "")">
+                                                    @valorAct.ToString("0.##")
+                                                    <span class="jstocks-unidad">@(esGramaje ? "kg" : "pzs")</span>
+                                                </span>
+                                                @if (!_soloLectura && Estado.Jornada?.Estado == JornadaEstado.Abierta)
+                                                {
+                                                    <button class="jstocks-edit-btn"
+                                                            @onclick="() => AbrirNumpadStock(_hojaRondaId!.Value, sec.Id, sItem)">
+                                                        <span class="material-symbols-rounded">edit</span>
+                                                    </button>
+                                                }
+                                            </div>
                                         </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div style="padding:12px 0;text-align:center;color:var(--gray-muted);font-size:12px;">
+                                        Sin productos asignados a esta sección.
                                     </div>
                                 }
-                            </div>
-                        }
-
-                        @if (!_secciones.Any(s => s.Stocks.Count > 0))
-                        {
-                            <div class="empty-state" style="padding:32px 0;">
-                                <span class="material-symbols-rounded">inventory_2</span>
-                                <p>Las secciones no tienen productos asignados.</p>
                             </div>
                         }
                     </div>
