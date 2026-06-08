@@ -789,7 +789,7 @@ else
         await CargarSiNecesario();
 
         // Cargar stocks por ronda desde snapshot (datos operativos locales)
-        if (_negocioId > 0 && !JornadaId.HasValue)
+        if (_negocioId > 0)
         {
             var snapStocks = await LocalData.GetSnapshotAsync(_negocioId);
             if (snapStocks?.StocksRonda != null)
@@ -827,10 +827,11 @@ else
         _cargando = false;
 
         // Cargar datos del negocio (grupos, secciones) y arrancar sync periódico
-        if (_negocioId > 0 && !JornadaId.HasValue)
+        if (_negocioId > 0)
         {
             await CargarDatosNegocioAsync();
-            OfflineSync.StartPeriodicSync(_negocioId);
+            if (!JornadaId.HasValue)
+                OfflineSync.StartPeriodicSync(_negocioId);
         }
 
         // Si hay ops pendientes, reflejar estado en el indicador
@@ -1086,7 +1087,7 @@ else
         }
     }
 
-    /// <summary>Carga grupos y secciones: primero desde local, luego sincroniza en segundo plano si hay red.</summary>
+    /// <summary>Carga grupos y secciones: primero desde local, luego desde la API si no hay datos.</summary>
     private async Task CargarDatosNegocioAsync()
     {
         if (_negocioId == 0) return;
@@ -1097,8 +1098,19 @@ else
             _secciones      = snap.Secciones;
         }
 
-        // Si es gerente viendo jornada ajena → ir directamente a reparto
-        if (JornadaId.HasValue)
+        // Si no hay secciones locales (ej. Admin accediendo a negocio ajeno), cargar desde la API
+        if (_secciones.Count == 0 && OfflineSync.IsOnline)
+        {
+            var apiSnap = await OfflineSync.SyncNegocioDataAsync(_negocioId);
+            if (apiSnap != null)
+            {
+                _gruposProducto = apiSnap.GruposProducto;
+                _secciones      = apiSnap.Secciones;
+            }
+        }
+
+        // Si es supervisor en modo solo lectura → ir directamente a reparto
+        if (JornadaId.HasValue && _soloLectura)
             _vista = Vista.Reparto;
         // Si no hay secciones configuradas → ir directamente a reparto (sin pantalla de stocks)
         else if (_secciones.Count == 0)
@@ -1108,8 +1120,8 @@ else
         if (_secciones.Count > 0 && _hojaRondaId == null)
             _hojaRondaId = Estado.Jornada?.Rondas.FirstOrDefault()?.Id;
 
-        // Sincronizar en segundo plano si hay internet
-        if (OfflineSync.IsOnline)
+        // Sincronizar en segundo plano si hay internet (solo para repartidor en su jornada)
+        if (!JornadaId.HasValue && OfflineSync.IsOnline)
             _ = OfflineSync.SyncNegocioDataAsync(_negocioId);
     }
 
