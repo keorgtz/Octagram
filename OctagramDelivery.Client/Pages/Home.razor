@@ -10,9 +10,9 @@
 
         Nav.NavigateTo(user.Rol switch
         {
-            UserRole.Admin      => "/admin/dashboard",
-            UserRole.Gerente    => "/gerente/dashboard",
-            UserRole.Supervisor => "/supervisor/dashboard",
+            UserRole.Admin      => "/dashboard",
+            UserRole.Gerente    => "/dashboard",
+            UserRole.Supervisor => "/dashboard",
             _                   => "/repartidor/jornada"
         }, replace: true);
     }

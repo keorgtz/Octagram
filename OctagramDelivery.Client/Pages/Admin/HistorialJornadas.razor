@@ -146,6 +146,18 @@
     protected override async Task OnInitializedAsync()
     {
         var user = await AuthSvc.GetCurrentUser();
+
+        // Gate: Supervisor necesita VerReportes
+        if (user?.Rol == UserRole.Supervisor)
+        {
+            var negId = user.NegocioIds.FirstOrDefault();
+            if (negId == 0 || !user.TienePermiso(Permiso.VerReportes, negId))
+            {
+                Nav.NavigateTo("/");
+                return;
+            }
+        }
+
         _negocioActivo = user?.NegocioIds.FirstOrDefault() ?? 0;
         await Buscar();
     }

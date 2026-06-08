@@ -115,12 +115,12 @@ else
         <div class="sidebar-backdrop" @onclick="CloseSidebar"></div>
 
         <nav class="sidebar">
-            <NavMenu UserRol="@_user.Rol" SidebarOpen="@_sidebarOpen" />
+            <NavMenu User="@_user" SidebarOpen="@_sidebarOpen" />
         </nav>
 
         <main class="main-content">@Body</main>
 
-        <BottomNav UserRol="@_user.Rol" />
+        <BottomNav User="@_user" />
 
     </div>
 }

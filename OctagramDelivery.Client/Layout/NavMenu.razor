@@ -2,7 +2,7 @@
 
 <div class="nav-menu">
 
-    @switch (UserRol)
+    @switch (User.Rol)
     {
         case UserRole.Admin:
             <div class="nav-section">
@@ -101,48 +101,71 @@
             break;
 
         case UserRole.Supervisor:
-            <div class="nav-section">
-                <NavLink class="nav-item" href="/dashboard" Match="NavLinkMatch.All" ActiveClass="active">
-                    <span class="material-symbols-rounded nav-item-icon">dashboard</span>
-                    @if (SidebarOpen) { <span class="nav-item-label">Dashboard</span> }
-                </NavLink>
-                <NavLink class="nav-item" href="/gerente/jornadas" Match="NavLinkMatch.Prefix" ActiveClass="active">
-                    <span class="material-symbols-rounded nav-item-icon">delivery_dining</span>
-                    @if (SidebarOpen) { <span class="nav-item-label">Jornada en Vivo</span> }
-                </NavLink>
-            </div>
+            @if (User.TienePermiso(Permiso.VerDashboard, NegId))
+            {
+                <div class="nav-section">
+                    <NavLink class="nav-item" href="/dashboard" Match="NavLinkMatch.All" ActiveClass="active">
+                        <span class="material-symbols-rounded nav-item-icon">dashboard</span>
+                        @if (SidebarOpen) { <span class="nav-item-label">Dashboard</span> }
+                    </NavLink>
+                </div>
+                <div class="nav-divider"></div>
+            }
+            @if (User.TienePermiso(Permiso.VerHojaReparto, NegId))
+            {
+                <div class="nav-section">
+                    <NavLink class="nav-item" href="/gerente/jornadas" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                        <span class="material-symbols-rounded nav-item-icon">delivery_dining</span>
+                        @if (SidebarOpen) { <span class="nav-item-label">Jornada en Vivo</span> }
+                    </NavLink>
+                </div>
+                <div class="nav-divider"></div>
+            }
 
-            <div class="nav-divider"></div>
-            @if (SidebarOpen) { <div class="nav-category">Catálogos</div> }
-            <div class="nav-section">
-                <NavLink class="nav-item" href="/catalogos/clientes" Match="NavLinkMatch.Prefix" ActiveClass="active">
-                    <span class="material-symbols-rounded nav-item-icon">people</span>
-                    @if (SidebarOpen) { <span class="nav-item-label">Clientes</span> }
-                </NavLink>
-                <NavLink class="nav-item" href="/catalogos/productos" Match="NavLinkMatch.Prefix" ActiveClass="active">
-                    <span class="material-symbols-rounded nav-item-icon">inventory_2</span>
-                    @if (SidebarOpen) { <span class="nav-item-label">Productos</span> }
-                </NavLink>
-                <NavLink class="nav-item" href="/catalogos/grupos" Match="NavLinkMatch.Prefix" ActiveClass="active">
-                    <span class="material-symbols-rounded nav-item-icon">folder_special</span>
-                    @if (SidebarOpen) { <span class="nav-item-label">Grupos</span> }
-                </NavLink>
-            </div>
+            @if (User.TienePermiso(Permiso.GestionClientes, NegId) || User.TienePermiso(Permiso.GestionProductos, NegId))
+            {
+                @if (SidebarOpen) { <div class="nav-category">Catálogos</div> }
+                <div class="nav-section">
+                    @if (User.TienePermiso(Permiso.GestionClientes, NegId))
+                    {
+                        <NavLink class="nav-item" href="/catalogos/clientes" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                            <span class="material-symbols-rounded nav-item-icon">people</span>
+                            @if (SidebarOpen) { <span class="nav-item-label">Clientes</span> }
+                        </NavLink>
+                    }
+                    @if (User.TienePermiso(Permiso.GestionProductos, NegId))
+                    {
+                        <NavLink class="nav-item" href="/catalogos/productos" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                            <span class="material-symbols-rounded nav-item-icon">inventory_2</span>
+                            @if (SidebarOpen) { <span class="nav-item-label">Productos</span> }
+                        </NavLink>
+                        <NavLink class="nav-item" href="/catalogos/grupos" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                            <span class="material-symbols-rounded nav-item-icon">folder_special</span>
+                            @if (SidebarOpen) { <span class="nav-item-label">Grupos</span> }
+                        </NavLink>
+                    }
+                </div>
+                <div class="nav-divider"></div>
+            }
 
-            <div class="nav-divider"></div>
-            @if (SidebarOpen) { <div class="nav-category">Reportes</div> }
-            <div class="nav-section">
-                <NavLink class="nav-item" href="/supervisor/historial" Match="NavLinkMatch.Prefix" ActiveClass="active">
-                    <span class="material-symbols-rounded nav-item-icon">history</span>
-                    @if (SidebarOpen) { <span class="nav-item-label">Historial</span> }
-                </NavLink>
-            </div>
+            @if (User.TienePermiso(Permiso.VerReportes, NegId))
+            {
+                @if (SidebarOpen) { <div class="nav-category">Reportes</div> }
+                <div class="nav-section">
+                    <NavLink class="nav-item" href="/supervisor/historial" Match="NavLinkMatch.Prefix" ActiveClass="active">
+                        <span class="material-symbols-rounded nav-item-icon">history</span>
+                        @if (SidebarOpen) { <span class="nav-item-label">Historial</span> }
+                    </NavLink>
+                </div>
+            }
             break;
     }
 
 </div>
 
 @code {
-    [Parameter] public UserRole UserRol { get; set; }
+    [Parameter] public UserInfo User { get; set; } = null!;
     [Parameter] public bool SidebarOpen { get; set; } = true;
+
+    private int NegId => User?.NegocioIds.FirstOrDefault() ?? 0;
 }

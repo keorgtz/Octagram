@@ -1,7 +1,7 @@
 @implements IDisposable
 @inject NavigationManager Nav
 
-@if (UserRol != UserRole.Repartidor)
+@if (User.Rol != UserRole.Repartidor)
 {
     @if (_moreOpen)
     {
@@ -41,7 +41,7 @@
 }
 
 @code {
-    [Parameter] public UserRole UserRol { get; set; }
+    [Parameter] public UserInfo User { get; set; } = null!;
 
     private bool _moreOpen;
 
@@ -68,7 +68,9 @@
             path.StartsWith(item.ActivePrefix, StringComparison.OrdinalIgnoreCase));
     }
 
-    private IEnumerable<NavItem> GetMainItems() => UserRol switch
+    private int NegId => User.NegocioIds.FirstOrDefault();
+
+    private IEnumerable<NavItem> GetMainItems() => User.Rol switch
     {
         UserRole.Admin => [
             new("/dashboard",           "dashboard",       "Inicio",   "/dashboard"),
@@ -81,16 +83,11 @@
             new("/catalogos/clientes",  "people",          "Clientes",  "/catalogos/clientes"),
             new("/gerente/historial",   "history",         "Historial", "/gerente/historial"),
         ],
-        UserRole.Supervisor => [
-            new("/dashboard",           "dashboard",       "Inicio",    "/dashboard"),
-            new("/gerente/jornadas",    "delivery_dining", "Jornadas",  "/gerente/jornada"),
-            new("/catalogos/clientes",  "people",          "Clientes",  "/catalogos/clientes"),
-            new("/supervisor/historial","history",         "Historial", "/supervisor/historial"),
-        ],
+        UserRole.Supervisor => BuildSupervisorMainItems(),
         _ => []
     };
 
-    private IEnumerable<NavItem> GetMoreItems() => UserRol switch
+    private IEnumerable<NavItem> GetMoreItems() => User.Rol switch
     {
         UserRole.Admin => [
             new("/admin/usuarios",      "manage_accounts", "Usuarios",  "/admin/usuarios"),
@@ -103,10 +100,34 @@
             new("/catalogos/grupos",    "folder_special",  "Grupos",    "/catalogos/grupos"),
             new("/catalogos/productos", "inventory_2",     "Productos", "/catalogos/productos"),
         ],
-        UserRole.Supervisor => [
-            new("/catalogos/grupos",    "folder_special",  "Grupos",    "/catalogos/grupos"),
-            new("/catalogos/productos", "inventory_2",     "Productos", "/catalogos/productos"),
-        ],
+        UserRole.Supervisor => BuildSupervisorMoreItems(),
         _ => []
     };
+
+    // ── Supervisor: permisos granulares ──────────────────────────────
+
+    private List<NavItem> BuildSupervisorMainItems()
+    {
+        var items = new List<NavItem>();
+        if (User.TienePermiso(Permiso.VerDashboard, NegId))
+            items.Add(new("/dashboard", "dashboard", "Inicio", "/dashboard"));
+        if (User.TienePermiso(Permiso.VerHojaReparto, NegId))
+            items.Add(new("/gerente/jornadas", "delivery_dining", "Jornadas", "/gerente/jornada"));
+        if (User.TienePermiso(Permiso.GestionClientes, NegId))
+            items.Add(new("/catalogos/clientes", "people", "Clientes", "/catalogos/clientes"));
+        if (User.TienePermiso(Permiso.VerReportes, NegId))
+            items.Add(new("/supervisor/historial", "history", "Historial", "/supervisor/historial"));
+        return items;
+    }
+
+    private List<NavItem> BuildSupervisorMoreItems()
+    {
+        var items = new List<NavItem>();
+        if (User.TienePermiso(Permiso.GestionProductos, NegId))
+        {
+            items.Add(new("/catalogos/grupos", "folder_special", "Grupos", "/catalogos/grupos"));
+            items.Add(new("/catalogos/productos", "inventory_2", "Productos", "/catalogos/productos"));
+        }
+        return items;
+    }
 }

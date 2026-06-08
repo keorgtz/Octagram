@@ -155,6 +155,17 @@
         var user = await AuthSvc.GetCurrentUser();
         _esAdmin = user?.Rol == UserRole.Admin || user?.Rol == UserRole.Gerente;
 
+        // Gate: Supervisor necesita VerHojaReparto
+        if (user?.Rol == UserRole.Supervisor)
+        {
+            var negId = user.NegocioIds.FirstOrDefault();
+            if (negId == 0 || !user.PuedeVerHojaReparto(negId))
+            {
+                Nav.NavigateTo("/");
+                return;
+            }
+        }
+
         if (_esAdmin)
         {
             _negocios      = await Api.GetNegociosAsync() ?? new();
