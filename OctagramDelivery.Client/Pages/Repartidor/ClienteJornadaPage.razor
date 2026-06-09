@@ -44,6 +44,12 @@ else
         }
         else
         {
+            <button class="icon-btn @(_guardandoManual ? "syncing" : "")"
+                    title="Guardar cambios"
+                    @onclick="GuardarManualAsync"
+                    disabled="@_guardandoManual">
+                <span class="material-symbols-rounded">@(_guardandoManual ? "sync" : "save")</span>
+            </button>
             <span class="save-indicator @_saveClass" style="font-size:11px;">@_saveText</span>
         }
     </div>
@@ -230,6 +236,7 @@ else
 
     private string _saveText  = "Guardado ✓";
     private string _saveClass = "save-ok";
+    private bool   _guardandoManual;
 
     // Numpad state
     private bool             _numpadVisible;
@@ -419,6 +426,49 @@ else
         _saveText  = "Sincronizado ✓";
         _saveClass = "save-ok";
         InvokeAsync(StateHasChanged);
+    }
+
+    private async Task GuardarManualAsync()
+    {
+        if (_guardandoManual || Estado.Jornada == null) return;
+        _guardandoManual = true;
+        _saveText  = "Guardando…";
+        _saveClass = "save-pending";
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            // 1. Always save locally
+            await GuardarSnapshotLocalAsync();
+
+            // 2. If online, push pending changes to cloud
+            if (OfflineSync.IsOnline)
+            {
+                await EnviarCambiosApiAsync();
+                await OfflineSync.ProcessQueueAsync();
+                _saveText  = "Sincronizado ✓";
+                _saveClass = "save-ok";
+            }
+            else
+            {
+                _saveText  = "Guardado local ✓";
+                _saveClass = "save-ok";
+            }
+
+            Estado.HayCambiosPendientes = false;
+            Snackbar.Add(OfflineSync.IsOnline ? "Cambios guardados y sincronizados" : "Cambios guardados localmente", Severity.Success);
+        }
+        catch
+        {
+            _saveText  = "Error al guardar";
+            _saveClass = "save-error";
+            Snackbar.Add("Error al guardar los cambios", Severity.Error);
+        }
+        finally
+        {
+            _guardandoManual = false;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task ToggleExclusion(bool excluido)

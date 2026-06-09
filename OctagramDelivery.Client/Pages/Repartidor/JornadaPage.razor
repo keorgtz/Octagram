@@ -242,6 +242,12 @@ else
         <div style="display:flex;align-items:center;gap:8px;">
             @if (!_soloLectura)
             {
+                <button class="icon-btn @(_guardandoManual ? "syncing" : "")"
+                        title="Guardar cambios"
+                        @onclick="GuardarManualAsync"
+                        disabled="@_guardandoManual">
+                    <span class="material-symbols-rounded">@(_guardandoManual ? "sync" : "save")</span>
+                </button>
                 <span class="save-indicator @_saveClass" style="flex:1;font-size:11px;">@_saveText</span>
                 @if (Estado.Jornada.Estado == JornadaEstado.Abierta)
                 {
@@ -627,6 +633,7 @@ else
     private int    _negocioId;
     private string _saveText        = "Guardado ✓";
     private string _saveClass       = "save-ok";
+    private bool    _guardandoManual;
     private string  _busquedaCliente = string.Empty;
     private bool    _mostrarDinero   = true;
     private string? _grupoFiltro;
@@ -1351,6 +1358,55 @@ else
         if (!JornadaId.HasValue)
             _ = RefrescarDesdeApiAsync();
         await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task GuardarManualAsync()
+    {
+        if (_guardandoManual || Estado.Jornada == null) return;
+        _guardandoManual = true;
+        _saveText  = "Guardando…";
+        _saveClass = "save-pending";
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            // 1. Always save locally
+            var negId = Estado.Jornada.TenantId;
+            var existing = await LocalData.GetSnapshotAsync(negId);
+            await LocalData.SaveSnapshotAsync(negId, new JornadaSnapshot
+            {
+                Jornada     = Estado.GetSnapshotJornada(),
+                Productos   = Estado.Productos,
+                Clientes    = Estado.Clientes,
+                StocksRonda = existing?.StocksRonda ?? _stocksRonda
+            });
+
+            // 2. If online, push pending changes to cloud
+            if (OfflineSync.IsOnline)
+            {
+                await OfflineSync.ProcessQueueAsync();
+                _saveText  = "Sincronizado ✓";
+                _saveClass = "save-ok";
+            }
+            else
+            {
+                _saveText  = "Guardado local ✓";
+                _saveClass = "save-ok";
+            }
+
+            Snackbar.Add(OfflineSync.IsOnline ? "Cambios guardados y sincronizados" : "Cambios guardados localmente", Severity.Success);
+        }
+        catch
+        {
+            _saveText  = "Error al guardar";
+            _saveClass = "save-error";
+            Snackbar.Add("Error al guardar los cambios", Severity.Error);
+        }
+        finally
+        {
+            _guardandoManual = false;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     public void Dispose()
