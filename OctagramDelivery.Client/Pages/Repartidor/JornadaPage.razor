@@ -14,14 +14,6 @@
 
 <PageTitle>Jornada · TortiCloud</PageTitle>
 
-@if (_loadedFromCache && !OfflineSync.IsOnline)
-{
-    <div style="background:#FEF3C7;border-bottom:1px solid #FDE68A;padding:8px 16px;display:flex;align-items:center;gap:8px;font-size:12px;color:#92400E;">
-        <span class="material-symbols-rounded" style="font-size:16px;">wifi_off</span>
-        Sin conexión — mostrando datos guardados localmente.
-    </div>
-}
-
 @if (_cargando)
 {
     <div style="display:flex;height:60vh;align-items:center;justify-content:center;">
@@ -78,59 +70,31 @@ else if (_mostrarPickerJornadas && _misJornadasHoy != null)
 }
 else if (Estado.Jornada == null)
 {
-    @if (_sinDatosLocales)
-    {
-        <!-- Sin datos locales: offline sin caché -->
-        <div style="padding:32px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;">
-            <span class="material-symbols-rounded" style="font-size:64px;color:var(--gray-muted);">cloud_off</span>
-            <h2 style="color:var(--gray-dark);margin:0;">Sin datos locales</h2>
-            <p style="color:var(--gray-muted);margin:0;max-width:280px;">
-                No hay datos guardados en este dispositivo. Conéctate a internet y sincroniza.
-            </p>
-            @if (OfflineSync.IsOnline)
-            {
-                <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                           StartIcon="@Icons.Material.Rounded.CloudSync"
-                           Disabled="_sincronizando"
-                           OnClick="SincronizarDatosAsync"
-                           Style="margin-top:4px;">
-                    @(_sincronizando ? "Sincronizando…" : "Bajar datos de la nube")
-                </MudButton>
-            }
-            else
-            {
-                <MudAlert Severity="Severity.Warning" Dense="true">Sin conexión a internet</MudAlert>
-            }
-        </div>
-    }
-    else
-    {
-        <!-- Sin jornada activa (confirmado por la API) -->
-        <div style="padding:32px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;">
-            <span class="material-symbols-rounded" style="font-size:64px;color:var(--gray-muted);">delivery_dining</span>
-            <h2 style="color:var(--gray-dark);margin:0;">Sin jornada activa</h2>
-            <p style="color:var(--gray-muted);margin:0;">No hay una jornada abierta para hoy.</p>
-            @if (_negocioId > 0 && !_soloLectura && _puedeAbrir)
-            {
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AbrirJornada"
-                           StartIcon="@Icons.Material.Rounded.PlayCircle" Style="margin-top:4px;">
-                    Abrir Jornada de Hoy
-                </MudButton>
-            }
-            else if (!_puedeAbrir)
-            {
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary"
-                           StartIcon="@Icons.Material.Rounded.ArrowBack"
-                           OnClick='() => Nav.NavigateTo("/gerente/jornadas")'>
-                    Ver jornadas activas
-                </MudButton>
-            }
-            else if (_negocioId == 0)
-            {
-                <MudAlert Severity="Severity.Warning">No tienes un negocio asignado.</MudAlert>
-            }
-        </div>
-    }
+    <!-- Sin jornada activa -->
+    <div style="padding:32px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;">
+        <span class="material-symbols-rounded" style="font-size:64px;color:var(--gray-muted);">delivery_dining</span>
+        <h2 style="color:var(--gray-dark);margin:0;">Sin jornada activa</h2>
+        <p style="color:var(--gray-muted);margin:0;">No hay una jornada abierta para hoy.</p>
+        @if (_negocioId > 0 && !_soloLectura && _puedeAbrir)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AbrirJornada"
+                       StartIcon="@Icons.Material.Rounded.PlayCircle" Style="margin-top:4px;">
+                Abrir Jornada de Hoy
+            </MudButton>
+        }
+        else if (!_puedeAbrir)
+        {
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Rounded.ArrowBack"
+                       OnClick='() => Nav.NavigateTo("/gerente/jornadas")'>
+                Ver jornadas activas
+            </MudButton>
+        }
+        else if (_negocioId == 0)
+        {
+            <MudAlert Severity="Severity.Warning">No tienes un negocio asignado.</MudAlert>
+        }
+    </div>
 }
 else
 {
@@ -275,14 +239,9 @@ else
             }
             @if (!JornadaId.HasValue)
             {
-                @if (OfflineSync.IsOnline)
-                {
-                    <button class="icon-btn @(_sincronizando ? "syncing" : "")"
-                            title="@(_sincronizando ? "Sincronizando…" : "Sincronizar datos desde la nube")"
-                            @onclick="SincronizarDatosAsync" disabled="@_sincronizando">
-                        <span class="material-symbols-rounded">@(_sincronizando ? "sync" : "cloud_sync")</span>
-                    </button>
-                }
+                <button class="icon-btn" title="Refrescar" @onclick="RefrescarDesdeApiAsync">
+                    <span class="material-symbols-rounded">refresh</span>
+                </button>
                 <a href="/repartidor/historial" class="icon-btn" title="Historial">
                     <span class="material-symbols-rounded">history</span>
                 </a>
@@ -638,8 +597,6 @@ else
     private string  _busquedaCliente = string.Empty;
     private bool    _mostrarDinero   = true;
     private string? _grupoFiltro;
-    private bool    _sincronizando;   // descargando datos desde la nube
-    private bool    _sinDatosLocales; // offline y sin caché disponible
     private List<SeccionDto>       _secciones       = new();
     private List<GrupoProductoDto> _gruposProducto  = new();
     private int?    _hojaRondaId;      // null = todas las vueltas
@@ -812,31 +769,13 @@ else
     {
         _stocksRonda[$"{_stockNumpadRondaId}_{_stockNumpadSeccionId}_{_stockNumpadProductoId}"] = valor;
         await GuardarStocksRondaAsync();
-        await EnviarStocksRondaAsync();
         StateHasChanged();
     }
 
     private async Task GuardarStocksRondaAsync()
     {
-        if (Estado.Jornada?.TenantId is not > 0) return;
-        var negId = Estado.Jornada.TenantId;
-        var snap = await LocalData.GetSnapshotAsync(negId) ?? new JornadaSnapshot
-        {
-            Jornada   = Estado.GetSnapshotJornada(),
-            Productos = Estado.Productos,
-            Clientes  = Estado.Clientes
-        };
-        snap.StocksRonda = _stocksRonda;
-        await LocalData.SaveSnapshotAsync(negId, snap);
-    }
-
-    /// <summary>Envía los stocks de la ronda activa al servidor (o los encola si no hay conexión).</summary>
-    private async Task EnviarStocksRondaAsync()
-    {
         if (Estado.Jornada == null || !_hojaRondaId.HasValue) return;
         var rondaId = _hojaRondaId.Value;
-        var jornadaId = Estado.Jornada.Id;
-        var negocioId = Estado.Jornada.TenantId;
 
         // Build stock items from _stocksRonda for this ronda
         var stocks = new List<RondaStockItem>();
@@ -849,8 +788,14 @@ else
             stocks.Add(new RondaStockItem { SeccionId = secId, ProductoId = prodId, Cantidad = kv.Value });
         }
 
-        if (stocks.Count == 0) return;
-        await OfflineSync.EnqueueStocksRondaAsync(rondaId, jornadaId, negocioId, stocks);
+        if (stocks.Count > 0 && OfflineSync.IsOnline)
+        {
+            try
+            {
+                await Api.SaveRondaStocksAsync(rondaId, new SaveRondaStocksRequest { Stocks = stocks });
+            }
+            catch { /* show error if needed */ }
+        }
     }
 
     /// <summary>Envía los stocks de TODAS las rondas al servidor.</summary>
@@ -869,8 +814,14 @@ else
                 if (!int.TryParse(parts[1], out var secId) || !int.TryParse(parts[2], out var prodId)) continue;
                 stocks.Add(new RondaStockItem { SeccionId = secId, ProductoId = prodId, Cantidad = kv.Value });
             }
-            if (stocks.Count > 0)
-                await OfflineSync.EnqueueStocksRondaAsync(rondaId, Estado.Jornada.Id, Estado.Jornada.TenantId, stocks);
+            if (stocks.Count > 0 && OfflineSync.IsOnline)
+            {
+                try
+                {
+                    await Api.SaveRondaStocksAsync(rondaId, new SaveRondaStocksRequest { Stocks = stocks });
+                }
+                catch { }
+            }
         }
     }
 
@@ -878,7 +829,6 @@ else
     {
         Estado.OnChange += StateHasChanged;
         OfflineSync.OnConnectivityChanged += OnConectividadCambia;
-        OfflineSync.OnSynced += OnDatosSincronizados;
         OfflineSync.OnNegocioSynced += OnNegocioActualizado;
         OfflineSync.OnJornadaSyncNeeded += OnJornadaSyncNeeded;
 
@@ -927,8 +877,6 @@ else
                             }
 
                             Estado.Cargar(full, prods, clis);
-                            await LocalData.SaveSnapshotAsync(_negocioId, new JornadaSnapshot
-                            { Jornada = full, Productos = prods, Clientes = clis, StocksRonda = _stocksRonda });
                         }
                     }
                     else if ((_misJornadasHoy?.Count ?? 0) > 1)
@@ -950,14 +898,6 @@ else
 
         // Connect to SignalR for real-time sync
         _ = ConectarHubAsync();
-
-        // Si hay ops pendientes, reflejar estado en el indicador
-        var pending = await OfflineSync.PendingCountAsync();
-        if (pending > 0 && !JornadaId.HasValue)
-        {
-            _saveText  = $"{pending} cambio(s) pendiente(s)";
-            _saveClass = "save-pending";
-        }
     }
 
     protected override async Task OnParametersSetAsync()
@@ -985,65 +925,22 @@ else
         }
     }
 
-    private bool _loadedFromCache;
-
     private async Task CargarJornada()
     {
-        _sinDatosLocales = false;
-
-        if (JornadaId.HasValue)
-        {
-            await CargarDesdeApi();
-            return;
-        }
-
-        // 1. Intentar local primero (no requiere red → instante)
-        bool tieneLocal = await CargarDesdeLocal();
-
-        if (tieneLocal)
-        {
-            // Datos disponibles al instante; API en segundo plano si hay conexión
-            _ = RefrescarDesdeApiAsync();
-        }
-        else
-        {
-            // Sin caché → intentar API (primera vez u otro dispositivo)
-            await CargarDesdeApi();
-
-            // Si sigue sin jornada y no hay red → indicar "sin datos locales"
-            if (!Estado.Cargado)
-                _sinDatosLocales = !OfflineSync.IsOnline;
-        }
-    }
-
-    private async Task<bool> CargarDesdeLocal()
-    {
-        if (_negocioId == 0) return false;
         try
         {
-            var snap = await LocalData.GetSnapshotAsync(_negocioId);
-            if (snap?.Jornada?.Id is not > 0) return false;
-
-            // Aceptar si es de hoy O si la jornada sigue abierta (tolerancia a
-            // diferencias de zona horaria y reinicios entre días)
-            var esDeHoy    = snap.Jornada.Fecha == DateOnly.FromDateTime(DateTime.Today);
-            var estaAbierta = snap.Jornada.Estado == JornadaEstado.Abierta;
-            if (!esDeHoy && !estaAbierta) return false;
-
-            var clientes = snap.Clientes.Any()
-                ? snap.Clientes.Where(TieneEntregaHoy).ToList()
-                : new();
-
-            Estado.Cargar(snap.Jornada, snap.Productos, clientes);
-
-            // Cargar stocks por ronda desde el snapshot local (datos rápidos)
-            if (snap.StocksRonda != null)
-                _stocksRonda = snap.StocksRonda;
-
-            _loadedFromCache = true;
-            return true;
+            await CargarDesdeApi();
         }
-        catch { return false; }
+        catch
+        {
+            // API unreachable — try local cache for master data only
+            var snap = await LocalData.GetNegocioSnapshotAsync(_negocioId);
+            if (snap != null)
+            {
+                _gruposProducto = snap.GruposProducto;
+                _secciones = snap.Secciones;
+            }
+        }
     }
 
     private async Task CargarDesdeApi()
@@ -1077,24 +974,13 @@ else
                     }
                 }
 
-                if (!JornadaId.HasValue)
-                    await LocalData.SaveSnapshotAsync(_negocioId, new JornadaSnapshot
-                    {
-                        Jornada   = jornada,
-                        Productos = productos,
-                        Clientes  = clientes,
-                        StocksRonda = _stocksRonda
-                    });
-
                 Estado.Cargar(jornada, productos, clientes);
-                _loadedFromCache  = false;
-                _sinDatosLocales  = false;
             }
         }
         catch { }
     }
 
-    /// <summary>Descarga datos actualizados en segundo plano y actualiza el snapshot local.</summary>
+    /// <summary>Descarga datos actualizados desde la API y actualiza el estado.</summary>
     private async Task RefrescarDesdeApiAsync()
     {
         if (_negocioId == 0) return;
@@ -1120,18 +1006,7 @@ else
                 }
             }
 
-            await LocalData.SaveSnapshotAsync(_negocioId, new JornadaSnapshot
-            {
-                Jornada   = jornada,
-                Productos = productos,
-                Clientes  = clientes,
-                StocksRonda = _stocksRonda
-            });
-
-            // Siempre actualizar el estado con datos del servidor
-            // (los stocks ya se actualizaron arriba desde el servidor)
             Estado.Cargar(jornada, productos, clientes);
-            _loadedFromCache = false;
             await InvokeAsync(StateHasChanged);
         }
         catch { }
@@ -1163,88 +1038,10 @@ else
                 }
 
                 Estado.Cargar(jornada, prods, clis);
-                await LocalData.SaveSnapshotAsync(_negocioId, new JornadaSnapshot
-                { Jornada = jornada, Productos = prods, Clientes = clis, StocksRonda = _stocksRonda });
             }
         }
         catch { Snackbar.Add("Error al cargar la jornada", Severity.Error); }
         _cargando = false;
-    }
-
-    /// <summary>Descarga TODOS los datos desde la nube y los persiste en local. Botón manual.</summary>
-    private async Task SincronizarDatosAsync()
-    {
-        if (_negocioId == 0 || _sincronizando) return;
-        _sincronizando   = true;
-        _sinDatosLocales = false;
-        StateHasChanged();
-        try
-        {
-            // Descargar datos maestros y jornada en paralelo
-            var negSnap = OfflineSync.SyncNegocioDataAsync(_negocioId);
-            var jornadaTask = Api.GetJornadaHoyAsync(_negocioId);
-            await Task.WhenAll(negSnap, jornadaTask);
-
-            var jornada = jornadaTask.Result;
-
-            if (jornada != null)
-            {
-                var negocioSnap = await LocalData.GetNegocioSnapshotAsync(_negocioId);
-                var productos = negocioSnap?.Productos ?? await Api.GetProductosAsync(_negocioId) ?? new();
-                var clientesTodos = negocioSnap?.Clientes ?? await Api.GetClientesAsync(_negocioId) ?? new();
-                var clientes = clientesTodos.Where(TieneEntregaHoy).ToList();
-
-                // Populate _stocksRonda from server data
-                _stocksRonda.Clear();
-                foreach (var ronda in jornada.Rondas)
-                {
-                    foreach (var stock in ronda.Stocks)
-                    {
-                        _stocksRonda[$"{ronda.Id}_{stock.SeccionId}_{stock.ProductoId}"] = stock.Cantidad;
-                    }
-                }
-
-                await LocalData.SaveSnapshotAsync(_negocioId, new JornadaSnapshot
-                {
-                    Jornada   = jornada,
-                    Productos = productos,
-                    Clientes  = clientesTodos,
-                    StocksRonda = _stocksRonda
-                });
-
-                // Actualizar listas de grupos y secciones en memoria
-                if (negocioSnap != null)
-                {
-                    _gruposProducto = negocioSnap.GruposProducto;
-                    _secciones      = negocioSnap.Secciones;
-                }
-
-                await OfflineSync.ProcessQueueAsync();
-                Estado.Cargar(jornada, productos, clientes);
-                _loadedFromCache = false;
-                Snackbar.Add("Datos sincronizados ✓", Severity.Success);
-            }
-            else
-            {
-                // Sin jornada, pero actualizar datos maestros igual
-                var negocioSnap = await LocalData.GetNegocioSnapshotAsync(_negocioId);
-                if (negocioSnap != null)
-                {
-                    _gruposProducto = negocioSnap.GruposProducto;
-                    _secciones      = negocioSnap.Secciones;
-                }
-                Snackbar.Add("No hay jornada activa hoy", Severity.Info);
-            }
-        }
-        catch
-        {
-            Snackbar.Add("Error de conexión al sincronizar", Severity.Error);
-        }
-        finally
-        {
-            _sincronizando = false;
-            await InvokeAsync(StateHasChanged);
-        }
     }
 
     /// <summary>Carga grupos y secciones: primero desde local para mostrar rápido, luego desde la API para tener datos actualizados.</summary>
@@ -1375,13 +1172,6 @@ else
             {
                 Estado.Jornada.Estado = JornadaEstado.Cerrada;
                 Estado.Notificar();
-                // Actualizar snapshot local con el nuevo estado
-                await LocalData.SaveSnapshotAsync(_negocioId, new JornadaSnapshot
-                {
-                    Jornada   = Estado.GetSnapshotJornada(),
-                    Productos = Estado.Productos,
-                    Clientes  = Estado.Clientes
-                });
                 Snackbar.Add($"Jornada cerrada. Efectivo: {efect.ToString("C", _mx)}", Severity.Success);
             }
         }
@@ -1435,74 +1225,47 @@ else
         {
             if (OfflineSync.IsOnline)
             {
-                // Si estábamos en modo "sin datos", intentar cargar ahora que hay red
-                if (_sinDatosLocales || !Estado.Cargado)
-                    InvokeAsync(async () => { await CargarJornada(); StateHasChanged(); });
-                else
-                    _ = RefrescarDesdeApiAsync();
+                InvokeAsync(async () => { await CargarDesdeApi(); StateHasChanged(); });
             }
             else
             {
-                // Se perdió la conexión — actualizar indicadores en la UI
                 InvokeAsync(StateHasChanged);
             }
         }
-    }
-
-    private async void OnDatosSincronizados()
-    {
-        // La cola se vació → ahora sí podemos tomar el estado del servidor
-        _saveText  = "Sincronizado ✓";
-        _saveClass = "save-ok";
-        if (!JornadaId.HasValue)
-            _ = RefrescarDesdeApiAsync();
-        await InvokeAsync(StateHasChanged);
     }
 
     private async Task GuardarManualAsync()
     {
         if (_guardandoManual || Estado.Jornada == null) return;
         _guardandoManual = true;
-        _saveText  = "Guardando…";
+        _saveText = "Guardando…";
         _saveClass = "save-pending";
         await InvokeAsync(StateHasChanged);
 
         try
         {
-            // 1. Always save locally
-            var negId = Estado.Jornada.TenantId;
-            var existing = await LocalData.GetSnapshotAsync(negId);
-            await LocalData.SaveSnapshotAsync(negId, new JornadaSnapshot
-            {
-                Jornada     = Estado.GetSnapshotJornada(),
-                Productos   = Estado.Productos,
-                Clientes    = Estado.Clientes,
-                StocksRonda = existing?.StocksRonda ?? _stocksRonda
-            });
-
-            // 2. Send all ronda stocks to server
+            // 1. Save all ronda stocks to API
             await EnviarTodosStocksRondaAsync();
 
-            // 3. If online, push pending changes to cloud
+            // 2. Refresh from server to get latest state
             if (OfflineSync.IsOnline)
             {
-                await OfflineSync.ProcessQueueAsync();
-                // Refresh from server to confirm data was saved and get latest state
                 await RefrescarDesdeApiAsync();
-                _saveText  = "Sincronizado ✓";
+                _saveText = "Sincronizado ✓";
                 _saveClass = "save-ok";
             }
             else
             {
-                _saveText  = "Guardado local ✓";
-                _saveClass = "save-ok";
+                _saveText = "Sin conexión";
+                _saveClass = "save-error";
             }
 
-            Snackbar.Add(OfflineSync.IsOnline ? "Cambios guardados y sincronizados" : "Cambios guardados localmente", Severity.Success);
+            Snackbar.Add(OfflineSync.IsOnline ? "Cambios guardados y sincronizados" : "Sin conexión a internet",
+                OfflineSync.IsOnline ? Severity.Success : Severity.Warning);
         }
         catch
         {
-            _saveText  = "Error al guardar";
+            _saveText = "Error al guardar";
             _saveClass = "save-error";
             Snackbar.Add("Error al guardar los cambios", Severity.Error);
         }
@@ -1552,7 +1315,6 @@ else
     {
         Estado.OnChange -= StateHasChanged;
         OfflineSync.OnConnectivityChanged -= OnConectividadCambia;
-        OfflineSync.OnSynced -= OnDatosSincronizados;
         OfflineSync.OnNegocioSynced -= OnNegocioActualizado;
         OfflineSync.OnJornadaSyncNeeded -= OnJornadaSyncNeeded;
         foreach (var s in _hubSubs) s.Dispose();

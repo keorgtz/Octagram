@@ -50,18 +50,11 @@ else if (_user.Rol == UserRole.Repartidor)
                     Sin conexión
                 </span>
             }
-            else if (_pendingCount > 0)
-            {
-                <span class="sync-pending-badge">
-                    <span class="material-symbols-rounded" style="font-size:12px;">sync</span>
-                    Sincronizando @_pendingCount pend.
-                </span>
-            }
             else
             {
                 <span class="sync-ok-badge">
                     <span class="material-symbols-rounded" style="font-size:12px;">cloud_done</span>
-                    Sincronizado
+                    En línea
                 </span>
             }
             <span>TortiCloud · @DateTime.Now.ToString("ddd d MMM", new System.Globalization.CultureInfo("es-MX"))</span>
@@ -89,18 +82,11 @@ else
                     Sin conexión
                 </span>
             }
-            else if (_pendingCount > 0)
-            {
-                <span class="sync-pending-badge">
-                    <span class="material-symbols-rounded" style="font-size:12px;">sync</span>
-                    @_pendingCount pend.
-                </span>
-            }
             else
             {
                 <span class="sync-ok-badge">
                     <span class="material-symbols-rounded" style="font-size:12px;">cloud_done</span>
-                    Guardado
+                    En línea
                 </span>
             }
             <div class="titlebar-user hide-mobile">
@@ -130,7 +116,6 @@ else
     private bool _loading = true;
     private bool _sidebarOpen = true;
     private bool _isOnline = true;
-    private int  _pendingCount = 0;
 
     private MudTheme _theme = new()
     {
@@ -174,27 +159,19 @@ else
         }
 
         OfflineSync.OnConnectivityChanged += OnConnectivityChanged;
-        OfflineSync.OnSynced             += OnSynced;
         await OfflineSync.InitAsync();
-        _isOnline     = OfflineSync.IsOnline;
-        _pendingCount = (int)await OfflineSync.PendingCountAsync();
+        _isOnline = OfflineSync.IsOnline;
     }
 
     private void OnConnectivityChanged()
     {
         _isOnline = OfflineSync.IsOnline;
-        InvokeAsync(async () => { _pendingCount = (int)await OfflineSync.PendingCountAsync(); StateHasChanged(); });
-    }
-
-    private void OnSynced()
-    {
-        InvokeAsync(async () => { _pendingCount = (int)await OfflineSync.PendingCountAsync(); StateHasChanged(); });
+        InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
     {
         OfflineSync.OnConnectivityChanged -= OnConnectivityChanged;
-        OfflineSync.OnSynced             -= OnSynced;
     }
 
     private void ToggleSidebar() => _sidebarOpen = !_sidebarOpen;

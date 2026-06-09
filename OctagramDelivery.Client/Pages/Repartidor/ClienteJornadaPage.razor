@@ -247,16 +247,12 @@ else
     private JornadaStateService.CeldaState? _numpadCelda;
     private bool             _numpadEsEntregado;
 
-    // Auto-save
-    private System.Threading.Timer? _saveTimer;
-
     private bool _enVivo;
     private List<IDisposable> _hubSubs = new();
 
     protected override async Task OnInitializedAsync()
     {
         Estado.OnChange += StateHasChanged;
-        OfflineSync.OnSynced += OnSynced;
 
         var currentUser = await AuthSvc.GetCurrentUser();
         // Supervisor → siempre solo lectura; Gerente en modo monitor (JornadaId) → solo lectura
@@ -313,79 +309,52 @@ else
         _numpadVisible     = true;
     }
 
-    private void OnNumpadConfirmar(decimal valor)
+    private async Task OnNumpadConfirmar(decimal valor)
     {
         if (_numpadCelda == null || _soloLectura) return;
         if (_numpadEsEntregado) _numpadCelda.Entregado = valor;
         else                    _numpadCelda.Devuelto  = Math.Min(valor, _numpadCelda.Entregado);
         Estado.HayCambiosPendientes = true;
         Estado.Notificar();
-        _ = GuardarLocalInmediatoAsync();
+        await GuardarCambiosApiAsync();
     }
 
-    // Guarda en localStorage inmediatamente, sin esperar ningún timer.
-    // El envío a la API se debouncea por separado para no saturar la cola.
-    private async Task GuardarLocalInmediatoAsync()
+    private async Task GuardarCambiosApiAsync()
     {
-        _saveText  = "Guardando…";
+        if (Estado.Jornada == null || !OfflineSync.IsOnline) return;
+        _saveText = "Guardando…";
         _saveClass = "save-pending";
         await InvokeAsync(StateHasChanged);
 
-        await GuardarSnapshotLocalAsync();
-
-        _saveText  = "Guardado ✓";
-        _saveClass = "save-ok";
-        Estado.HayCambiosPendientes = false;
-
-        ProgramarEnvioApi();
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private void ProgramarEnvioApi()
-    {
-        _saveTimer?.Dispose();
-        _saveTimer = new System.Threading.Timer(async _ =>
+        try
         {
-            await InvokeAsync(EnviarCambiosApiAsync);
-        }, null, 2000, System.Threading.Timeout.Infinite);
-    }
-
-    private async Task EnviarCambiosApiAsync()
-    {
-        if (Estado.Jornada == null) return;
-        foreach (var ronda in Estado.Jornada.Rondas)
-        {
-            var detalles = _productosDelCliente.Select(p =>
+            foreach (var ronda in Estado.Jornada.Rondas)
             {
-                var c = Estado.GetOrCreate(ronda.Id, ClienteId, p.ProductId);
-                return new DetalleUpsertItem
+                var detalles = _productosDelCliente.Select(p =>
                 {
-                    ClienteId         = ClienteId,
-                    ProductoId        = p.ProductId,
-                    CantidadEntregada = c.Entregado,
-                    CantidadDevuelta  = c.Devuelto,
-                    PrecioUnitario    = c.Precio,
-                    GramajePreset     = c.GramajePreset
-                };
-            }).ToList();
-            await OfflineSync.EnqueueRondaSaveAsync(
-                ronda.Id, Estado.Jornada.Id, Estado.Jornada.TenantId, detalles);
+                    var c = Estado.GetOrCreate(ronda.Id, ClienteId, p.ProductId);
+                    return new DetalleUpsertItem
+                    {
+                        ClienteId = ClienteId,
+                        ProductoId = p.ProductId,
+                        CantidadEntregada = c.Entregado,
+                        CantidadDevuelta = c.Devuelto,
+                        PrecioUnitario = c.Precio,
+                        GramajePreset = c.GramajePreset
+                    };
+                }).ToList();
+                await Api.BulkSaveDetallesAsync(ronda.Id, new BulkSaveRondaRequest { Detalles = detalles });
+            }
+            _saveText = "Guardado ✓";
+            _saveClass = "save-ok";
+            Estado.HayCambiosPendientes = false;
         }
-    }
-
-    /// <summary>Persiste el estado actual de la jornada en localStorage (preserva StocksRonda existentes).</summary>
-    private async Task GuardarSnapshotLocalAsync()
-    {
-        if (Estado.Jornada?.TenantId is not > 0) return;
-        // Leer snapshot existente para no sobreescribir los stocks por ronda editados en JornadaPage
-        var existing = await LocalData.GetSnapshotAsync(Estado.Jornada.TenantId);
-        await LocalData.SaveSnapshotAsync(Estado.Jornada.TenantId, new JornadaSnapshot
+        catch
         {
-            Jornada     = Estado.GetSnapshotJornada(),
-            Productos   = Estado.Productos,
-            Clientes    = Estado.Clientes,
-            StocksRonda = existing?.StocksRonda ?? new()
-        });
+            _saveText = "Error al guardar";
+            _saveClass = "save-error";
+        }
+        await InvokeAsync(StateHasChanged);
     }
 
     // ── Grupos accordion ────────────────────────────────────────────────────
@@ -428,56 +397,55 @@ else
             _grupoExpandidoId = _grupoExpandidoId == grupoId ? null : grupoId;
     }
 
-    private void OnSynced()
-    {
-        _saveText  = "Sincronizado ✓";
-        _saveClass = "save-ok";
-        InvokeAsync(StateHasChanged);
-    }
-
     private async Task GuardarManualAsync()
     {
         if (_guardandoManual || Estado.Jornada == null) return;
         _guardandoManual = true;
-        _saveText  = "Guardando…";
+        _saveText = "Guardando…";
         _saveClass = "save-pending";
         await InvokeAsync(StateHasChanged);
 
         try
         {
-            // 1. Always save locally
-            await GuardarSnapshotLocalAsync();
-
-            // 2. If online, push pending changes to cloud
-            if (OfflineSync.IsOnline)
+            // Save all changes to API
+            foreach (var ronda in Estado.Jornada.Rondas)
             {
-                await EnviarCambiosApiAsync();
-                await OfflineSync.ProcessQueueAsync();
-                // Refresh from server to confirm and get latest state
-                if (Estado.Jornada != null)
+                var detalles = _productosDelCliente.Select(p =>
                 {
-                    var jornada = await Api.GetJornadaByIdAsync(Estado.Jornada.Id);
-                    if (jornada != null)
+                    var c = Estado.GetOrCreate(ronda.Id, ClienteId, p.ProductId);
+                    return new DetalleUpsertItem
                     {
-                        Estado.Cargar(jornada, Estado.Productos, Estado.Clientes);
-                        _excluido = Estado.Exclusiones.TryGetValue(ClienteId, out var ex) && ex.ExcluidoDeEfectivo;
-                    }
-                }
-                _saveText  = "Sincronizado ✓";
-                _saveClass = "save-ok";
-            }
-            else
-            {
-                _saveText  = "Guardado local ✓";
-                _saveClass = "save-ok";
+                        ClienteId = ClienteId,
+                        ProductoId = p.ProductId,
+                        CantidadEntregada = c.Entregado,
+                        CantidadDevuelta = c.Devuelto,
+                        PrecioUnitario = c.Precio,
+                        GramajePreset = c.GramajePreset
+                    };
+                }).ToList();
+                await Api.BulkSaveDetallesAsync(ronda.Id, new BulkSaveRondaRequest { Detalles = detalles });
             }
 
+            // Refresh from server
+            if (OfflineSync.IsOnline && Estado.Jornada != null)
+            {
+                var jornada = await Api.GetJornadaByIdAsync(Estado.Jornada.Id);
+                if (jornada != null)
+                {
+                    Estado.Cargar(jornada, Estado.Productos, Estado.Clientes);
+                    _excluido = Estado.Exclusiones.TryGetValue(ClienteId, out var ex) && ex.ExcluidoDeEfectivo;
+                }
+            }
+
+            _saveText = "Sincronizado ✓";
+            _saveClass = "save-ok";
             Estado.HayCambiosPendientes = false;
-            Snackbar.Add(OfflineSync.IsOnline ? "Cambios guardados y sincronizados" : "Cambios guardados localmente", Severity.Success);
+            Snackbar.Add(OfflineSync.IsOnline ? "Cambios guardados y sincronizados" : "Sin conexión",
+                OfflineSync.IsOnline ? Severity.Success : Severity.Warning);
         }
         catch
         {
-            _saveText  = "Error al guardar";
+            _saveText = "Error al guardar";
             _saveClass = "save-error";
             Snackbar.Add("Error al guardar los cambios", Severity.Error);
         }
@@ -490,31 +458,37 @@ else
 
     private async Task ToggleExclusion(bool excluido)
     {
-        if (Estado.Jornada == null) return;
+        if (Estado.Jornada == null || !OfflineSync.IsOnline) return;
         _excluido = excluido;
-
-        // Actualizar estado local inmediatamente (sin esperar red)
         var metodo = excluido ? MetodoPago.Transferencia : MetodoPago.Efectivo;
         if (Estado.Exclusiones.TryGetValue(ClienteId, out var ex))
         {
-            ex.ExcluidoDeEfectivo    = excluido;
+            ex.ExcluidoDeEfectivo = excluido;
             ex.MetodoPagoAlternativo = metodo;
         }
         else
         {
             Estado.Exclusiones[ClienteId] = new ClienteJornadaDto
             {
-                ClienteId             = ClienteId,
-                ExcluidoDeEfectivo    = excluido,
+                ClienteId = ClienteId,
+                ExcluidoDeEfectivo = excluido,
                 MetodoPagoAlternativo = metodo
             };
         }
         Estado.Notificar();
 
-        // Persistir snapshot y encolar sincronización
-        await GuardarSnapshotLocalAsync();
-        await OfflineSync.EnqueueExclusionAsync(
-            Estado.Jornada.Id, Estado.Jornada.TenantId, ClienteId, excluido, metodo);
+        try
+        {
+            await Api.ToggleExclusionAsync(Estado.Jornada.Id, ClienteId, new ToggleExclusionRequest
+            {
+                ExcluidoDeEfectivo = excluido,
+                MetodoPagoAlternativo = metodo
+            });
+        }
+        catch
+        {
+            Snackbar.Add("Error al guardar la exclusión", Severity.Error);
+        }
     }
 
     private async Task AgregarRonda()
@@ -532,7 +506,6 @@ else
                     Estado.Jornada!.Rondas.Add(nueva);
                     _rondaActivaId = nueva.Id;
                     Estado.Notificar();
-                    await GuardarSnapshotLocalAsync();
                 }
                 Snackbar.Add("Vuelta agregada", Severity.Success);
             }
@@ -585,11 +558,7 @@ else
     public async ValueTask DisposeAsync()
     {
         Estado.OnChange -= StateHasChanged;
-        OfflineSync.OnSynced -= OnSynced;
         foreach (var s in _hubSubs) s.Dispose();
         await Hub.DisposeAsync();
-        _saveTimer?.Dispose();
-        // Garantizar que el último estado quede en localStorage aunque el usuario salga rápido
-        try { await GuardarSnapshotLocalAsync(); } catch { }
     }
 }
