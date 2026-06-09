@@ -1,7 +1,7 @@
 @page "/repartidor/jornada"
 @page "/gerente/jornada/{JornadaId:int}"
 @attribute [Authorize(Roles = $"{nameof(UserRole.Repartidor)},{nameof(UserRole.Gerente)},{nameof(UserRole.Supervisor)},{nameof(UserRole.Admin)}")]
-@implements IDisposable
+@implements IAsyncDisposable
 @inject ApiService Api
 @inject AuthService AuthSvc
 @inject ISnackbar Snackbar
@@ -10,6 +10,7 @@
 @inject JornadaStateService Estado
 @inject LocalDataService LocalData
 @inject OfflineSyncService OfflineSync
+@inject HubService Hub
 
 <PageTitle>Jornada · TortiCloud</PageTitle>
 
@@ -671,6 +672,9 @@ else
     private HashSet<int> _seccionesEditExpanded = new();
     private HashSet<int> _seccionesConcExpanded = new();
 
+    private bool _enVivo;
+    private List<IDisposable> _hubSubs = new();
+
     private record ProductTotal(string Nombre, decimal Total, bool EsGramaje, bool EsGrupo = false);
     private record SeccionItem(int ProductoId, string ProductoNombre, bool EsGramaje, decimal Stock, decimal Entregado, decimal Devuelto);
     private record SeccionResumen(int Id, string Nombre, List<SeccionItem> Items);
@@ -876,6 +880,7 @@ else
         OfflineSync.OnConnectivityChanged += OnConectividadCambia;
         OfflineSync.OnSynced += OnDatosSincronizados;
         OfflineSync.OnNegocioSynced += OnNegocioActualizado;
+        OfflineSync.OnJornadaSyncNeeded += OnJornadaSyncNeeded;
 
         var user = await AuthSvc.GetCurrentUser();
         _negocioId   = user?.NegocioIds.FirstOrDefault() ?? 0;
@@ -950,6 +955,9 @@ else
             if (!JornadaId.HasValue)
                 OfflineSync.StartPeriodicSync(_negocioId);
         }
+
+        // Connect to SignalR for real-time sync
+        _ = ConectarHubAsync();
 
         // Si hay ops pendientes, reflejar estado en el indicador
         var pending = await OfflineSync.PendingCountAsync();
@@ -1492,6 +1500,8 @@ else
             if (OfflineSync.IsOnline)
             {
                 await OfflineSync.ProcessQueueAsync();
+                // Refresh from server to confirm data was saved and get latest state
+                await RefrescarDesdeApiAsync();
                 _saveText  = "Sincronizado ✓";
                 _saveClass = "save-ok";
             }
@@ -1516,11 +1526,49 @@ else
         }
     }
 
-    public void Dispose()
+    private async Task ConectarHubAsync()
+    {
+        try
+        {
+            await Hub.ConnectAsync();
+            if (_negocioId > 0)
+                await Hub.JoinNegocioAsync(_negocioId);
+            _hubSubs.Add(Hub.On<object>("JornadaActualizada", async _ =>
+            {
+                await InvokeAsync(async () =>
+                {
+                    if (!JornadaId.HasValue && Estado.Jornada != null)
+                    {
+                        await RefrescarDesdeApiAsync();
+                        StateHasChanged();
+                    }
+                });
+            }));
+            _enVivo = true;
+        }
+        catch { /* funciona sin SignalR */ }
+    }
+
+    private void OnJornadaSyncNeeded()
+    {
+        _ = InvokeAsync(async () =>
+        {
+            if (!JornadaId.HasValue && Estado.Jornada != null)
+            {
+                await RefrescarDesdeApiAsync();
+                StateHasChanged();
+            }
+        });
+    }
+
+    public async ValueTask DisposeAsync()
     {
         Estado.OnChange -= StateHasChanged;
         OfflineSync.OnConnectivityChanged -= OnConectividadCambia;
         OfflineSync.OnSynced -= OnDatosSincronizados;
         OfflineSync.OnNegocioSynced -= OnNegocioActualizado;
+        OfflineSync.OnJornadaSyncNeeded -= OnJornadaSyncNeeded;
+        foreach (var s in _hubSubs) s.Dispose();
+        await Hub.DisposeAsync();
     }
 }

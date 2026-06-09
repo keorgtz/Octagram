@@ -19,6 +19,7 @@ public class OfflineSyncService : IAsyncDisposable
     public event Action? OnConnectivityChanged;
     public event Action? OnSynced;
     public event Action? OnNegocioSynced;
+    public event Action? OnJornadaSyncNeeded;
 
     public OfflineSyncService(LocalDataService local, ApiService api, IJSRuntime js)
     {
@@ -90,7 +91,14 @@ public class OfflineSyncService : IAsyncDisposable
     {
         _syncTimer?.Dispose();
         _syncTimer = new System.Threading.Timer(
-            async _ => { if (IsOnline) await SyncNegocioDataAsync(negocioId); },
+            async _ =>
+            {
+                if (IsOnline)
+                {
+                    await SyncNegocioDataAsync(negocioId);
+                    OnJornadaSyncNeeded?.Invoke();
+                }
+            },
             null,
             TimeSpan.FromMinutes(5),
             TimeSpan.FromMinutes(5));

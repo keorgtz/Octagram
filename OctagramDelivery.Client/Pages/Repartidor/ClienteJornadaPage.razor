@@ -10,6 +10,7 @@
 @inject JornadaStateService Estado
 @inject OfflineSyncService OfflineSync
 @inject LocalDataService LocalData
+@inject HubService Hub
 
 <PageTitle>Cliente · TortiCloud</PageTitle>
 
@@ -249,6 +250,9 @@ else
     // Auto-save
     private System.Threading.Timer? _saveTimer;
 
+    private bool _enVivo;
+    private List<IDisposable> _hubSubs = new();
+
     protected override async Task OnInitializedAsync()
     {
         Estado.OnChange += StateHasChanged;
@@ -293,6 +297,9 @@ else
         _grupoExpandidoId = _gruposProducto.FirstOrDefault()?.Id;
 
         _cargando = false;
+
+        // Connect to SignalR for real-time sync
+        _ = ConectarHubAsync();
     }
 
     private void AbrirNumpad(JornadaStateService.CeldaState celda, bool esEntregado,
@@ -446,6 +453,16 @@ else
             {
                 await EnviarCambiosApiAsync();
                 await OfflineSync.ProcessQueueAsync();
+                // Refresh from server to confirm and get latest state
+                if (Estado.Jornada != null)
+                {
+                    var jornada = await Api.GetJornadaByIdAsync(Estado.Jornada.Id);
+                    if (jornada != null)
+                    {
+                        Estado.Cargar(jornada, Estado.Productos, Estado.Clientes);
+                        _excluido = Estado.Exclusiones.TryGetValue(ClienteId, out var ex) && ex.ExcluidoDeEfectivo;
+                    }
+                }
                 _saveText  = "Sincronizado ✓";
                 _saveClass = "save-ok";
             }
@@ -534,10 +551,43 @@ else
     private void Regresar()
         => Nav.NavigateTo(JornadaId.HasValue ? $"/gerente/jornada/{JornadaId}" : "/repartidor/jornada");
 
+    private async Task ConectarHubAsync()
+    {
+        try
+        {
+            await Hub.ConnectAsync();
+            if (Estado.Jornada?.TenantId is > 0)
+                await Hub.JoinNegocioAsync(Estado.Jornada.TenantId);
+            _hubSubs.Add(Hub.On<object>("JornadaActualizada", async _ =>
+            {
+                await InvokeAsync(async () =>
+                {
+                    // Refresh delivery data from server when another device makes changes
+                    if (OfflineSync.IsOnline && Estado.Jornada != null)
+                    {
+                        var jornada = await Api.GetJornadaByIdAsync(Estado.Jornada.Id);
+                        if (jornada != null)
+                        {
+                            var productos = Estado.Productos;
+                            var clientes = Estado.Clientes;
+                            Estado.Cargar(jornada, productos, clientes);
+                            _excluido = Estado.Exclusiones.TryGetValue(ClienteId, out var ex) && ex.ExcluidoDeEfectivo;
+                            StateHasChanged();
+                        }
+                    }
+                });
+            }));
+            _enVivo = true;
+        }
+        catch { /* funciona sin SignalR */ }
+    }
+
     public async ValueTask DisposeAsync()
     {
         Estado.OnChange -= StateHasChanged;
         OfflineSync.OnSynced -= OnSynced;
+        foreach (var s in _hubSubs) s.Dispose();
+        await Hub.DisposeAsync();
         _saveTimer?.Dispose();
         // Garantizar que el último estado quede en localStorage aunque el usuario salga rápido
         try { await GuardarSnapshotLocalAsync(); } catch { }
