@@ -26,7 +26,7 @@ public class NegocioSnapshot
     public DateTime SincronizadoEn { get; set; } = DateTime.UtcNow;
 }
 
-public enum PendingOpType { BulkSaveRonda, ToggleExclusion }
+public enum PendingOpType { BulkSaveRonda, ToggleExclusion, SaveStocksRonda }
 
 public class PendingOperation
 {
@@ -41,6 +41,8 @@ public class PendingOperation
     public int ClienteId { get; set; }
     public bool ExcluidoDeEfectivo { get; set; }
     public MetodoPago MetodoPago { get; set; }
+    // SaveStocksRonda
+    public List<RondaStockItem> StocksRonda { get; set; } = new();
     // Metadata
     public DateTime CreadoEn { get; set; } = DateTime.UtcNow;
     public int Intentos { get; set; }
@@ -103,6 +105,8 @@ public class LocalDataService
         else if (op.Tipo == PendingOpType.ToggleExclusion)
             ops.RemoveAll(o => o.Tipo == PendingOpType.ToggleExclusion
                             && o.JornadaId == op.JornadaId && o.ClienteId == op.ClienteId);
+        else if (op.Tipo == PendingOpType.SaveStocksRonda)
+            ops.RemoveAll(o => o.Tipo == PendingOpType.SaveStocksRonda && o.RondaId == op.RondaId);
         ops.Add(op);
         try { await _storage.SetItemAsync(OpsKey, ops); } catch { }
     }

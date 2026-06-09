@@ -43,6 +43,7 @@ public class JornadasController : ControllerBase
             .Include(d => d.Tenant)
             .Include(d => d.Rounds).ThenInclude(r => r.Details).ThenInclude(d => d.Customer)
             .Include(d => d.Rounds).ThenInclude(r => r.Details).ThenInclude(d => d.Product)
+            .Include(d => d.Rounds).ThenInclude(r => r.RondaStocks)
             .Include(d => d.DayCustomers).ThenInclude(dc => dc.Customer)
             .Where(d => d.TenantId == negocioId && d.DriverId == driverId && d.Fecha == hoy)
             .OrderByDescending(d => d.Estado == JornadaEstado.Abierta ? 1 : 0)
@@ -65,6 +66,7 @@ public class JornadasController : ControllerBase
             .Include(d => d.Tenant)
             .Include(d => d.Rounds).ThenInclude(r => r.Details).ThenInclude(d => d.Customer)
             .Include(d => d.Rounds).ThenInclude(r => r.Details).ThenInclude(d => d.Product)
+            .Include(d => d.Rounds).ThenInclude(r => r.RondaStocks)
             .Include(d => d.DayCustomers).ThenInclude(dc => dc.Customer)
             .Where(d => d.TenantId == negocioId && d.DriverId == driverId && d.Fecha == hoy)
             .OrderBy(d => d.FechaApertura)
@@ -227,6 +229,42 @@ public class JornadasController : ControllerBase
         return NoContent();
     }
 
+    // PUT /api/jornadas/rondas/{rondaId}/stocks — Save per-ronda stock overrides
+    [HttpPut("rondas/{rondaId}/stocks")]
+    public async Task<IActionResult> SaveRondaStocks(int rondaId, [FromBody] SaveRondaStocksRequest req)
+    {
+        var ronda = await _ctx.DeliveryRounds.Include(r => r.DeliveryDay)
+            .Include(r => r.RondaStocks)
+            .FirstOrDefaultAsync(r => r.Id == rondaId);
+        if (ronda == null) return NotFound();
+        if (ronda.DeliveryDay?.Estado != JornadaEstado.Abierta) return BadRequest("La jornada está cerrada.");
+
+        // Remove existing stocks for this ronda
+        _ctx.RondaStocks.RemoveRange(ronda.RondaStocks);
+
+        // Add new stocks
+        foreach (var item in req.Stocks)
+        {
+            if (item.Cantidad > 0)
+            {
+                _ctx.RondaStocks.Add(new RondaStock
+                {
+                    RondaId = rondaId,
+                    SeccionId = item.SeccionId,
+                    ProductoId = item.ProductoId,
+                    Cantidad = item.Cantidad
+                });
+            }
+        }
+
+        await _ctx.SaveChangesAsync();
+
+        await _hub.Clients.Group($"negocio-{ronda.DeliveryDay!.TenantId}")
+            .SendAsync("JornadaActualizada", new { jornadaId = ronda.DeliveryDayId });
+
+        return NoContent();
+    }
+
     // PUT /api/jornadas/{id}/clientes/{clienteId}/exclusion
     [HttpPut("{id}/clientes/{clienteId}/exclusion")]
     public async Task<IActionResult> ToggleExclusion(int id, int clienteId, [FromBody] ToggleExclusionRequest req)
@@ -274,6 +312,7 @@ public class JornadasController : ControllerBase
             .Include(d => d.Driver)
             .Include(d => d.Tenant)
             .Include(d => d.Rounds).ThenInclude(r => r.Details)
+            .Include(d => d.Rounds).ThenInclude(r => r.RondaStocks)
             .Where(d => d.Estado != JornadaEstado.Abierta)
             .AsQueryable();
 
@@ -328,6 +367,7 @@ public class JornadasController : ControllerBase
             .Include(d => d.Driver)
             .Include(d => d.Tenant)
             .Include(d => d.Rounds).ThenInclude(r => r.Details)
+            .Include(d => d.Rounds).ThenInclude(r => r.RondaStocks)
             .Where(d => d.TenantId == negocioId && d.Fecha == hoy)
             .OrderBy(d => d.Driver!.FullName)
             .ToListAsync();
@@ -354,6 +394,7 @@ public class JornadasController : ControllerBase
             .Include(d => d.Tenant)
             .Include(d => d.Rounds).ThenInclude(r => r.Details).ThenInclude(d => d.Customer)
             .Include(d => d.Rounds).ThenInclude(r => r.Details).ThenInclude(d => d.Product)
+            .Include(d => d.Rounds).ThenInclude(r => r.RondaStocks)
             .Include(d => d.DayCustomers).ThenInclude(dc => dc.Customer)
             .FirstOrDefaultAsync(d => d.TenantId == tenantId && d.DriverId == driverId && d.Fecha == fecha);
 
@@ -363,6 +404,7 @@ public class JornadasController : ControllerBase
             .Include(d => d.Tenant)
             .Include(d => d.Rounds).ThenInclude(r => r.Details).ThenInclude(d => d.Customer)
             .Include(d => d.Rounds).ThenInclude(r => r.Details).ThenInclude(d => d.Product)
+            .Include(d => d.Rounds).ThenInclude(r => r.RondaStocks)
             .Include(d => d.DayCustomers).ThenInclude(dc => dc.Customer)
             .FirstOrDefaultAsync(d => d.Id == id);
 
@@ -393,6 +435,12 @@ public class JornadasController : ControllerBase
                 CantidadDevuelta = det.CantidadDevuelta,
                 PrecioUnitario = det.PrecioUnitario,
                 GramajePreset = det.GramajePreset
+            }).ToList(),
+            Stocks = r.RondaStocks.Select(rs => new RondaStockDto
+            {
+                SeccionId = rs.SeccionId,
+                ProductoId = rs.ProductoId,
+                Cantidad = rs.Cantidad
             }).ToList()
         }).ToList(),
         Clientes = d.DayCustomers.Select(dc => new ClienteJornadaDto

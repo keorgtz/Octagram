@@ -21,6 +21,7 @@ public class AppDbContext : DbContext
     public DbSet<GrupoProducto> GruposProducto { get; set; } = null!;
     public DbSet<Seccion> Secciones { get; set; } = null!;
     public DbSet<SeccionStock> SeccionStocks { get; set; } = null!;
+    public DbSet<RondaStock> RondaStocks { get; set; } = null!;
     public DbSet<NegocioPermiso> NegocioPermisos { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -111,6 +112,20 @@ public class AppDbContext : DbContext
             .HasForeignKey(ss => ss.ProductoId).OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<SeccionStock>()
             .Property(ss => ss.CantidadStock).HasPrecision(18, 3);
+
+        // RondaStock — clave compuesta: RondaId + SeccionId + ProductoId
+        modelBuilder.Entity<RondaStock>().HasKey(rs => new { rs.RondaId, rs.SeccionId, rs.ProductoId });
+        modelBuilder.Entity<RondaStock>()
+            .HasOne(rs => rs.Ronda).WithMany(r => r.RondaStocks)
+            .HasForeignKey(rs => rs.RondaId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<RondaStock>()
+            .HasOne(rs => rs.Seccion).WithMany()
+            .HasForeignKey(rs => rs.SeccionId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<RondaStock>()
+            .HasOne(rs => rs.Producto).WithMany()
+            .HasForeignKey(rs => rs.ProductoId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<RondaStock>()
+            .Property(rs => rs.Cantidad).HasPrecision(18, 3);
 
         // NegocioPermiso — permisos por rol en cada negocio
         modelBuilder.Entity<NegocioPermiso>()

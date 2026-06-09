@@ -9,4 +9,5 @@ public class DeliveryRound
     public string Etiqueta { get; set; } = string.Empty;
     public int Orden { get; set; }
     public ICollection<DeliveryDetail> Details { get; set; } = new List<DeliveryDetail>();
+    public ICollection<RondaStock> RondaStocks { get; set; } = new List<RondaStock>();
 }

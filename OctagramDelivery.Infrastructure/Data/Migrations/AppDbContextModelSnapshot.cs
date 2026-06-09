@@ -390,6 +390,30 @@ namespace OctagramDelivery.Infrastructure.Data.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("OctagramDelivery.Domain.Entities.RondaStock", b =>
+                {
+                    b.Property<int>("RondaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SeccionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductoId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Cantidad")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("decimal(18,3)");
+
+                    b.HasKey("RondaId", "SeccionId", "ProductoId");
+
+                    b.HasIndex("ProductoId");
+
+                    b.HasIndex("SeccionId");
+
+                    b.ToTable("RondaStocks");
+                });
+
             modelBuilder.Entity("OctagramDelivery.Domain.Entities.Seccion", b =>
                 {
                     b.Property<int>("Id")
@@ -664,6 +688,33 @@ namespace OctagramDelivery.Infrastructure.Data.Migrations
                     b.Navigation("Tenant");
                 });
 
+            modelBuilder.Entity("OctagramDelivery.Domain.Entities.RondaStock", b =>
+                {
+                    b.HasOne("OctagramDelivery.Domain.Entities.Product", "Producto")
+                        .WithMany()
+                        .HasForeignKey("ProductoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OctagramDelivery.Domain.Entities.DeliveryRound", "Ronda")
+                        .WithMany("RondaStocks")
+                        .HasForeignKey("RondaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OctagramDelivery.Domain.Entities.Seccion", "Seccion")
+                        .WithMany()
+                        .HasForeignKey("SeccionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Producto");
+
+                    b.Navigation("Ronda");
+
+                    b.Navigation("Seccion");
+                });
+
             modelBuilder.Entity("OctagramDelivery.Domain.Entities.Seccion", b =>
                 {
                     b.HasOne("OctagramDelivery.Domain.Entities.Tenant", "Tenant")
@@ -735,6 +786,8 @@ namespace OctagramDelivery.Infrastructure.Data.Migrations
             modelBuilder.Entity("OctagramDelivery.Domain.Entities.DeliveryRound", b =>
                 {
                     b.Navigation("Details");
+
+                    b.Navigation("RondaStocks");
                 });
 
             modelBuilder.Entity("OctagramDelivery.Domain.Entities.GrupoProducto", b =>

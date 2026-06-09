@@ -33,6 +33,14 @@ public class RondaDto
     public string Etiqueta { get; set; } = string.Empty;
     public int Orden { get; set; }
     public List<DetalleDto> Detalles { get; set; } = new();
+    public List<RondaStockDto> Stocks { get; set; } = new();
+}
+
+public class RondaStockDto
+{
+    public int SeccionId { get; set; }
+    public int ProductoId { get; set; }
+    public decimal Cantidad { get; set; }
 }
 
 public class AddRondaRequest { public string Etiqueta { get; set; } = string.Empty; }
@@ -59,6 +67,18 @@ public class DetalleUpsertItem
     public decimal CantidadDevuelta { get; set; }
     public decimal PrecioUnitario { get; set; }
     public GramajePreset GramajePreset { get; set; }
+}
+
+public class SaveRondaStocksRequest
+{
+    public List<RondaStockItem> Stocks { get; set; } = new();
+}
+
+public class RondaStockItem
+{
+    public int SeccionId { get; set; }
+    public int ProductoId { get; set; }
+    public decimal Cantidad { get; set; }
 }
 
 public class ClienteJornadaDto

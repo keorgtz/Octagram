@@ -133,6 +133,9 @@ public class ApiService
     public Task<HttpResponseMessage> BulkSaveDetallesAsync(int rondaId, BulkSaveRondaRequest req)
         => _http.PutAsJsonAsync($"api/jornadas/rondas/{rondaId}/detalles", req);
 
+    public Task<HttpResponseMessage> SaveRondaStocksAsync(int rondaId, SaveRondaStocksRequest req)
+        => _http.PutAsJsonAsync($"api/jornadas/rondas/{rondaId}/stocks", req);
+
     public Task<HttpResponseMessage> ToggleExclusionAsync(int jornadaId, int clienteId, ToggleExclusionRequest req)
         => _http.PutAsJsonAsync($"api/jornadas/{jornadaId}/clientes/{clienteId}/exclusion", req);
 

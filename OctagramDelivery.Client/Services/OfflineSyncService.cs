@@ -125,6 +125,19 @@ public class OfflineSyncService : IAsyncDisposable
         if (IsOnline) _ = ProcessQueueAsync();
     }
 
+    public async Task EnqueueStocksRondaAsync(int rondaId, int jornadaId, int negocioId, List<RondaStockItem> stocks)
+    {
+        await _local.UpsertOpAsync(new PendingOperation
+        {
+            Tipo = PendingOpType.SaveStocksRonda,
+            RondaId = rondaId,
+            JornadaId = jornadaId,
+            NegocioId = negocioId,
+            StocksRonda = stocks
+        });
+        if (IsOnline) _ = ProcessQueueAsync();
+    }
+
     // ── Procesar cola de operaciones pendientes ───────────────────────────
 
     public async Task ProcessQueueAsync()
@@ -157,6 +170,11 @@ public class OfflineSyncService : IAsyncDisposable
                                     MetodoPagoAlternativo = op.MetodoPago
                                 });
                             ok = e.IsSuccessStatusCode;
+                            break;
+                        case PendingOpType.SaveStocksRonda:
+                            var s = await _api.SaveRondaStocksAsync(op.RondaId,
+                                new SaveRondaStocksRequest { Stocks = op.StocksRonda });
+                            ok = s.IsSuccessStatusCode;
                             break;
                     }
                     if (ok) synced.Add(op.OpId);

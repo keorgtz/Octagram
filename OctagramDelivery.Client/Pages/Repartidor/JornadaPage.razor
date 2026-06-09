@@ -808,6 +808,7 @@ else
     {
         _stocksRonda[$"{_stockNumpadRondaId}_{_stockNumpadSeccionId}_{_stockNumpadProductoId}"] = valor;
         await GuardarStocksRondaAsync();
+        await EnviarStocksRondaAsync();
         StateHasChanged();
     }
 
@@ -823,6 +824,50 @@ else
         };
         snap.StocksRonda = _stocksRonda;
         await LocalData.SaveSnapshotAsync(negId, snap);
+    }
+
+    /// <summary>Envía los stocks de la ronda activa al servidor (o los encola si no hay conexión).</summary>
+    private async Task EnviarStocksRondaAsync()
+    {
+        if (Estado.Jornada == null || !_hojaRondaId.HasValue) return;
+        var rondaId = _hojaRondaId.Value;
+        var jornadaId = Estado.Jornada.Id;
+        var negocioId = Estado.Jornada.TenantId;
+
+        // Build stock items from _stocksRonda for this ronda
+        var stocks = new List<RondaStockItem>();
+        foreach (var kv in _stocksRonda)
+        {
+            var parts = kv.Key.Split('_');
+            if (parts.Length != 3) continue;
+            if (!int.TryParse(parts[0], out var rid) || rid != rondaId) continue;
+            if (!int.TryParse(parts[1], out var secId) || !int.TryParse(parts[2], out var prodId)) continue;
+            stocks.Add(new RondaStockItem { SeccionId = secId, ProductoId = prodId, Cantidad = kv.Value });
+        }
+
+        if (stocks.Count == 0) return;
+        await OfflineSync.EnqueueStocksRondaAsync(rondaId, jornadaId, negocioId, stocks);
+    }
+
+    /// <summary>Envía los stocks de TODAS las rondas al servidor.</summary>
+    private async Task EnviarTodosStocksRondaAsync()
+    {
+        if (Estado.Jornada == null) return;
+        foreach (var ronda in Estado.Jornada.Rondas)
+        {
+            var rondaId = ronda.Id;
+            var stocks = new List<RondaStockItem>();
+            foreach (var kv in _stocksRonda)
+            {
+                var parts = kv.Key.Split('_');
+                if (parts.Length != 3) continue;
+                if (!int.TryParse(parts[0], out var rid) || rid != rondaId) continue;
+                if (!int.TryParse(parts[1], out var secId) || !int.TryParse(parts[2], out var prodId)) continue;
+                stocks.Add(new RondaStockItem { SeccionId = secId, ProductoId = prodId, Cantidad = kv.Value });
+            }
+            if (stocks.Count > 0)
+                await OfflineSync.EnqueueStocksRondaAsync(rondaId, Estado.Jornada.Id, Estado.Jornada.TenantId, stocks);
+        }
     }
 
     protected override async Task OnInitializedAsync()
@@ -873,9 +918,20 @@ else
                         {
                             var prods = await Api.GetProductosAsync(_negocioId) ?? new();
                             var clis  = (await Api.GetClientesAsync(_negocioId) ?? new()).Where(TieneEntregaHoy).ToList();
+
+                            // Populate _stocksRonda from server data
+                            _stocksRonda.Clear();
+                            foreach (var ronda in full.Rondas)
+                            {
+                                foreach (var stock in ronda.Stocks)
+                                {
+                                    _stocksRonda[$"{ronda.Id}_{stock.SeccionId}_{stock.ProductoId}"] = stock.Cantidad;
+                                }
+                            }
+
                             Estado.Cargar(full, prods, clis);
                             await LocalData.SaveSnapshotAsync(_negocioId, new JornadaSnapshot
-                            { Jornada = full, Productos = prods, Clientes = clis });
+                            { Jornada = full, Productos = prods, Clientes = clis, StocksRonda = _stocksRonda });
                         }
                     }
                     else if ((_misJornadasHoy?.Count ?? 0) > 1)
@@ -1006,12 +1062,23 @@ else
                 var clientes  = (await Api.GetClientesAsync(_negocioId) ?? new())
                                 .Where(c => JornadaId.HasValue || TieneEntregaHoy(c)).ToList();
 
+                // Populate _stocksRonda from server data
+                _stocksRonda.Clear();
+                foreach (var ronda in jornada.Rondas)
+                {
+                    foreach (var stock in ronda.Stocks)
+                    {
+                        _stocksRonda[$"{ronda.Id}_{stock.SeccionId}_{stock.ProductoId}"] = stock.Cantidad;
+                    }
+                }
+
                 if (!JornadaId.HasValue)
                     await LocalData.SaveSnapshotAsync(_negocioId, new JornadaSnapshot
                     {
                         Jornada   = jornada,
                         Productos = productos,
-                        Clientes  = clientes
+                        Clientes  = clientes,
+                        StocksRonda = _stocksRonda
                     });
 
                 Estado.Cargar(jornada, productos, clientes);
@@ -1038,11 +1105,22 @@ else
             var clientes  = (await Api.GetClientesAsync(_negocioId) ?? new())
                             .Where(TieneEntregaHoy).ToList();
 
+            // Populate _stocksRonda from server data
+            _stocksRonda.Clear();
+            foreach (var ronda in jornada.Rondas)
+            {
+                foreach (var stock in ronda.Stocks)
+                {
+                    _stocksRonda[$"{ronda.Id}_{stock.SeccionId}_{stock.ProductoId}"] = stock.Cantidad;
+                }
+            }
+
             await LocalData.SaveSnapshotAsync(_negocioId, new JornadaSnapshot
             {
                 Jornada   = jornada,
                 Productos = productos,
-                Clientes  = clientes
+                Clientes  = clientes,
+                StocksRonda = _stocksRonda
             });
 
             var pending = await LocalData.CountPendingAsync();
@@ -1070,11 +1148,26 @@ else
                 var prods = await Api.GetProductosAsync(_negocioId) ?? new();
                 var clis  = (await Api.GetClientesAsync(_negocioId) ?? new()).Where(TieneEntregaHoy).ToList();
                 Estado.Limpiar();
+
+                // Populate _stocksRonda from server data
+                _stocksRonda.Clear();
+                foreach (var ronda in jornada.Rondas)
+                {
+                    foreach (var stock in ronda.Stocks)
+                    {
+                        _stocksRonda[$"{ronda.Id}_{stock.SeccionId}_{stock.ProductoId}"] = stock.Cantidad;
+                    }
+                }
+
                 Estado.Cargar(jornada, prods, clis);
                 // Recuperar stocks específicos de esta jornada si el snapshot coincide
                 var snap = await LocalData.GetSnapshotAsync(_negocioId);
-                _stocksRonda = (snap?.Jornada?.Id == jornada.Id && snap.StocksRonda != null)
-                    ? snap.StocksRonda : new();
+                if (snap?.Jornada?.Id == jornada.Id && snap.StocksRonda != null)
+                {
+                    // Merge local stocks on top of server stocks (local wins)
+                    foreach (var kv in snap.StocksRonda)
+                        _stocksRonda[kv.Key] = kv.Value;
+                }
                 await LocalData.SaveSnapshotAsync(_negocioId, new JornadaSnapshot
                 { Jornada = jornada, Productos = prods, Clientes = clis, StocksRonda = _stocksRonda });
             }
@@ -1106,11 +1199,22 @@ else
                 var clientesTodos = negocioSnap?.Clientes ?? await Api.GetClientesAsync(_negocioId) ?? new();
                 var clientes = clientesTodos.Where(TieneEntregaHoy).ToList();
 
+                // Populate _stocksRonda from server data
+                _stocksRonda.Clear();
+                foreach (var ronda in jornada.Rondas)
+                {
+                    foreach (var stock in ronda.Stocks)
+                    {
+                        _stocksRonda[$"{ronda.Id}_{stock.SeccionId}_{stock.ProductoId}"] = stock.Cantidad;
+                    }
+                }
+
                 await LocalData.SaveSnapshotAsync(_negocioId, new JornadaSnapshot
                 {
                     Jornada   = jornada,
                     Productos = productos,
-                    Clientes  = clientesTodos
+                    Clientes  = clientesTodos,
+                    StocksRonda = _stocksRonda
                 });
 
                 // Actualizar listas de grupos y secciones en memoria
@@ -1381,7 +1485,10 @@ else
                 StocksRonda = existing?.StocksRonda ?? _stocksRonda
             });
 
-            // 2. If online, push pending changes to cloud
+            // 2. Send all ronda stocks to server
+            await EnviarTodosStocksRondaAsync();
+
+            // 3. If online, push pending changes to cloud
             if (OfflineSync.IsOnline)
             {
                 await OfflineSync.ProcessQueueAsync();
