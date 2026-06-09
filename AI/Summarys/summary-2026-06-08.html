@@ -70,7 +70,7 @@ body { font-family: var(--font); background: var(--page-bg); color: var(--gray-d
 
 <div class="page-header">
   <h1>OctagramDelivery · Resumen de implementación</h1>
-  <div class="subtitle">8 de junio de 2026 · 4 sesiones de cambios</div>
+  <div class="subtitle">8 de junio de 2026 · 6 sesiones de cambios</div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
@@ -235,7 +235,46 @@ body { font-family: var(--font); background: var(--page-bg); color: var(--gray-d
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- SESIÓN 4: Stocks de reparto no mostraban productos -->
+<!-- SESIÓN 5: Stocks sin productos + permiso de conciliación -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">
+    <div class="icon" style="background:var(--em-bg);color:var(--em);">
+      <span class="material-symbols-rounded">inventory_2</span>
+    </div>
+    <h2>Fix: Stocks y permiso de conciliación</h2>
+  </div>
+
+  <div class="change-row">
+    <span class="change-badge fix">Fix</span>
+    <div class="change-content">
+      <div class="title">Secciones siempre muestran productos (incluso con stock 0)</div>
+      <div class="desc">Se quitó el filtro <code>.Where(s => s.Stocks.Count > 0)</code> que ocultaba secciones sin productos asignados en <code>Stocks</code>. Ahora todas las secciones se muestran, con un mensaje interno si no tienen productos.</div>
+      <div class="files">JornadaPage.razor · vista Stocks</div>
+    </div>
+  </div>
+
+  <div class="change-row">
+    <span class="change-badge fix">Fix</span>
+    <div class="change-content">
+      <div class="title">Productos con cantidad 0 se guardan correctamente</div>
+      <div class="desc">Se quitó el filtro <code>.Where(kv => kv.Value > 0)</code> en <code>GestionSeccionesDialog</code> que eliminaba productos con <code>CantidadStock = 0</code> al guardar. Ahora los productos asignados a una sección se persisten aunque su cantidad sea 0.</div>
+      <div class="files">GestionSeccionesDialog.razor · GuardarSeccion</div>
+    </div>
+  </div>
+
+  <div class="change-row">
+    <span class="change-badge add">Add</span>
+    <div class="change-content">
+      <div class="title">Permiso <code>GestionSecciones</code> controla la conciliación de stocks</div>
+      <div class="desc">La sección de conciliación de stocks (comparación cargado vs entregado vs devuelto) ahora solo es visible para Repartidor, Admin y Gerente. Los Supervisores solo la ven si tienen el permiso <code>GestionSecciones</code>.</div>
+      <div class="files">JornadaPage.razor · _puedeVerConciliacion</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SESIÓN 6: Carga de secciones desde API -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <div class="section">
   <div class="section-title">
@@ -281,11 +320,12 @@ body { font-family: var(--font); background: var(--page-bg); color: var(--gray-d
     <div><span class="tag client">Client</span> Dashboard.razor</div>
     <div><span class="tag client">Client</span> NavMenu.razor</div>
     <div><span class="tag client">Client</span> BottomNav.razor</div>
-    <div><span class="tag client">Client</span> JornadaPage.razor <span style="font-size:10px;color:var(--or);">★ edited 4x</span></div>
+    <div><span class="tag client">Client</span> JornadaPage.razor <span style="font-size:10px;color:var(--or);">★ edited 6x</span></div>
     <div><span class="tag client">Client</span> ClienteJornadaPage.razor</div>
     <div><span class="tag client">Client</span> HistorialJornadas.razor</div>
     <div><span class="tag client">Client</span> GestionGrupos.razor</div>
     <div><span class="tag client">Client</span> NegocioDetailDialog.razor</div>
+    <div><span class="tag client">Client</span> GestionSeccionesDialog.razor</div>
     <div><span class="tag domain">Domain</span> Enums.cs</div>
     <div><span class="tag docs">Docs</span> CLAUDE.md</div>
   </div>

@@ -21,6 +21,7 @@ public class AppDbContext : DbContext
     public DbSet<GrupoProducto> GruposProducto { get; set; } = null!;
     public DbSet<Seccion> Secciones { get; set; } = null!;
     public DbSet<SeccionStock> SeccionStocks { get; set; } = null!;
+    public DbSet<NegocioPermiso> NegocioPermisos { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -110,5 +111,12 @@ public class AppDbContext : DbContext
             .HasForeignKey(ss => ss.ProductoId).OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<SeccionStock>()
             .Property(ss => ss.CantidadStock).HasPrecision(18, 3);
+
+        // NegocioPermiso — permisos por rol en cada negocio
+        modelBuilder.Entity<NegocioPermiso>()
+            .HasOne(np => np.Tenant).WithMany(t => t.PermisosPorRol)
+            .HasForeignKey(np => np.TenantId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<NegocioPermiso>()
+            .HasIndex(np => new { np.TenantId, np.Rol }).IsUnique();
     }
 }

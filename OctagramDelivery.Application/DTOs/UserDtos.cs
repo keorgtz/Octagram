@@ -44,6 +44,18 @@ public class UsuarioNegocioDto
 
 public class SetPermisosRequest { public int PermisosFlags { get; set; } }
 
+public class NegocioPermisoRolDto
+{
+    public UserRole Rol { get; set; }
+    public int PermisosFlags { get; set; }
+}
+
+public class SetPermisosRolRequest
+{
+    public UserRole Rol { get; set; }
+    public int PermisosFlags { get; set; }
+}
+
 public class AsignarUsuarioRequest
 {
     public int UserId { get; set; }

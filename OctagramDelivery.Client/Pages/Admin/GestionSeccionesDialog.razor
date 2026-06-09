@@ -245,7 +245,6 @@
     private async Task GuardarSeccion(SeccionDto sec)
     {
         var stocks = (_stocksTemp.TryGetValue(sec.Id, out var s) ? s : new())
-            .Where(kv => kv.Value > 0)
             .Select(kv => new UpsertSeccionStockRequest { ProductoId = kv.Key, CantidadStock = kv.Value })
             .ToList();
 

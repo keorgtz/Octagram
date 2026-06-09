@@ -34,9 +34,25 @@ public class AuthController : ControllerBase
             return Unauthorized("Usuario o contraseña incorrectos.");
 
         var negocioIds = user.UsuarioNegocios.Select(un => un.TenantId).ToList();
-        var permisosPorNegocio = user.UsuarioNegocios.ToDictionary(
-            un => un.TenantId.ToString(),
-            un => un.PermisosFlags);
+
+        // Permisos por negocio: combinar permisos del usuario con permisos por rol del negocio
+        var permisosPorNegocio = new Dictionary<string, int>();
+        foreach (var un in user.UsuarioNegocios)
+        {
+            // Si el usuario tiene permisos explícitos (no 0), usar esos
+            if (un.PermisosFlags != 0)
+            {
+                permisosPorNegocio[un.TenantId.ToString()] = un.PermisosFlags;
+            }
+            else
+            {
+                // Si no tiene permisos explícitos, heredar del rol para este negocio
+                var rolPermisos = await _context.NegocioPermisos
+                    .FirstOrDefaultAsync(np => np.TenantId == un.TenantId && np.Rol == user.Rol);
+                permisosPorNegocio[un.TenantId.ToString()] = rolPermisos?.PermisosFlags ?? 0;
+            }
+        }
+
         var token = GenerateToken(user, negocioIds, permisosPorNegocio);
 
         return Ok(new LoginResponse

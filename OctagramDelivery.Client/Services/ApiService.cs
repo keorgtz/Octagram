@@ -200,6 +200,13 @@ public class ApiService
     public Task<HttpResponseMessage> SetPermisosAsync(int negocioId, int userId, SetPermisosRequest req)
         => _http.PutAsJsonAsync($"api/negocios/{negocioId}/usuarios/{userId}/permisos", req);
 
+    // ── Permisos por rol del negocio ──────────────────────────────
+    public Task<List<NegocioPermisoRolDto>?> GetPermisosRolAsync(int negocioId)
+        => _http.GetFromJsonAsync<List<NegocioPermisoRolDto>>($"api/negocios/{negocioId}/permisos-rol");
+
+    public Task<HttpResponseMessage> SetPermisosRolAsync(int negocioId, SetPermisosRolRequest req)
+        => _http.PutAsJsonAsync($"api/negocios/{negocioId}/permisos-rol", req);
+
     // ── Dashboard ─────────────────────────────────────────────────
     public Task<DashboardNegocioDto?> GetDashboardSupervisorAsync(int negocioId, DateOnly? fecha = null)
     {

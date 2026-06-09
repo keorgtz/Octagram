@@ -397,8 +397,8 @@ else
                         }
                     </div>
 
-                    <!-- Conciliación de stocks (si ya hay entregas) -->
-                    @if (HayEntregasEnVuelta())
+                    <!-- Conciliación de stocks (si ya hay entregas y tiene permiso) -->
+                    @if (_puedeVerConciliacion && HayEntregasEnVuelta())
                     {
                         <div style="padding:0 16px 8px;">
                             <div class="hoja-reparto-title" style="border-radius:12px 12px 0 0;">
@@ -579,6 +579,7 @@ else
     private bool   _cargando        = true;
     private bool   _soloLectura;
     private bool   _puedeAbrir;
+    private bool   _puedeVerConciliacion;
     private bool   _initialized;
     private int    _negocioId;
     private string _saveText        = "Guardado ✓";
@@ -777,6 +778,8 @@ else
         _negocioId   = user?.NegocioIds.FirstOrDefault() ?? 0;
         _soloLectura = user?.Rol == UserRole.Supervisor;
         _puedeAbrir  = user?.Rol == UserRole.Repartidor || user?.Rol == UserRole.Admin;
+        _puedeVerConciliacion = user?.Rol != UserRole.Supervisor
+            || (_negocioId > 0 && user.TienePermiso(Permiso.GestionSecciones, _negocioId));
 
         // Gate de permiso: Supervisor sin VerHojaReparto no puede acceder
         if (user?.Rol == UserRole.Supervisor && _negocioId > 0 && !user.PuedeVerHojaReparto(_negocioId))

@@ -163,4 +163,56 @@ public class NegociosController : ControllerBase
         await _ctx.SaveChangesAsync();
         return NoContent();
     }
+
+    // ── Permisos por rol del negocio ──────────────────────────────
+
+    [HttpGet("{id}/permisos-rol")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
+    public async Task<ActionResult<List<NegocioPermisoRolDto>>> GetPermisosRol(int id)
+    {
+        var permisos = await _ctx.NegocioPermisos
+            .Where(np => np.TenantId == id)
+            .ToListAsync();
+
+        return Ok(permisos.Select(np => new NegocioPermisoRolDto
+        {
+            Rol = np.Rol,
+            PermisosFlags = np.PermisosFlags
+        }));
+    }
+
+    [HttpPut("{id}/permisos-rol")]
+    [Authorize(Roles = nameof(UserRole.Admin))]
+    public async Task<IActionResult> SetPermisosRol(int id, [FromBody] SetPermisosRolRequest req)
+    {
+        // Upsert: crear o actualizar el permiso para el rol en este negocio
+        var existing = await _ctx.NegocioPermisos
+            .FirstOrDefaultAsync(np => np.TenantId == id && np.Rol == req.Rol);
+
+        if (existing != null)
+        {
+            existing.PermisosFlags = req.PermisosFlags;
+        }
+        else
+        {
+            _ctx.NegocioPermisos.Add(new NegocioPermiso
+            {
+                TenantId = id,
+                Rol = req.Rol,
+                PermisosFlags = req.PermisosFlags
+            });
+        }
+
+        // También actualizar los permisos de todos los usuarios de este rol en este negocio
+        var usersInRole = await _ctx.UsuarioNegocios
+            .Include(un => un.User)
+            .Where(un => un.TenantId == id && un.User!.Rol == req.Rol)
+            .ToListAsync();
+
+        foreach (var un in usersInRole)
+            un.PermisosFlags = req.PermisosFlags;
+
+        await _ctx.SaveChangesAsync();
+        return NoContent();
+    }
 }

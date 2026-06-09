@@ -299,6 +299,31 @@ namespace OctagramDelivery.Infrastructure.Data.Migrations
                     b.ToTable("GruposProducto");
                 });
 
+            modelBuilder.Entity("OctagramDelivery.Domain.Entities.NegocioPermiso", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("PermisosFlags")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Rol")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "Rol")
+                        .IsUnique();
+
+                    b.ToTable("NegocioPermisos");
+                });
+
             modelBuilder.Entity("OctagramDelivery.Domain.Entities.PriceTier", b =>
                 {
                     b.Property<int>("Id")
@@ -599,6 +624,17 @@ namespace OctagramDelivery.Infrastructure.Data.Migrations
                     b.Navigation("Tenant");
                 });
 
+            modelBuilder.Entity("OctagramDelivery.Domain.Entities.NegocioPermiso", b =>
+                {
+                    b.HasOne("OctagramDelivery.Domain.Entities.Tenant", "Tenant")
+                        .WithMany("PermisosPorRol")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("OctagramDelivery.Domain.Entities.PriceTier", b =>
                 {
                     b.HasOne("OctagramDelivery.Domain.Entities.Product", "Product")
@@ -729,6 +765,8 @@ namespace OctagramDelivery.Infrastructure.Data.Migrations
                     b.Navigation("DeliveryDays");
 
                     b.Navigation("GruposProducto");
+
+                    b.Navigation("PermisosPorRol");
 
                     b.Navigation("Products");
 
