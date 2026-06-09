@@ -1807,6 +1807,89 @@ body,
 .jstocks-ir-btn:active { filter: brightness(.93); }
 .jstocks-ir-btn .material-symbols-rounded { font-size: 22px; }
 
+/* ═══════════════════════════════════════════════════════════════════
+   STOCKS DE REPARTO — Rediseño con tarjetas de edición y conciliación
+   ═══════════════════════════════════════════════════════════════════ */
+.jstocks-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 4px 16px 8px;
+}
+@media (min-width: 960px) {
+    .jstocks-cards { grid-template-columns: 1fr 1fr; }
+}
+
+.jstocks-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.05);
+    overflow: hidden;
+}
+.jstocks-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--page-bg, #F2F3F7);
+}
+.jstocks-card-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.jstocks-card-icon.edit { background: #EEF2FF; color: var(--in, #6366F1); }
+.jstocks-card-icon.conc { background: #D1FAE5; color: var(--em, #10B981); }
+.jstocks-card-title { font-size: 15px; font-weight: 700; color: var(--gray-dark, #1C1E26); flex: 1; }
+.jstocks-card-badge {
+    font-size: 11px; font-weight: 600; color: var(--gray-muted, #6B7280);
+    background: var(--page-bg, #F2F3F7);
+    padding: 2px 8px; border-radius: 10px;
+}
+
+.jstocks-section-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+    transition: background .12s;
+    -webkit-tap-highlight-color: transparent;
+}
+.jstocks-section-toggle:hover { background: var(--page-bg, #F2F3F7); }
+.jstocks-section-toggle .toggle-icon {
+    font-size: 20px;
+    color: var(--gray-muted, #9CA3AF);
+    transition: transform .2s;
+}
+.jstocks-section-toggle.open .toggle-icon { transform: rotate(180deg); }
+.jstocks-section-name { font-size: 14px; font-weight: 600; color: var(--gray-dark, #1C1E26); flex: 1; }
+.jstocks-section-count { font-size: 11px; color: var(--gray-muted, #6B7280); }
+
+.jstocks-section-body {
+    border-top: 1px solid var(--page-bg, #F2F3F7);
+    padding: 0 0 4px;
+}
+.jstocks-section-body:empty { display: none; }
+
+.jstocks-empty {
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--gray-muted, #6B7280);
+    font-size: 13px;
+}
+.jstocks-empty .material-symbols-rounded {
+    font-size: 32px;
+    display: block;
+    margin: 0 auto 8px;
+    opacity: .5;
+}
+
 /* ── Renderizado dual desktop/mobile — defaults que el breakpoint overrides ── */
 .desk-only { display: block; }
 .mob-cards  { display: none; }

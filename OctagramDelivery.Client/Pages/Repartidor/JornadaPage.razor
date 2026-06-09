@@ -315,7 +315,7 @@ else
     }
     else if (_vista == Vista.Stocks)
     {
-        <!-- ── STOCKS: carga por sección/vuelta ──────────────────────── -->
+        <!-- ── STOCKS: edición y conciliación por sección/vuelta ────────── -->
         <div class="jstocks-container">
 
             @if (!(Estado.Jornada?.Rondas.Count > 0))
@@ -327,7 +327,7 @@ else
             }
             else
             {
-                <!-- Selector de vuelta (stocks siempre son por vuelta específica) -->
+                <!-- Selector de vuelta -->
                 <div class="jstocks-vuelta-bar">
                     <span class="jstocks-vuelta-label">Vuelta:</span>
                     @foreach (var ronda in Estado.Jornada!.Rondas)
@@ -340,111 +340,154 @@ else
 
                 @if (!_hojaRondaId.HasValue)
                 {
-                    <div style="padding:20px 16px;text-align:center;color:var(--gray-muted);font-size:13px;">
-                        Selecciona una vuelta para editar sus stocks.
-                    </div>
-                }
-                else if (_secciones.Count == 0)
-                {
-                    <div class="empty-state" style="padding:40px 0;">
-                        <span class="material-symbols-rounded">map</span>
-                        <p>No hay secciones configuradas para este negocio.</p>
+                    <div class="jstocks-empty">
+                        <span class="material-symbols-rounded">swap_horiz</span>
+                        Selecciona una vuelta para ver sus stocks.
                     </div>
                 }
                 else
                 {
-                    <div class="jstocks-secciones">
-                        @foreach (var sec in _secciones)
-                        {
-                            <div class="jstocks-seccion-card">
-                                <div class="jstocks-seccion-titulo">
-                                    <span class="material-symbols-rounded" style="font-size:16px;color:var(--in,#6366F1);">map</span>
-                                    <span>@sec.Nombre</span>
+                    <div class="jstocks-cards">
+                        <!-- ═══ Card 1: Edición de Stock ═══ -->
+                        <div class="jstocks-card">
+                            <div class="jstocks-card-header">
+                                <div class="jstocks-card-icon edit">
+                                    <span class="material-symbols-rounded" style="font-size:20px;">inventory_2</span>
                                 </div>
-                                @if (sec.Stocks.Count > 0)
+                                <span class="jstocks-card-title">Edición de Stock</span>
+                                <span class="jstocks-card-badge">@_secciones.Count secciones</span>
+                            </div>
+                            @if (_secciones.Count == 0)
+                            {
+                                <div class="jstocks-empty">
+                                    <span class="material-symbols-rounded">map</span>
+                                    No hay secciones configuradas.
+                                </div>
+                            }
+                            else
+                            {
+                                @foreach (var sec in _secciones)
                                 {
-                                    @foreach (var st in sec.Stocks.OrderBy(s => s.ProductoId))
-                                    {
-                                        var prodDto  = Estado.Productos.FirstOrDefault(p => p.Id == st.ProductoId);
-                                        var esGramaje = prodDto?.TipoMedida == TipoMedida.Gramaje;
-                                        var valorAct  = GetStockParaRonda(_hojaRondaId!.Value, sec.Id, st.ProductoId, st.CantidadStock);
-                                        var sItem     = new SeccionItem(st.ProductoId, st.ProductoNombre, esGramaje, valorAct, 0, 0);
-                                        <div class="jstocks-prod-row">
-                                            <span class="jstocks-prod-nombre">@st.ProductoNombre</span>
-                                            <div class="jstocks-prod-right">
-                                                <span class="jstocks-valor @(valorAct > 0 ? "activo" : "")">
-                                                    @valorAct.ToString("0.##")
-                                                    <span class="jstocks-unidad">@(esGramaje ? "kg" : "pzs")</span>
-                                                </span>
-                                                @if (!_soloLectura && Estado.Jornada?.Estado == JornadaEstado.Abierta)
+                                    var isOpen = _seccionesEditExpanded.Contains(sec.Id);
+                                    <div style="border-top:1px solid var(--page-bg,#F2F3F7);">
+                                        <button class="jstocks-section-toggle @(isOpen ? "open" : "")"
+                                                @onclick="() => ToggleSection(_seccionesEditExpanded, sec.Id)">
+                                            <span class="material-symbols-rounded toggle-icon">expand_more</span>
+                                            <span class="jstocks-section-name">@sec.Nombre</span>
+                                            <span class="jstocks-section-count">@(sec.Stocks.Count) productos</span>
+                                        </button>
+                                        @if (isOpen)
+                                        {
+                                            <div class="jstocks-section-body">
+                                                @if (sec.Stocks.Count > 0)
                                                 {
-                                                    <button class="jstocks-edit-btn"
-                                                            @onclick="() => AbrirNumpadStock(_hojaRondaId!.Value, sec.Id, sItem)">
-                                                        <span class="material-symbols-rounded">edit</span>
-                                                    </button>
+                                                    @foreach (var st in sec.Stocks.OrderBy(s => s.ProductoId))
+                                                    {
+                                                        var prodDto  = Estado.Productos.FirstOrDefault(p => p.Id == st.ProductoId);
+                                                        var esGramaje = prodDto?.TipoMedida == TipoMedida.Gramaje;
+                                                        var valorAct  = GetStockParaRonda(_hojaRondaId!.Value, sec.Id, st.ProductoId, st.CantidadStock);
+                                                        var sItem     = new SeccionItem(st.ProductoId, st.ProductoNombre, esGramaje, valorAct, 0, 0);
+                                                        <div class="jstocks-prod-row">
+                                                            <span class="jstocks-prod-nombre">@st.ProductoNombre</span>
+                                                            <div class="jstocks-prod-right">
+                                                                <span class="jstocks-valor @(valorAct > 0 ? "activo" : "")">
+                                                                    @valorAct.ToString("0.##")
+                                                                    <span class="jstocks-unidad">@(esGramaje ? "kg" : "pzs")</span>
+                                                                </span>
+                                                                @if (!_soloLectura && Estado.Jornada?.Estado == JornadaEstado.Abierta)
+                                                                {
+                                                                    <button class="jstocks-edit-btn"
+                                                                            @onclick="() => AbrirNumpadStock(_hojaRondaId!.Value, sec.Id, sItem)">
+                                                                        <span class="material-symbols-rounded">edit</span>
+                                                                    </button>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <div style="padding:12px 16px;text-align:center;color:var(--gray-muted);font-size:12px;">
+                                                        Sin productos asignados a esta sección.
+                                                    </div>
                                                 }
                                             </div>
-                                        </div>
-                                    }
+                                        }
+                                    </div>
+                                }
+                            }
+                        </div>
+
+                        <!-- ═══ Card 2: Conciliación de Stock ═══ -->
+                        @if (_puedeVerConciliacion)
+                        {
+                            <div class="jstocks-card">
+                                <div class="jstocks-card-header">
+                                    <div class="jstocks-card-icon conc">
+                                        <span class="material-symbols-rounded" style="font-size:20px;">balance</span>
+                                    </div>
+                                    <span class="jstocks-card-title">Conciliación de Stock</span>
+                                    <span class="jstocks-card-badge">@_secciones.Count secciones</span>
+                                </div>
+                                @if (!HayEntregasEnVuelta())
+                                {
+                                    <div class="jstocks-empty">
+                                        <span class="material-symbols-rounded">hourglass_empty</span>
+                                        Aún no hay entregas en esta vuelta.
+                                    </div>
                                 }
                                 else
                                 {
-                                    <div style="padding:12px 0;text-align:center;color:var(--gray-muted);font-size:12px;">
-                                        Sin productos asignados a esta sección.
-                                    </div>
+                                    @foreach (var sec in GetSeccionesResumenActuales())
+                                    {
+                                        var isOpen = _seccionesConcExpanded.Contains(sec.Id);
+                                        <div style="border-top:1px solid var(--page-bg,#F2F3F7);">
+                                            <button class="jstocks-section-toggle @(isOpen ? "open" : "")"
+                                                    @onclick="() => ToggleSection(_seccionesConcExpanded, sec.Id)">
+                                                <span class="material-symbols-rounded toggle-icon">expand_more</span>
+                                                <span class="jstocks-section-name">@sec.Nombre</span>
+                                                <span class="jstocks-section-count">@(sec.Items.Count) productos</span>
+                                            </button>
+                                            @if (isOpen)
+                                            {
+                                                <div class="jstocks-section-body">
+                                                    @foreach (var item in sec.Items)
+                                                    {
+                                                        var netoSec    = item.Entregado - item.Devuelto;
+                                                        var diff       = item.Stock - netoSec;
+                                                        var excede     = diff < 0;
+                                                        var exacto     = diff == 0;
+                                                        var estadoClass = excede ? "excede" : exacto ? "exacto" : "falta";
+                                                        <div class="hoja-prod-row">
+                                                            <span class="hoja-prod-nombre">@item.ProductoNombre</span>
+                                                            <div class="hoja-prod-stats">
+                                                                <div class="hoja-stat">
+                                                                    <span class="hoja-stat-label">Cargado</span>
+                                                                    <span class="hoja-stat-num">@item.Stock.ToString("0.##")</span>
+                                                                </div>
+                                                                <div class="hoja-stat">
+                                                                    <span class="hoja-stat-label">Entregado</span>
+                                                                    <span class="hoja-stat-num">@netoSec.ToString("0.##")</span>
+                                                                </div>
+                                                                <div class="hoja-stat @estadoClass">
+                                                                    <span class="hoja-stat-label">
+                                                                        @if (excede) { <span class="material-symbols-rounded" style="font-size:10px;vertical-align:middle;">warning</span>@(" Excede") }
+                                                                        else if (exacto) { <span class="material-symbols-rounded" style="font-size:10px;vertical-align:middle;">check_circle</span>@(" OK") }
+                                                                        else { <span class="material-symbols-rounded" style="font-size:10px;vertical-align:middle;">inventory_2</span>@(" Devolver") }
+                                                                    </span>
+                                                                    <span class="hoja-stat-num">@(exacto ? "—" : Math.Abs(diff).ToString("0.##"))</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    }
                                 }
                             </div>
                         }
                     </div>
-
-                    <!-- Conciliación de stocks (si ya hay entregas y tiene permiso) -->
-                    @if (_puedeVerConciliacion && HayEntregasEnVuelta())
-                    {
-                        <div style="padding:0 16px 8px;">
-                            <div class="hoja-reparto-title" style="border-radius:12px 12px 0 0;">
-                                <span class="material-symbols-rounded" style="font-size:18px;">balance</span>
-                                <span style="flex:1;">Conciliación de esta vuelta</span>
-                            </div>
-                            @foreach (var sec in GetSeccionesResumenActuales())
-                            {
-                                <div class="hoja-seccion-card" style="border-radius:0;border-top:1px solid var(--gray-line);">
-                                    <div class="hoja-seccion-title">
-                                        <span class="material-symbols-rounded" style="font-size:15px;">map</span>
-                                        <span>@sec.Nombre</span>
-                                    </div>
-                                    @foreach (var item in sec.Items)
-                                    {
-                                        var netoSec    = item.Entregado - item.Devuelto;
-                                        var diff       = item.Stock - netoSec;
-                                        var excede     = diff < 0;
-                                        var exacto     = diff == 0;
-                                        var estadoClass = excede ? "excede" : exacto ? "exacto" : "falta";
-                                        <div class="hoja-prod-row">
-                                            <span class="hoja-prod-nombre">@item.ProductoNombre</span>
-                                            <div class="hoja-prod-stats">
-                                                <div class="hoja-stat">
-                                                    <span class="hoja-stat-label">Cargado</span>
-                                                    <span class="hoja-stat-num">@item.Stock.ToString("0.##")</span>
-                                                </div>
-                                                <div class="hoja-stat">
-                                                    <span class="hoja-stat-label">Entregado</span>
-                                                    <span class="hoja-stat-num">@netoSec.ToString("0.##")</span>
-                                                </div>
-                                                <div class="hoja-stat @estadoClass">
-                                                    <span class="hoja-stat-label">
-                                                        @if (excede) { <span class="material-symbols-rounded" style="font-size:10px;vertical-align:middle;">warning</span>@(" Excede") }
-                                                        else if (exacto) { <span class="material-symbols-rounded" style="font-size:10px;vertical-align:middle;">check_circle</span>@(" OK") }
-                                                        else { <span class="material-symbols-rounded" style="font-size:10px;vertical-align:middle;">inventory_2</span>@(" Devolver") }
-                                                    </span>
-                                                    <span class="hoja-stat-num">@(exacto ? "—" : Math.Abs(diff).ToString("0.##"))</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    }
-                                </div>
-                            }
-                        </div>
-                    }
 
                     <!-- Botón ir a repartir -->
                     @if (!_soloLectura && Estado.Jornada?.Estado == JornadaEstado.Abierta)
@@ -618,6 +661,9 @@ else
     // Stocks por ronda: clave "{rondaId}_{seccionId}_{productoId}" → cantidad cargada
     private Dictionary<string, decimal> _stocksRonda = new();
 
+    private HashSet<int> _seccionesEditExpanded = new();
+    private HashSet<int> _seccionesConcExpanded = new();
+
     private record ProductTotal(string Nombre, decimal Total, bool EsGramaje, bool EsGrupo = false);
     private record SeccionItem(int ProductoId, string ProductoNombre, bool EsGramaje, decimal Stock, decimal Entregado, decimal Devuelto);
     private record SeccionResumen(int Id, string Nombre, List<SeccionItem> Items);
@@ -682,6 +728,11 @@ else
     {
         var key = $"{rondaId}_{seccionId}_{productoId}";
         return _stocksRonda.TryGetValue(key, out var v) ? v : stockBase;
+    }
+
+    private void ToggleSection(HashSet<int> set, int id)
+    {
+        if (!set.Add(id)) set.Remove(id);
     }
 
     private List<SeccionResumen> GetSeccionesResumenActuales()
