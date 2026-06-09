@@ -899,14 +899,6 @@ else
 
         await CargarSiNecesario();
 
-        // Cargar stocks por ronda desde snapshot (datos operativos locales)
-        if (_negocioId > 0)
-        {
-            var snapStocks = await LocalData.GetSnapshotAsync(_negocioId);
-            if (snapStocks?.StocksRonda != null)
-                _stocksRonda = snapStocks.StocksRonda;
-        }
-
         // Cargar lista de todas las jornadas de hoy (soporte múltiples jornadas)
         if (_negocioId > 0 && !JornadaId.HasValue && OfflineSync.IsOnline)
         {
@@ -1043,6 +1035,11 @@ else
                 : new();
 
             Estado.Cargar(snap.Jornada, snap.Productos, clientes);
+
+            // Cargar stocks por ronda desde el snapshot local (datos rápidos)
+            if (snap.StocksRonda != null)
+                _stocksRonda = snap.StocksRonda;
+
             _loadedFromCache = true;
             return true;
         }
@@ -1131,13 +1128,11 @@ else
                 StocksRonda = _stocksRonda
             });
 
-            var pending = await LocalData.CountPendingAsync();
-            if (pending == 0)
-            {
-                Estado.Cargar(jornada, productos, clientes);
-                _loadedFromCache = false;
-                await InvokeAsync(StateHasChanged);
-            }
+            // Siempre actualizar el estado con datos del servidor
+            // (los stocks ya se actualizaron arriba desde el servidor)
+            Estado.Cargar(jornada, productos, clientes);
+            _loadedFromCache = false;
+            await InvokeAsync(StateHasChanged);
         }
         catch { }
     }
@@ -1168,14 +1163,6 @@ else
                 }
 
                 Estado.Cargar(jornada, prods, clis);
-                // Recuperar stocks específicos de esta jornada si el snapshot coincide
-                var snap = await LocalData.GetSnapshotAsync(_negocioId);
-                if (snap?.Jornada?.Id == jornada.Id && snap.StocksRonda != null)
-                {
-                    // Merge local stocks on top of server stocks (local wins)
-                    foreach (var kv in snap.StocksRonda)
-                        _stocksRonda[kv.Key] = kv.Value;
-                }
                 await LocalData.SaveSnapshotAsync(_negocioId, new JornadaSnapshot
                 { Jornada = jornada, Productos = prods, Clientes = clis, StocksRonda = _stocksRonda });
             }
