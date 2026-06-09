@@ -37,9 +37,11 @@ Los helpers disponibles en `UserInfo`:
 | `GestionGrupos` | Crear/editar grupos de producto | Supervisor |
 | `GestionSecciones` | Crear/editar secciones y stock | Supervisor |
 | `AsignarJornada` | Abrir/cerrar jornadas para repartidores | Supervisor |
+| `VerConciliacion` | Ver conciliación de stock en hoja de reparto | Supervisor, Gerente, Repartidor |
 
-Admin y Gerente **siempre** tienen acceso completo; no necesitan permisos adicionales.
-Repartidor **solo** accede a la hoja de reparto propia; no aplica el sistema de permisos de negocio.
+Admin **siempre** tiene acceso completo; no necesita permisos adicionales.
+Gerente y Repartidor **por defecto no ven** la conciliación de stock; solo si `VerConciliacion` está habilitado para su rol en ese negocio.
+Supervisor necesita los permisos explícitos según la tabla.
 
 ### Patrón de vista unificada
 La hoja de reparto (`JornadaPage`, `ClienteJornadaPage`) es **una sola vista** para todos los roles:
@@ -145,7 +147,7 @@ public async ValueTask DisposeAsync()
 
 ---
 
-## Sistema de permisos por negocio (Supervisor)
+## Sistema de permisos por rol y negocio
 
 El `Permiso` enum es `[Flags]` en `OctagramDelivery.Domain/Enums/Enums.cs`:
 ```csharp
@@ -161,13 +163,18 @@ public enum Permiso
     GestionGrupos     = 1 << 5,   // 32
     GestionSecciones  = 1 << 6,   // 64
     AsignarJornada    = 1 << 7,   // 128
-    Todo              = 255
+    VerConciliacion   = 1 << 8,   // 256
+    Todo              = 511
 }
 ```
 
-Los permisos del Supervisor se guardan como claim `"permisos"` en el JWT, codificados como `"{negocioId}:{flags}"` por negocio. El helper `UserInfo.TienePermiso(Permiso, negocioId)` decodifica esto en el cliente.
+Los permisos se almacenan **por rol** en cada negocio usando la entidad `NegocioPermiso` (composite key: `TenantId` + `Rol`). Se configuran desde la UI admin en `Pages/Admin/NegocioDetailDialog.razor`:
+- **Supervisor**: Todos los permisos son configurables (8 permisos + VerConciliacion).
+- **Gerente**: Solo `VerConciliacion` es configurable (el resto siempre tiene acceso).
+- **Repartidor**: Solo `VerConciliacion` es configurable (el resto no aplica).
+- **Admin**: Siempre tiene acceso completo, no necesita permisos.
 
-Los permisos se configuran desde la UI admin en `Pages/Admin/NegocioDetailDialog.razor`.
+Los permisos se guardan como claim `"permisos"` en el JWT, codificados como JSON `{"negocioId": flags}`. El helper `UserInfo.TienePermiso(Permiso, negocioId)` decodifica esto en el cliente. `UserInfo.PuedeVerConciliacion(negocioId)` verifica si el usuario puede ver la conciliación de stock (Admin siempre puede, los demás necesitan el permiso explícito).
 
 ---
 

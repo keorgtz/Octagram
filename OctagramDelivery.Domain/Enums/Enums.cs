@@ -18,6 +18,8 @@ public enum Permiso
     GestionGrupos     = 1 << 5,   // 32
     GestionSecciones  = 1 << 6,   // 64
     AsignarJornada    = 1 << 7,   // 128
+    VerConciliacion   = 1 << 8,   // 256
     Todo              = VerDashboard | VerReportes | GestionClientes | GestionProductos
                        | VerHojaReparto | GestionGrupos | GestionSecciones | AsignarJornada
+                       | VerConciliacion
 }

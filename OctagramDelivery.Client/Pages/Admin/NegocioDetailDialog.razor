@@ -551,38 +551,80 @@
                                     <span class="text-muted" style="font-size:12px;">Permisos configurables</span>
                                 </div>
                                 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-bottom:12px;">
-                                    @foreach (var (perm, label) in _permisosDisp)
+                                    @foreach (var (perm, label) in _permisosPorRol[UserRole.Supervisor])
                                     {
-                                        var activo = (_permisosRolSupervisor & (int)perm) != 0;
+                                        var flags = _permisosRolFlags[UserRole.Supervisor];
+                                        var activo = (flags & (int)perm) != 0;
                                         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
                                             <MudCheckBox T="bool" Value="activo"
-                                                         ValueChanged="@(v => TogglePermisoRol(perm, v))"
+                                                         ValueChanged="@(v => TogglePermisoRol(UserRole.Supervisor, perm, v))"
                                                          Color="Color.Primary" Size="Size.Small" />
                                             @label
                                         </label>
                                     }
                                 </div>
                                 <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
-                                           OnClick="GuardarPermisosRolSupervisor">
+                                           OnClick="@(() => GuardarPermisosRol(UserRole.Supervisor))">
                                     Guardar permisos de Supervisor
                                 </MudButton>
                             </div>
 
-                            @* ── Admin y Gerente ── *@
-                            <div class="data-card" style="padding:14px 16px;opacity:.6;">
-                                <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
-                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Error">Admin</MudChip>
+                            @* ── Gerente ── *@
+                            <div class="data-card" style="padding:14px 16px;">
+                                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
                                     <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Success">Gerente</MudChip>
+                                    <span class="text-muted" style="font-size:12px;">Acceso completo excepto conciliación de stock</span>
                                 </div>
-                                <span class="text-muted" style="font-size:12px;">Acceso completo — no requieren configuración de permisos.</span>
+                                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-bottom:12px;">
+                                    @foreach (var (perm, label) in _permisosPorRol[UserRole.Gerente])
+                                    {
+                                        var flags = _permisosRolFlags[UserRole.Gerente];
+                                        var activo = (flags & (int)perm) != 0;
+                                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+                                            <MudCheckBox T="bool" Value="activo"
+                                                         ValueChanged="@(v => TogglePermisoRol(UserRole.Gerente, perm, v))"
+                                                         Color="Color.Primary" Size="Size.Small" />
+                                            @label
+                                        </label>
+                                    }
+                                </div>
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                           OnClick="@(() => GuardarPermisosRol(UserRole.Gerente))">
+                                    Guardar permisos de Gerente
+                                </MudButton>
                             </div>
 
                             @* ── Repartidor ── *@
+                            <div class="data-card" style="padding:14px 16px;">
+                                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Default">Repartidor</MudChip>
+                                    <span class="text-muted" style="font-size:12px;">Solo conciliación de stock es configurable</span>
+                                </div>
+                                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-bottom:12px;">
+                                    @foreach (var (perm, label) in _permisosPorRol[UserRole.Repartidor])
+                                    {
+                                        var flags = _permisosRolFlags[UserRole.Repartidor];
+                                        var activo = (flags & (int)perm) != 0;
+                                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+                                            <MudCheckBox T="bool" Value="activo"
+                                                         ValueChanged="@(v => TogglePermisoRol(UserRole.Repartidor, perm, v))"
+                                                         Color="Color.Primary" Size="Size.Small" />
+                                            @label
+                                        </label>
+                                    }
+                                </div>
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                                           OnClick="@(() => GuardarPermisosRol(UserRole.Repartidor))">
+                                    Guardar permisos de Repartidor
+                                </MudButton>
+                            </div>
+
+                            @* ── Admin ── *@
                             <div class="data-card" style="padding:14px 16px;opacity:.6;">
                                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
-                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Default">Repartidor</MudChip>
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Error">Admin</MudChip>
                                 </div>
-                                <span class="text-muted" style="font-size:12px;">Solo accede a su propia hoja de reparto — no aplica el sistema de permisos.</span>
+                                <span class="text-muted" style="font-size:12px;">Acceso completo — no requiere configuración de permisos.</span>
                             </div>
                         </div>
                     }
@@ -630,37 +672,54 @@
     private decimal _tierPrecio;
 
     // ── Permisos por rol ───────────────────────────────────────────
-    private int _permisosRolSupervisor;
+    private Dictionary<UserRole, int> _permisosRolFlags = new()
+    {
+        [UserRole.Supervisor] = 0,
+        [UserRole.Gerente] = 0,
+        [UserRole.Repartidor] = 0,
+    };
     private bool _cargandoPermisosRol = true;
 
-    private static readonly (Permiso Perm, string Label)[] _permisosDisp =
+    /// <summary>Permisos configurables por cada rol.</summary>
+    private static readonly Dictionary<UserRole, (Permiso Perm, string Label)[]> _permisosPorRol = new()
     {
-        (Permiso.VerDashboard,      "Ver Dashboard"),
-        (Permiso.VerReportes,       "Ver Reportes"),
-        (Permiso.GestionClientes,   "Gestión Clientes"),
-        (Permiso.GestionProductos,  "Gestión Productos"),
-        (Permiso.GestionGrupos,     "Gestión Grupos"),
-        (Permiso.GestionSecciones,  "Gestión Secciones"),
-        (Permiso.VerHojaReparto,    "Ver Hoja de Reparto"),
-        (Permiso.AsignarJornada,    "Abrir/Cerrar Jornadas"),
+        [UserRole.Supervisor] = new[]
+        {
+            (Permiso.VerDashboard,      "Ver Dashboard"),
+            (Permiso.VerReportes,       "Ver Reportes"),
+            (Permiso.GestionClientes,   "Gestión Clientes"),
+            (Permiso.GestionProductos,  "Gestión Productos"),
+            (Permiso.GestionGrupos,     "Gestión Grupos"),
+            (Permiso.GestionSecciones,  "Gestión Secciones"),
+            (Permiso.VerHojaReparto,    "Ver Hoja de Reparto"),
+            (Permiso.AsignarJornada,    "Abrir/Cerrar Jornadas"),
+            (Permiso.VerConciliacion,   "Ver Conciliación de Stock"),
+        },
+        [UserRole.Gerente] = new[]
+        {
+            (Permiso.VerConciliacion,   "Ver Conciliación de Stock"),
+        },
+        [UserRole.Repartidor] = new[]
+        {
+            (Permiso.VerConciliacion,   "Ver Conciliación de Stock"),
+        },
     };
 
-    private void TogglePermisoRol(Permiso permiso, bool activo)
+    private void TogglePermisoRol(UserRole rol, Permiso permiso, bool activo)
     {
-        _permisosRolSupervisor = activo
-            ? _permisosRolSupervisor | (int)permiso
-            : _permisosRolSupervisor & ~(int)permiso;
+        var current = _permisosRolFlags[rol];
+        _permisosRolFlags[rol] = activo ? current | (int)permiso : current & ~(int)permiso;
     }
 
-    private async Task GuardarPermisosRolSupervisor()
+    private async Task GuardarPermisosRol(UserRole rol)
     {
         var resp = await Api.SetPermisosRolAsync(TenantId, new SetPermisosRolRequest
         {
-            Rol = UserRole.Supervisor,
-            PermisosFlags = _permisosRolSupervisor
+            Rol = rol,
+            PermisosFlags = _permisosRolFlags[rol]
         });
         if (resp.IsSuccessStatusCode)
-            Snackbar.Add("Permisos de Supervisor actualizados.", Severity.Success);
+            Snackbar.Add($"Permisos de {rol} actualizados.", Severity.Success);
         else
             Snackbar.Add("Error al actualizar los permisos.", Severity.Error);
     }
@@ -720,8 +779,9 @@
     {
         _cargandoPermisosRol = true;
         var permisos = await Api.GetPermisosRolAsync(TenantId) ?? new();
-        var supervisorPerms = permisos.FirstOrDefault(p => p.Rol == UserRole.Supervisor);
-        _permisosRolSupervisor = supervisorPerms?.PermisosFlags ?? 0;
+        _permisosRolFlags[UserRole.Supervisor] = permisos.FirstOrDefault(p => p.Rol == UserRole.Supervisor)?.PermisosFlags ?? 0;
+        _permisosRolFlags[UserRole.Gerente] = permisos.FirstOrDefault(p => p.Rol == UserRole.Gerente)?.PermisosFlags ?? 0;
+        _permisosRolFlags[UserRole.Repartidor] = permisos.FirstOrDefault(p => p.Rol == UserRole.Repartidor)?.PermisosFlags ?? 0;
         _cargandoPermisosRol = false;
     }
 

@@ -102,4 +102,8 @@ public class UserInfo
     // Admin y Gerente siempre pueden; Supervisor solo si tiene el permiso explícito.
     public bool PuedeVerHojaReparto(int negocioId)
         => Rol != UserRole.Supervisor || TienePermiso(Permiso.VerHojaReparto, negocioId);
+
+    // Admin siempre puede; los demás roles necesitan el permiso explícito.
+    public bool PuedeVerConciliacion(int negocioId)
+        => Rol == UserRole.Admin || TienePermiso(Permiso.VerConciliacion, negocioId);
 }
